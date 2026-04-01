@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>IBI Finance Ledger</title>
+    <style>
+        :root {
+            --bg: #f4f5f7; --surface: #ffffff; --text: #172b4d; --border: #dfe1e6;
+            --income: #10b981; --expense: #ef4444; --btn-hover: #0ea5e9;
+        }
+        [data-theme="dark"] {
+            --bg: #0f172a; --surface: #1e293b; --text: #f8fafc; --border: #334155;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg); color: var(--text); margin: 0; padding: 20px;
+            display: flex; flex-direction: column; align-items: center; min-height: 100vh;
+        }
+        .header { width: 100%; max-width: 400px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .theme-toggle { background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 8px 16px; border-radius: 20px; font-weight: bold; cursor: pointer; }
+        .card { background-color: var(--surface); width: 100%; max-width: 400px; border-radius: 16px; padding: 30px 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); box-sizing: border-box; }
+        h2 { margin-top: 0; text-align: center; color: var(--text); margin-bottom: 24px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px; opacity: 0.8; }
+        input, select { width: 100%; padding: 14px; font-size: 16px; border-radius: 8px; border: 2px solid var(--border); background-color: var(--bg); color: var(--text); font-weight: bold; box-sizing: border-box; }
+        input:focus, select:focus { outline: none; border-color: #3b82f6; }
+        
+        .radio-group { display: flex; gap: 10px; margin-bottom: 20px; }
+        .radio-label { flex: 1; text-align: center; padding: 15px; border: 2px solid var(--border); border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        input[type="radio"] { display: none; }
+        
+        /* Dynamic Selection Colors */
+        input[type="radio"][value="Income"]:checked + .radio-label { background-color: #dcfce7; border-color: var(--income); color: #166534; }
+        input[type="radio"][value="Expenditure"]:checked + .radio-label { background-color: #fee2e2; border-color: var(--expense); color: #991b1b; }
+        [data-theme="dark"] input[type="radio"][value="Income"]:checked + .radio-label { background-color: rgba(16, 185, 129, 0.2); color: #34d399; }
+        [data-theme="dark"] input[type="radio"][value="Expenditure"]:checked + .radio-label { background-color: rgba(239, 68, 68, 0.2); color: #f87171; }
+
+        button.submit-btn { width: 100%; padding: 18px; font-size: 18px; font-weight: 800; color: white; background-color: #3b82f6; border: none; border-radius: 12px; cursor: pointer; margin-top: 10px; }
+        button.submit-btn:active { transform: scale(0.98); }
+        button.submit-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+
+        #status { margin-top: 20px; font-weight: bold; padding: 12px; border-radius: 8px; display: none; text-align: center; }
+        .status-success { background-color: #dcfce7; color: #166534; display: block !important; }
+        .status-error { background-color: #fee2e2; color: #991b1b; display: block !important; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h3 style="margin:0;">India Business Int.</h3>
+        <button class="theme-toggle" id="themeBtn" onclick="toggleTheme()">🌙 Dark</button>
+    </div>
+
+    <div class="card">
+        <h2>Financial Ledger</h2>
+
+        <div class="radio-group">
+            <input type="radio" id="typeIncome" name="txType" value="Income" checked>
+            <label for="typeIncome" class="radio-label">🟢 Income</label>
+
+            <input type="radio" id="typeExpense" name="txType" value="Expenditure">
+            <label for="typeExpense" class="radio-label">🔴 Expenditure</label>
+        </div>
+
+        <div class="form-group">
+            <label for="amount">Amount (₹)</label>
+            <input type="number" id="amount" placeholder="e.g. 5000" required>
+        </div>
+
+        <div class="form-group">
+            <label for="desc">Description / Particulars</label>
+            <input type="text" id="desc" placeholder="e.g. Amazon Payout or Packaging Supply" required>
+        </div>
+
+        <button class="submit-btn" id="submitBtn" onclick="submitData()">Record Transaction</button>
+        <div id="status"></div>
+    </div>
+
+    <script>
+        // Theme Logic
+        const currentTheme = localStorage.getItem('theme') || 'light';
+        if (currentTheme === 'dark') { document.body.setAttribute('data-theme', 'dark'); document.getElementById('themeBtn').innerText = '☀️ Light'; }
+        function toggleTheme() {
+            if (document.body.getAttribute('data-theme') === 'dark') {
+                document.body.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); document.getElementById('themeBtn').innerText = '🌙 Dark';
+            } else {
+                document.body.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); document.getElementById('themeBtn').innerText = '☀️ Light';
+            }
+        }
+
+        // ⚠️ PASTE YOUR NEW WEB APP URL BELOW
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbxosA5MhEcSAIx68X2iOjF7psh1Iie3QlgTJHzy1V7Fwi2MJJlhqt0vROs-csoqpgAs/exec';
+
+        function submitData() {
+            const type = document.querySelector('input[name="txType"]:checked').value;
+            const amount = document.getElementById('amount').value;
+            const desc = document.getElementById('desc').value;
+            const submitBtn = document.getElementById('submitBtn');
+            const statusDiv = document.getElementById('status');
+
+            if (!amount || !desc) {
+                alert("Please enter both the amount and description.");
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.innerText = "Processing...";
+            statusDiv.className = '';
+            statusDiv.style.display = 'none';
+
+            const formData = new FormData();
+            formData.append('type', type);
+            formData.append('amount', amount);
+            formData.append('desc', desc);
+
+            fetch(scriptURL, { method: 'POST', body: formData })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        statusDiv.innerText = `Success! ₹${amount} ${type} recorded.`;
+                        statusDiv.className = 'status-success';
+                        document.getElementById('amount').value = '';
+                        document.getElementById('desc').value = '';
+                    } else {
+                        statusDiv.innerText = `Error: ${data.message}`;
+                        statusDiv.className = 'status-error';
+                    }
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = "Record Transaction";
+                    setTimeout(() => { statusDiv.style.display = 'none'; }, 5000);
+                })
+                .catch(error => {
+                    statusDiv.innerText = 'Network error. Please try again.';
+                    statusDiv.className = 'status-error';
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = "Record Transaction";
+                });
+        }
+    </script>
+</body>
+</html>
