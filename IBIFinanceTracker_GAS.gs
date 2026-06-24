@@ -1,4 +1,4 @@
-// IBI Finance Tracker — GAS Backend v2.2
+// IBI Finance Tracker — GAS Backend v2.3
 // India Business International — Finance & Accounts Ledger
 // Sheet ID: 1hbh5E9kzX4632d4kaMHLXC-Aqhi5exgEJWOxMtSrttE
 // All requests via GET (URL params) — avoids CORS/redirect issues
@@ -11,6 +11,9 @@
 // v2.2: read the Ledger with getDisplayValues() so dates are parsed from the literal
 //       DD-MM-YYYY text the user sees (the raw cells were locale-swapped Date objects,
 //       which sent day<=12 rows to the wrong month). toISO_ now auto-corrects order.
+// v2.3: the Ledger date column is MIXED — day<=12 dates became US (month-first) Date
+//       objects while day>12 stayed DD-MM text. Read raw values and swap month<->day on
+//       the Date cells to recover the intended Indian dates; text stays day-first.
 
 const SHEET_ID    = "1hbh5E9kzX4632d4kaMHLXC-Aqhi5exgEJWOxMtSrttE";
 const SHEET_NAME  = "Transactions";
@@ -48,7 +51,7 @@ function doGet(e) {
   try {
     switch (action) {
       case 'ping':
-        result = { status:'ok', message:'IBI Finance Tracker GAS v2.2 is live!' };
+        result = { status:'ok', message:'IBI Finance Tracker GAS v2.3 is live!' };
         break;
       case 'getAll':
         result = getAllTransactions();
@@ -186,9 +189,11 @@ function migrateFromLedger_(force) {
   }
   if (!led) return 0;
 
-  // Read DISPLAY values (the literal "01-04-2026" text the user sees). The raw cell
-  // values are locale-swapped Date objects, so getValues() would mangle day<=12 dates.
-  const lv = led.getDataRange().getDisplayValues();
+  // Read RAW values. Day<=12 dates were stored as US (month-first) Date objects; toISO_
+  // swaps month<->day to recover the intended Indian DD-MM date. Day>12 dates stayed as
+  // text and are parsed day-first. (getDisplayValues only shows the already-misparsed
+  // value, so it cannot recover the original intent.)
+  const lv = led.getDataRange().getValues();
   if (lv.length <= 1) return 0;
 
   const out = [];
@@ -216,7 +221,7 @@ function migrateFromLedger_(force) {
     else                         { type = 'income';  amount = isNaN(incN) ? 0 : incN; } // income (or 0 balance note)
 
     idx++;
-    const created = fmtDisp_(dCell) + (fmtTime_(tCell) ? ' ' + fmtTime_(tCell) : '');
+    const created = toISO_(dCell) + (fmtTime_(tCell) ? ' ' + fmtTime_(tCell) : '');
     out.push(['TXMIG' + idx, toISO_(dCell), type, String(desc), '', amount, '', created]);
   }
 
@@ -232,9 +237,18 @@ function migrateFromLedger_(force) {
 }
 
 function toISO_(d) {
-  if (d instanceof Date) return Utilities.formatDate(d, 'Asia/Kolkata', 'yyyy-MM-dd');
+  // Date object → Sheets misparsed the typed Indian DD-MM as US M-D. Recover by treating
+  // the stored MONTH as the user's day and the stored DAY as the user's month.
+  if (d instanceof Date) {
+    const sMon = d.getMonth() + 1, sDay = d.getDate(), yr = d.getFullYear();
+    let day, mon;
+    if (sDay <= 12) { day = sMon; mon = sDay; }   // swap back to DD-MM intent
+    else            { day = sDay; mon = sMon; }   // day>12 can't be a month → already correct
+    return yr + '-' + ('0' + mon).slice(-2) + '-' + ('0' + day).slice(-2);
+  }
+  // Text "DD-MM-YYYY" (day-first, Indian), with a guard that auto-corrects a swapped order.
   const s = String(d || '').trim();
-  const m = s.match(/^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{4})$/);  // day/month order, Indian default
+  const m = s.match(/^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{4})$/);
   if (m) {
     let a = parseInt(m[1], 10), b = parseInt(m[2], 10);
     const y = m[3];
