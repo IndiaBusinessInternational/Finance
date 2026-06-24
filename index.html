@@ -1,142 +1,757 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>IBI Finance Ledger</title>
-    <style>
-        :root {
-            --bg: #f4f5f7; --surface: #ffffff; --text: #172b4d; --border: #dfe1e6;
-            --income: #10b981; --expense: #ef4444; --btn-hover: #0ea5e9;
-        }
-        [data-theme="dark"] {
-            --bg: #0f172a; --surface: #1e293b; --text: #f8fafc; --border: #334155;
-        }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: var(--bg); color: var(--text); margin: 0; padding: 20px;
-            display: flex; flex-direction: column; align-items: center; min-height: 100vh;
-        }
-        .header { width: 100%; max-width: 400px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .theme-toggle { background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 8px 16px; border-radius: 20px; font-weight: bold; cursor: pointer; }
-        .card { background-color: var(--surface); width: 100%; max-width: 400px; border-radius: 16px; padding: 30px 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); box-sizing: border-box; }
-        h2 { margin-top: 0; text-align: center; color: var(--text); margin-bottom: 24px; }
-        .form-group { margin-bottom: 20px; }
-        label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px; opacity: 0.8; }
-        input, select { width: 100%; padding: 14px; font-size: 16px; border-radius: 8px; border: 2px solid var(--border); background-color: var(--bg); color: var(--text); font-weight: bold; box-sizing: border-box; }
-        input:focus, select:focus { outline: none; border-color: #3b82f6; }
-        
-        .radio-group { display: flex; gap: 10px; margin-bottom: 20px; }
-        .radio-label { flex: 1; text-align: center; padding: 15px; border: 2px solid var(--border); border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; }
-        input[type="radio"] { display: none; }
-        
-        /* Dynamic Selection Colors */
-        input[type="radio"][value="Income"]:checked + .radio-label { background-color: #dcfce7; border-color: var(--income); color: #166534; }
-        input[type="radio"][value="Expenditure"]:checked + .radio-label { background-color: #fee2e2; border-color: var(--expense); color: #991b1b; }
-        [data-theme="dark"] input[type="radio"][value="Income"]:checked + .radio-label { background-color: rgba(16, 185, 129, 0.2); color: #34d399; }
-        [data-theme="dark"] input[type="radio"][value="Expenditure"]:checked + .radio-label { background-color: rgba(239, 68, 68, 0.2); color: #f87171; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="IBI Finance">
+<meta name="description" content="IBI Finance Tracker — India Business International">
+<title>IBI Finance Tracker</title>
+<link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 
-        button.submit-btn { width: 100%; padding: 18px; font-size: 18px; font-weight: 800; color: white; background-color: #3b82f6; border: none; border-radius: 12px; cursor: pointer; margin-top: 10px; }
-        button.submit-btn:active { transform: scale(0.98); }
-        button.submit-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+<!-- Inline SVG favicon with IBI text -->
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='10' fill='%23000'/><text x='32' y='44' font-family='Roboto,sans-serif' font-size='24' font-weight='700' fill='%2300c5ff' text-anchor='middle'>IBI</text></svg>">
 
-        #status { margin-top: 20px; font-weight: bold; padding: 12px; border-radius: 8px; display: none; text-align: center; }
-        .status-success { background-color: #dcfce7; color: #166534; display: block !important; }
-        .status-error { background-color: #fee2e2; color: #991b1b; display: block !important; }
-    </style>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --cyan:#00c5ff;
+  --cyan-dark:#009ac7;
+  --black:#000000;
+  --bg:#0a0a0a;
+  --bg2:#141414;
+  --bg3:#1c1c1c;
+  --bg4:#242424;
+  --text:#f0f0f0;
+  --text2:#aaa;
+  --text3:#666;
+  --border:#2a2a2a;
+  --border2:#333;
+  --success-bg:#0d2e0d;--success-text:#5dd45d;--success-border:#1e5c1e;
+  --danger-bg:#2e0d0d;--danger-text:#ff7070;--danger-border:#5c1e1e;
+  --warning-bg:#2e200d;--warning-text:#ffb84d;--warning-border:#5c3e1e;
+  --info-bg:#0d1e2e;--info-text:#4db8ff;--info-border:#1e3e5c;
+  --radius:10px;--radius-lg:14px;--radius-xl:18px;
+  --font:'Roboto',sans-serif;
+}
+body[data-theme="light"]{
+  --bg:#f0f4f8;--bg2:#ffffff;--bg3:#e8ecf0;--bg4:#dde3ea;
+  --text:#1a1a2e;--text2:#555;--text3:#999;
+  --border:#d0d7df;--border2:#bcc5cf;
+  --success-bg:#e6f7e6;--success-text:#1a6b1a;--success-border:#a3d9a3;
+  --danger-bg:#fdeaea;--danger-text:#8b1a1a;--danger-border:#f5a5a5;
+  --warning-bg:#fef6e4;--warning-text:#7a4a00;--warning-border:#ffd080;
+  --info-bg:#e4f0fd;--info-text:#0c447c;--info-border:#85b7eb;
+}
+
+html,body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
+
+/* ── TOPBAR ── */
+.topbar{background:var(--black);border-bottom:2px solid var(--cyan);position:sticky;top:0;z-index:200;padding:0 16px}
+.topbar-inner{max-width:960px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:56px;gap:10px}
+.topbar-left{display:flex;align-items:center;gap:10px;min-width:0}
+.ibi-logo{width:38px;height:38px;border-radius:8px;background:var(--black);border:1.5px solid var(--cyan);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ibi-logo span{font-family:var(--font);font-weight:700;font-size:12px;color:var(--cyan);letter-spacing:0.5px}
+.app-name{color:var(--cyan);font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ver-badge{font-size:10px;font-weight:700;background:var(--cyan);color:#000;padding:2px 7px;border-radius:20px;letter-spacing:0.04em;flex-shrink:0}
+.topbar-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.tbar-btn{background:none;border:1px solid var(--border2);border-radius:8px;color:var(--text2);cursor:pointer;padding:6px 10px;font-size:12px;font-family:var(--font);display:flex;align-items:center;gap:4px;white-space:nowrap}
+.tbar-btn:hover{border-color:var(--cyan);color:var(--cyan)}
+.tbar-btn.install-btn{border-color:var(--cyan);color:var(--cyan);font-weight:600}
+.tbar-btn.install-btn:hover{background:var(--cyan);color:#000}
+
+/* ── DARK/LIGHT TOGGLE ── */
+.toggle-wrap{display:flex;align-items:center;gap:6px}
+.toggle-label{font-size:11px;color:var(--text2)}
+.toggle{position:relative;width:40px;height:22px;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0}
+.toggle-track{position:absolute;inset:0;background:var(--border2);border-radius:22px;cursor:pointer;transition:background 0.2s}
+.toggle input:checked + .toggle-track{background:var(--cyan)}
+.toggle-thumb{position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform 0.2s;pointer-events:none}
+.toggle input:checked ~ .toggle-thumb{transform:translateX(18px)}
+
+/* ── HERO SECTION ── */
+.hero{background:var(--black);border-bottom:1px solid var(--border);padding:20px 16px 16px}
+.hero-inner{max-width:960px;margin:0 auto;display:flex;align-items:center;gap:18px}
+.hero-logo{width:80px;height:80px;border-radius:50%;background:var(--black);border:3px solid var(--cyan);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 0 18px rgba(0,197,255,0.35)}
+.hero-logo span{font-family:var(--font);font-weight:700;font-size:26px;color:var(--cyan);letter-spacing:1px}
+.hero-info{min-width:0}
+.hero-name{font-size:20px;font-weight:700;color:var(--cyan);font-family:var(--font)}
+.hero-sub{font-size:12px;color:var(--text2);margin-top:3px}
+.hero-clock{font-size:13px;color:var(--text2);margin-top:6px;font-family:var(--font);font-weight:400}
+.hero-clock span{color:var(--cyan);font-weight:500}
+
+/* ── INSTALL BANNER ── */
+.install-banner{background:linear-gradient(135deg,#001a22,#002e3d);border-bottom:1px solid var(--cyan);padding:10px 16px;display:none;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.install-banner.show{display:flex}
+.install-banner-left{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--cyan)}
+.install-banner-actions{display:flex;gap:8px}
+.ib-install{background:var(--cyan);color:#000;border:none;border-radius:7px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font)}
+.ib-dismiss{background:none;border:1px solid var(--border2);border-radius:7px;padding:6px 12px;font-size:12px;color:var(--text2);cursor:pointer;font-family:var(--font)}
+.ib-dismiss:hover{border-color:var(--text3)}
+
+/* ── MAIN ── */
+.main{max-width:960px;margin:0 auto;padding:16px 16px 32px}
+
+/* ── SUMMARY GRID ── */
+.summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+.metric{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 14px 12px;position:relative;overflow:hidden}
+.metric::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.metric.m-income::before{background:var(--success-text)}
+.metric.m-expense::before{background:var(--danger-text)}
+.metric.m-net::before{background:var(--cyan)}
+.metric.m-count::before{background:var(--text3)}
+.metric-label{font-size:11px;color:var(--text2);margin-bottom:6px;display:flex;align-items:center;gap:4px;text-transform:uppercase;letter-spacing:0.06em;font-weight:500}
+.metric-value{font-size:22px;font-weight:700;font-family:var(--font)}
+.metric-value.income{color:var(--success-text)}
+.metric-value.expense{color:var(--danger-text)}
+.metric-value.positive{color:var(--cyan)}
+.metric-value.negative{color:var(--danger-text)}
+.metric-value.count{color:var(--text)}
+
+/* ── SECTION HEADER ── */
+.section-hdr{background:var(--black);border:1px solid var(--border);border-radius:var(--radius-lg) var(--radius-lg) 0 0;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.section-title{color:var(--cyan);font-weight:700;font-size:14px;font-family:var(--font);display:flex;align-items:center;gap:7px;text-transform:uppercase;letter-spacing:0.06em}
+
+/* ── FORM CARD ── */
+.form-card{background:var(--bg2);border:1px solid var(--border);border-radius:0 0 var(--radius-lg) var(--radius-lg);padding:16px;margin-bottom:14px;transition:border-color 0.2s,box-shadow 0.2s}
+.form-card.editing{border-color:var(--cyan);box-shadow:0 0 0 2px rgba(0,197,255,0.15)}
+.edit-banner{background:var(--info-bg);border:1px solid var(--info-border);border-radius:var(--radius);padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.edit-banner-left{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:500;color:var(--info-text)}
+.edit-cancel-btn{background:none;border:1px solid var(--info-border);cursor:pointer;color:var(--info-text);font-size:12px;font-weight:600;padding:5px 12px;border-radius:var(--radius);font-family:var(--font)}
+.edit-cancel-btn:hover{background:var(--cyan);color:#000;border-color:var(--cyan)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-group.full{grid-column:1/-1}
+label{font-size:12px;color:var(--text2);font-weight:500;font-family:var(--font)}
+input,select{width:100%;padding:10px 12px;font-size:15px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg3);color:var(--text);outline:none;transition:border-color 0.15s;font-family:var(--font)}
+input:focus,select:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(0,197,255,0.12)}
+.type-toggle{display:flex;gap:8px}
+.type-btn{flex:1;padding:10px;font-size:13px;border:1px solid var(--border2);border-radius:var(--radius);background:transparent;color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;transition:all 0.15s;font-family:var(--font);font-weight:500}
+.type-btn.active-income{background:var(--success-bg);color:var(--success-text);border-color:var(--success-border)}
+.type-btn.active-expense{background:var(--danger-bg);color:var(--danger-text);border-color:var(--danger-border)}
+.btn-row{display:flex;gap:10px;margin-top:14px}
+.btn-save{flex:1;padding:12px;font-size:15px;font-weight:700;border:none;border-radius:var(--radius);background:var(--cyan);color:#000;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;transition:opacity 0.15s;font-family:var(--font)}
+.btn-save:hover{opacity:0.85}
+.btn-save:disabled{opacity:0.5;cursor:not-allowed}
+.btn-save.mode-edit{background:#4db8ff}
+.btn-clear{padding:12px 18px;font-size:14px;border:1px solid var(--border2);border-radius:var(--radius);background:transparent;color:var(--text2);cursor:pointer;font-family:var(--font)}
+.btn-clear:hover{border-color:var(--text3);color:var(--text)}
+
+/* ── STATUS BAR ── */
+.status-bar{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 16px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:14px;flex-wrap:wrap}
+.status-txt{font-size:12px;color:var(--text2);display:flex;align-items:center;gap:5px}
+.status-dot{width:8px;height:8px;border-radius:50%;background:var(--border2);flex-shrink:0}
+.status-dot.online{background:var(--success-text)}
+.status-dot.error{background:var(--danger-text)}
+.status-actions{display:flex;gap:6px;flex-wrap:wrap}
+.s-btn{font-size:11px;padding:4px 10px;border:1px solid var(--border2);border-radius:6px;background:transparent;color:var(--text2);cursor:pointer;font-family:var(--font);display:flex;align-items:center;gap:4px;text-decoration:none}
+.s-btn:hover{border-color:var(--cyan);color:var(--cyan)}
+
+/* ── PENDING ── */
+.pending-section{background:var(--warning-bg);border:1px solid var(--warning-border);border-radius:var(--radius);padding:12px 14px;margin-bottom:14px;display:none}
+.pending-title{font-weight:700;color:var(--warning-text);margin-bottom:8px;font-size:13px;display:flex;align-items:center;gap:5px;font-family:var(--font)}
+.pending-item{display:flex;justify-content:space-between;padding:5px 0;color:var(--warning-text);font-size:12px;border-bottom:1px solid var(--warning-border)}
+.pending-item:last-child{border-bottom:none}
+
+/* ── TABLE WRAP ── */
+.table-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:0 0 var(--radius-lg) var(--radius-lg);overflow:hidden;margin-bottom:16px}
+.filter-row{display:flex;gap:8px;padding:10px 14px;border-bottom:1px solid var(--border);background:var(--bg3);flex-wrap:wrap}
+.filter-row select,.filter-row input{width:auto;font-size:13px;padding:6px 10px;background:var(--bg2)}
+table{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed}
+th{padding:10px 13px;text-align:left;font-weight:600;font-size:11px;color:var(--cyan);border-bottom:1px solid var(--border);background:var(--black);text-transform:uppercase;letter-spacing:0.06em;font-family:var(--font)}
+td{padding:11px 13px;border-bottom:1px solid var(--border);vertical-align:middle;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--font)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--bg3)}
+tr.row-editing td{background:var(--info-bg) !important}
+.pill{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:3px 9px;border-radius:20px;font-weight:600;font-family:var(--font)}
+.pill.income{background:var(--success-bg);color:var(--success-text)}
+.pill.expense{background:var(--danger-bg);color:var(--danger-text)}
+.amt-income{color:var(--success-text);font-weight:700}
+.amt-expense{color:var(--danger-text);font-weight:700}
+.action-btn{background:none;border:none;cursor:pointer;padding:4px 8px;border-radius:6px;font-size:16px;line-height:1;color:var(--text3)}
+.action-btn.edit:hover{color:var(--cyan);background:rgba(0,197,255,0.1)}
+.action-btn.del:hover{color:var(--danger-text);background:var(--danger-bg)}
+.action-cell{display:flex;gap:2px;align-items:center}
+.count-badge{font-size:11px;background:var(--bg3);color:var(--text2);padding:2px 9px;border-radius:20px;font-weight:400}
+
+/* ── EMPTY / LOADING ── */
+.empty-state{text-align:center;padding:3rem;color:var(--text2);font-size:14px}
+.empty-state i{font-size:40px;display:block;margin-bottom:10px;color:var(--text3)}
+.loading-state{text-align:center;padding:2.5rem;color:var(--text2);font-size:14px}
+.spinner{display:inline-block;width:22px;height:22px;border:2px solid var(--border2);border-top-color:var(--cyan);border-radius:50%;animation:spin 0.7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:1.5rem;right:1.5rem;padding:12px 18px;border-radius:var(--radius);font-size:13px;font-weight:500;opacity:0;transition:opacity 0.3s;pointer-events:none;z-index:9999;max-width:320px;font-family:var(--font)}
+.toast.success{background:var(--success-bg);color:var(--success-text);border:1px solid var(--success-border)}
+.toast.error{background:var(--danger-bg);color:var(--danger-text);border:1px solid var(--danger-border)}
+.toast.show{opacity:1}
+
+/* ── FOOTER ── */
+.footer{text-align:center;font-size:11px;color:var(--text3);padding:1rem 0 0.5rem;font-family:var(--font)}
+
+/* ── MENU DRAWER ── */
+.drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:300;opacity:0;pointer-events:none;transition:opacity 0.25s}
+.drawer-overlay.open{opacity:1;pointer-events:all}
+.drawer{position:fixed;top:0;right:-280px;width:270px;height:100%;background:var(--bg2);border-left:1px solid var(--border);z-index:301;transition:right 0.25s;padding:0;overflow-y:auto}
+.drawer.open{right:0}
+.drawer-hdr{background:var(--black);border-bottom:2px solid var(--cyan);padding:14px 16px;display:flex;align-items:center;justify-content:space-between}
+.drawer-hdr-title{color:var(--cyan);font-weight:700;font-size:14px;font-family:var(--font);text-transform:uppercase;letter-spacing:0.06em}
+.drawer-close{background:none;border:none;color:var(--text2);font-size:22px;cursor:pointer;line-height:1}
+.drawer-item{display:flex;align-items:center;gap:10px;padding:13px 16px;border-bottom:1px solid var(--border);color:var(--text);font-size:14px;cursor:pointer;text-decoration:none;background:none;border-left:none;border-right:none;border-top:none;width:100%;font-family:var(--font);text-align:left}
+.drawer-item:hover{background:var(--bg3);color:var(--cyan)}
+.drawer-item i{font-size:18px;color:var(--cyan);width:22px;flex-shrink:0}
+.drawer-section-label{padding:10px 16px 4px;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;font-weight:600}
+
+/* ── MOBILE ── */
+@media(max-width:600px){
+  html,body{padding:0;margin:0}
+  .topbar{padding:0 10px}
+  .topbar-inner{height:50px}
+  .hero{padding:14px 12px 12px}
+  .hero-logo{width:64px;height:64px}
+  .hero-logo span{font-size:21px}
+  .hero-name{font-size:17px}
+  .main{padding:10px 0 24px}
+  .summary-grid{grid-template-columns:1fr 1fr;gap:8px;padding:0 10px;margin-bottom:12px}
+  .metric{padding:10px 10px 8px}
+  .metric-value{font-size:18px}
+  .section-hdr{border-radius:0;border-left:none;border-right:none;padding:10px 12px}
+  .form-card{border-radius:0;border-left:none;border-right:none;padding:12px}
+  .form-grid{grid-template-columns:1fr}
+  .form-group.full{grid-column:1}
+  input,select{font-size:16px;padding:11px 12px}
+  .btn-save,.btn-clear{font-size:15px;padding:13px}
+  .status-bar{border-radius:0;border-left:none;border-right:none;margin:0 0 10px;padding:8px 12px}
+  .pending-section{border-radius:0;border-left:none;border-right:none;margin:0 0 10px}
+  .table-wrap{border-radius:0;border-left:none;border-right:none}
+  .filter-row{padding:8px 12px}
+  th,td{padding:9px 10px;font-size:12px}
+  .toast{left:10px;right:10px;bottom:10px;max-width:none}
+  .install-banner{padding:10px 12px}
+  .app-name{font-size:13px}
+}
+</style>
 </head>
 <body>
 
-    <div class="header">
-        <h3 style="margin:0;">India Business Int.</h3>
-        <button class="theme-toggle" id="themeBtn" onclick="toggleTheme()">🌙 Dark</button>
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-left">
+      <div class="ibi-logo"><span>IBI</span></div>
+      <div>
+        <div class="app-name">IBI Finance Tracker <span class="ver-badge">v2.0</span></div>
+      </div>
     </div>
-
-    <div class="card">
-        <h2>Financial Ledger</h2>
-
-        <div class="radio-group">
-            <input type="radio" id="typeIncome" name="txType" value="Income" checked>
-            <label for="typeIncome" class="radio-label">🟢 Income</label>
-
-            <input type="radio" id="typeExpense" name="txType" value="Expenditure">
-            <label for="typeExpense" class="radio-label">🔴 Expenditure</label>
-        </div>
-
-        <div class="form-group">
-            <label for="amount">Amount (₹)</label>
-            <input type="number" id="amount" placeholder="e.g. 5000" required>
-        </div>
-
-        <div class="form-group">
-            <label for="desc">Description / Particulars</label>
-            <input type="text" id="desc" placeholder="e.g. Amazon Payout or Packaging Supply" required>
-        </div>
-
-        <button class="submit-btn" id="submitBtn" onclick="submitData()">Record Transaction</button>
-        <div id="status"></div>
+    <div class="topbar-right">
+      <div class="toggle-wrap">
+        <span class="toggle-label" id="themeLabel">Dark</span>
+        <label class="toggle">
+          <input type="checkbox" id="themeToggle" onchange="toggleTheme()">
+          <div class="toggle-track"></div>
+          <div class="toggle-thumb"></div>
+        </label>
+      </div>
+      <button class="tbar-btn install-btn" id="installBtn" style="display:none" onclick="triggerInstall()"><i class="ti ti-download"></i> Install</button>
+      <button class="tbar-btn" onclick="openDrawer()"><i class="ti ti-menu-2"></i></button>
     </div>
+  </div>
+</div>
 
-    <script>
-        // Theme Logic
-        const currentTheme = localStorage.getItem('theme') || 'light';
-        if (currentTheme === 'dark') { document.body.setAttribute('data-theme', 'dark'); document.getElementById('themeBtn').innerText = '☀️ Light'; }
-        function toggleTheme() {
-            if (document.body.getAttribute('data-theme') === 'dark') {
-                document.body.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); document.getElementById('themeBtn').innerText = '🌙 Dark';
-            } else {
-                document.body.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); document.getElementById('themeBtn').innerText = '☀️ Light';
-            }
+<!-- PWA INSTALL BANNER -->
+<div class="install-banner" id="installBanner">
+  <div class="install-banner-left"><i class="ti ti-device-mobile" style="font-size:18px"></i> Install this app on your device for quick access!</div>
+  <div class="install-banner-actions">
+    <button class="ib-install" onclick="triggerInstall()"><i class="ti ti-download"></i> Install App</button>
+    <button class="ib-dismiss" onclick="dismissBanner()">Later</button>
+  </div>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-logo"><span>IBI</span></div>
+    <div class="hero-info">
+      <div class="hero-name">India Business International</div>
+      <div class="hero-sub">Finance &amp; Accounts Ledger — Kanyakumari</div>
+      <div class="hero-clock"><span id="liveClock">Loading...</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="main">
+
+  <!-- SUMMARY -->
+  <div class="summary-grid">
+    <div class="metric m-income">
+      <div class="metric-label"><i class="ti ti-arrow-down-circle"></i> Income</div>
+      <div class="metric-value income" id="sumIncome">₹0</div>
+    </div>
+    <div class="metric m-expense">
+      <div class="metric-label"><i class="ti ti-arrow-up-circle"></i> Expense</div>
+      <div class="metric-value expense" id="sumExpense">₹0</div>
+    </div>
+    <div class="metric m-net">
+      <div class="metric-label"><i class="ti ti-scale"></i> Net Balance</div>
+      <div class="metric-value positive" id="sumNet">₹0</div>
+    </div>
+    <div class="metric m-count">
+      <div class="metric-label"><i class="ti ti-list-numbers"></i> Entries</div>
+      <div class="metric-value count" id="sumCount">0</div>
+    </div>
+  </div>
+
+  <!-- STATUS BAR -->
+  <div class="status-bar">
+    <span class="status-txt"><span class="status-dot" id="statusDot"></span><span id="statusTxt">Connecting...</span></span>
+    <div class="status-actions">
+      <button class="s-btn" onclick="loadAll()"><i class="ti ti-refresh"></i> Sync</button>
+      <a class="s-btn" href="https://docs.google.com/spreadsheets/d/1hbh5E9kzX4632d4kaMHLXC-Aqhi5exgEJWOxMtSrttE/edit?gid=0#gid=0" target="_blank"><i class="ti ti-external-link"></i> Sheet</a>
+      <button class="s-btn" onclick="exportCSV()"><i class="ti ti-download"></i> CSV</button>
+    </div>
+  </div>
+
+  <!-- ADD / EDIT FORM -->
+  <div class="section-hdr">
+    <div class="section-title" id="formTitle"><i class="ti ti-plus"></i> Add Transaction</div>
+  </div>
+  <div class="form-card" id="formCard">
+    <div id="editBanner" style="display:none" class="edit-banner">
+      <div class="edit-banner-left"><i class="ti ti-pencil"></i> Editing — make changes then click Update</div>
+      <button class="edit-cancel-btn" onclick="cancelEdit()"><i class="ti ti-x"></i> Cancel</button>
+    </div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label for="fDate">Date</label>
+        <input type="date" id="fDate">
+      </div>
+      <div class="form-group">
+        <label>Type</label>
+        <div class="type-toggle">
+          <button class="type-btn active-income" id="btnIncome" onclick="setType('income')"><i class="ti ti-arrow-down-circle"></i> Income</button>
+          <button class="type-btn" id="btnExpense" onclick="setType('expense')"><i class="ti ti-arrow-up-circle"></i> Expense</button>
+        </div>
+      </div>
+      <div class="form-group full">
+        <label for="fDesc">Description / Particulars</label>
+        <input type="text" id="fDesc" placeholder="e.g. Amazon payout, Packaging supply, EB bill...">
+      </div>
+      <div class="form-group">
+        <label for="fParty" id="partyLabel">Received from</label>
+        <input type="text" id="fParty" placeholder="Party / vendor / customer">
+      </div>
+      <div class="form-group">
+        <label for="fAmount">Amount (₹)</label>
+        <input type="number" id="fAmount" placeholder="0" min="0" inputmode="decimal">
+      </div>
+      <div class="form-group full">
+        <label for="fNote">Note (optional)</label>
+        <input type="text" id="fNote" placeholder="e.g. via GPay, GST invoice, pending ₹200...">
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn-save" id="btnSave" onclick="saveEntry()">
+        <i class="ti ti-device-floppy"></i> <span id="btnSaveLabel">Save to Google Drive</span>
+      </button>
+      <button class="btn-clear" onclick="cancelEdit()">Clear</button>
+    </div>
+  </div>
+
+  <!-- PENDING -->
+  <div id="pendingSection" class="pending-section">
+    <div class="pending-title"><i class="ti ti-alert-circle"></i> Pending / On Hold</div>
+    <div id="pendingList"></div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="section-hdr" style="border-radius:var(--radius-lg) var(--radius-lg) 0 0;margin-top:4px">
+    <div class="section-title"><i class="ti ti-table"></i> All Transactions <span class="count-badge" id="countBadge">0</span></div>
+  </div>
+  <div class="table-wrap">
+    <div class="filter-row">
+      <select id="filterType" onchange="render()">
+        <option value="all">All types</option>
+        <option value="income">Income</option>
+        <option value="expense">Expense</option>
+      </select>
+      <select id="filterSort" onchange="render()">
+        <option value="date-asc">Date ↑</option>
+        <option value="date-desc">Date ↓</option>
+        <option value="amount-desc">Amount ↓</option>
+      </select>
+      <input type="text" id="filterSearch" placeholder="Search..." oninput="render()" style="width:140px">
+    </div>
+    <div style="overflow-x:auto">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:36px">#</th>
+            <th style="width:100px">Date</th>
+            <th style="width:88px">Type</th>
+            <th style="width:185px">Description</th>
+            <th style="width:120px">Party</th>
+            <th style="width:110px;text-align:right">Amount</th>
+            <th>Note</th>
+            <th style="width:68px">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="txBody"></tbody>
+      </table>
+      <div id="emptyState" class="empty-state" style="display:none">
+        <i class="ti ti-inbox"></i>No transactions yet. Add one above.
+      </div>
+      <div id="loadingState" class="loading-state">
+        <div class="spinner" style="display:block;margin:0 auto 10px"></div>
+        Loading from Google Drive...
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">IBI Finance Tracker v2.0 &mdash; India Business International &mdash; indiabusinessinternational@gmail.com</div>
+</div>
+
+<!-- DRAWER MENU -->
+<div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-hdr">
+    <span class="drawer-hdr-title"><i class="ti ti-menu-2"></i> Menu</span>
+    <button class="drawer-close" onclick="closeDrawer()"><i class="ti ti-x"></i></button>
+  </div>
+  <div class="drawer-section-label">App</div>
+  <button class="drawer-item" onclick="loadAll();closeDrawer()"><i class="ti ti-refresh"></i> Sync with Google Drive</button>
+  <button class="drawer-item" onclick="exportCSV();closeDrawer()"><i class="ti ti-download"></i> Export CSV</button>
+  <a class="drawer-item" href="https://docs.google.com/spreadsheets/d/1hbh5E9kzX4632d4kaMHLXC-Aqhi5exgEJWOxMtSrttE/edit?gid=0#gid=0" target="_blank" onclick="closeDrawer()"><i class="ti ti-external-link"></i> Open Google Sheet</a>
+  <div class="drawer-section-label">Settings</div>
+  <button class="drawer-item" onclick="toggleTheme();closeDrawer()"><i class="ti ti-sun"></i> Toggle Dark / Light Mode</button>
+  <button class="drawer-item" id="drawerInstallBtn" style="display:none" onclick="triggerInstall();closeDrawer()"><i class="ti ti-device-mobile-down"></i> Install as App (PWA)</button>
+  <div class="drawer-section-label">About</div>
+  <div class="drawer-item" style="cursor:default;color:var(--text2);font-size:12px"><i class="ti ti-info-circle"></i> Version 2.0 — June 2026</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const GAS_URL = "https://script.google.com/macros/s/AKfycbxosA5MhEcSAIx68X2iOjF7psh1Iie3QlgTJHzy1V7Fwi2MJJlhqt0vROs-csoqpgAs/exec";
+let entries   = [];
+let txType    = 'income';
+let editingId = null;
+let deferredPrompt = null;
+
+// ── THEME ──
+function applyTheme(light){
+  document.body.setAttribute('data-theme', light ? 'light' : 'dark');
+  document.getElementById('themeLabel').textContent = light ? 'Light' : 'Dark';
+  document.getElementById('themeToggle').checked = light;
+  localStorage.setItem('ibi_theme', light ? 'light' : 'dark');
+}
+function toggleTheme(){
+  const isLight = document.body.getAttribute('data-theme') === 'light';
+  applyTheme(!isLight);
+}
+(function(){
+  const saved = localStorage.getItem('ibi_theme');
+  applyTheme(saved === 'light');
+})();
+
+// ── CLOCK ──
+function tickClock(){
+  const now = new Date();
+  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const d = String(now.getDate()).padStart(2,'0');
+  const mon = months[now.getMonth()];
+  const y = now.getFullYear();
+  const day = days[now.getDay()];
+  let h = now.getHours(), ampm = h >= 12 ? 'PM' : 'AM';
+  h = h % 12 || 12;
+  const min = String(now.getMinutes()).padStart(2,'0');
+  const sec = String(now.getSeconds()).padStart(2,'0');
+  document.getElementById('liveClock').textContent = `${d} ${mon} ${y}, ${day}, ${String(h).padStart(2,'0')}:${min}:${sec} ${ampm}`;
+}
+tickClock(); setInterval(tickClock, 1000);
+
+// ── PWA ──
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  const dismissed = parseInt(localStorage.getItem('ibi_banner_dismissed') || '0');
+  const now = Date.now();
+  if(now - dismissed > 24*60*60*1000){ // re-show after 24h
+    document.getElementById('installBanner').classList.add('show');
+  }
+  document.getElementById('installBtn').style.display = 'flex';
+  document.getElementById('drawerInstallBtn').style.display = 'flex';
+});
+window.addEventListener('appinstalled', () => {
+  document.getElementById('installBanner').classList.remove('show');
+  document.getElementById('installBtn').style.display = 'none';
+  document.getElementById('drawerInstallBtn').style.display = 'none';
+  showToast('App installed successfully!');
+});
+function triggerInstall(){
+  if(!deferredPrompt){ showToast('Open in Chrome/Safari to install','error'); return; }
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then(c => {
+    if(c.outcome === 'accepted') showToast('Installing app...');
+    deferredPrompt = null;
+    document.getElementById('installBanner').classList.remove('show');
+  });
+}
+function dismissBanner(){
+  localStorage.setItem('ibi_banner_dismissed', Date.now().toString());
+  document.getElementById('installBanner').classList.remove('show');
+}
+
+// ── DRAWER ──
+function openDrawer(){ document.getElementById('drawer').classList.add('open'); document.getElementById('drawerOverlay').classList.add('open'); }
+function closeDrawer(){ document.getElementById('drawer').classList.remove('open'); document.getElementById('drawerOverlay').classList.remove('open'); }
+
+// ── UTILS ──
+function fmt(n){ return '₹' + Math.round(n).toLocaleString('en-IN'); }
+function fmtDate(s){
+  if(!s) return '';
+  try{
+    const d = new Date(s);
+    const M = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return `${String(d.getDate()).padStart(2,'0')} ${M[d.getMonth()]} ${d.getFullYear()}`;
+  } catch(e){ return s; }
+}
+function setStatus(online, msg){
+  document.getElementById('statusDot').className = 'status-dot ' + (online ? 'online' : 'error');
+  document.getElementById('statusTxt').textContent = msg;
+}
+function showToast(msg, type='success'){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast ' + type + ' show';
+  setTimeout(() => t.className = 'toast ' + type, 3200);
+}
+function setType(t){
+  txType = t;
+  document.getElementById('btnIncome').className  = 'type-btn' + (t==='income'  ? ' active-income'  : '');
+  document.getElementById('btnExpense').className = 'type-btn' + (t==='expense' ? ' active-expense' : '');
+  document.getElementById('partyLabel').textContent = t==='income' ? 'Received from' : 'Paid to';
+}
+function today(){ return new Date().toISOString().split('T')[0]; }
+document.getElementById('fDate').value = today();
+
+// ── GAS — all via GET, with auto-retry on failure ──
+async function gasCall(params, retries=2){
+  const url = GAS_URL + '?' + new URLSearchParams(params).toString();
+  for(let attempt = 1; attempt <= retries; attempt++){
+    try{
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 12000); // 12s timeout
+      const r = await fetch(url, {redirect:'follow', signal: controller.signal});
+      clearTimeout(timer);
+      const text = await r.text();
+      try{ return JSON.parse(text); }
+      catch(e){ throw new Error('Bad JSON: '+text.slice(0,80)); }
+    } catch(e){
+      if(attempt === retries) throw e;
+      console.warn(`gasCall attempt ${attempt} failed, retrying...`, e.message);
+      await new Promise(r => setTimeout(r, 1500 * attempt)); // 1.5s, then 3s
+    }
+  }
+}
+
+async function loadAll(){
+  document.getElementById('loadingState').style.display = 'block';
+  document.getElementById('emptyState').style.display   = 'none';
+  document.getElementById('txBody').innerHTML            = '';
+  try{
+    const data = await gasCall({action:'getAll'});
+    if(data.status==='ok'){ entries=data.transactions||[]; setStatus(true,'Connected — Google Drive'); render(); }
+    else{ setStatus(false,'Error: '+data.message); showToast('Load failed','error'); }
+  }catch(e){ setStatus(false,'Connection failed'); showToast('Cannot reach Google Drive','error'); console.error(e); }
+  document.getElementById('loadingState').style.display = 'none';
+}
+
+// ── EDIT ──
+function startEdit(id){
+  const e = entries.find(x=>x.id===id); if(!e) return;
+  editingId = id;
+  document.getElementById('fDate').value   = e.date||today();
+  document.getElementById('fDesc').value   = e.description||'';
+  document.getElementById('fParty').value  = e.party||'';
+  document.getElementById('fAmount').value = e.amount||'';
+  document.getElementById('fNote').value   = e.note||'';
+  setType(e.type||'income');
+  document.getElementById('editBanner').style.display  = 'flex';
+  document.getElementById('formCard').classList.add('editing');
+  document.getElementById('formTitle').innerHTML = '<i class="ti ti-pencil"></i> Edit Transaction';
+  document.getElementById('btnSave').classList.add('mode-edit');
+  document.getElementById('btnSaveLabel').textContent  = 'Update in Google Drive';
+  document.getElementById('formCard').scrollIntoView({behavior:'smooth',block:'start'});
+  render();
+}
+function cancelEdit(){
+  editingId = null;
+  ['fDesc','fParty','fAmount','fNote'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('fDate').value = today();
+  setType('income');
+  document.getElementById('editBanner').style.display = 'none';
+  document.getElementById('formCard').classList.remove('editing');
+  document.getElementById('formTitle').innerHTML = '<i class="ti ti-plus"></i> Add Transaction';
+  document.getElementById('btnSave').classList.remove('mode-edit');
+  document.getElementById('btnSaveLabel').textContent = 'Save to Google Drive';
+  render();
+}
+
+async function saveEntry(){
+  const date=document.getElementById('fDate').value, desc=document.getElementById('fDesc').value.trim(),
+        party=document.getElementById('fParty').value.trim(), amount=parseFloat(document.getElementById('fAmount').value),
+        note=document.getElementById('fNote').value.trim();
+  if(!date||!desc||!party||!amount||amount<=0){ showToast('Fill date, description, party & amount','error'); return; }
+  const btn=document.getElementById('btnSave');
+  btn.disabled=true;
+  btn.innerHTML='<div class="spinner" style="width:16px;height:16px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:6px"></div> '+(editingId?'Updating...':'Saving...');
+  const wasEditing = editingId;
+  const savedDesc  = desc;
+  const savedDate  = date;
+  try{
+    const params = editingId
+      ? {action:'update', id:editingId, date, type:txType, description:desc, party, amount, note}
+      : {action:'add', date, type:txType, description:desc, party, amount, note};
+    const res = await gasCall(params);
+    if(res.status==='ok'){
+      showToast(wasEditing ? 'Updated in Google Drive!' : 'Saved to Google Drive!');
+      cancelEdit(); await loadAll();
+    } else {
+      showToast('Error: '+res.message, 'error');
+    }
+  } catch(e){
+    // GAS cold-start or network blip — verify by re-fetching before showing error
+    console.warn('Fetch threw, verifying if GAS actually saved...', e);
+    try {
+      await new Promise(r => setTimeout(r, 2500)); // wait 2.5s for GAS to finish
+      const check = await gasCall({action:'getAll'});
+      if(check.status === 'ok'){
+        const saved = check.transactions || [];
+        // Check if the entry exists in the sheet
+        const found = saved.some(t =>
+          t.description === savedDesc &&
+          (t.date || '').startsWith(savedDate.slice(0,7)) // same month
+        );
+        if(found){
+          showToast((wasEditing ? 'Updated' : 'Saved') + ' ✓ (GAS cold start — verified OK)');
+          entries = saved; cancelEdit(); render();
+        } else {
+          showToast('Not saved — please try again', 'error');
         }
+      } else {
+        showToast('Failed — check connection', 'error');
+      }
+    } catch(e2){
+      showToast('Failed — check connection', 'error');
+      console.error(e2);
+    }
+  }
+  btn.disabled=false;
+  btn.innerHTML='<i class="ti ti-device-floppy"></i> <span id="btnSaveLabel">'+(editingId?'Update in Google Drive':'Save to Google Drive')+'</span>';
+}
 
-        // ⚠️ PASTE YOUR NEW WEB APP URL BELOW
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbxosA5MhEcSAIx68X2iOjF7psh1Iie3QlgTJHzy1V7Fwi2MJJlhqt0vROs-csoqpgAs/exec';
-
-        function submitData() {
-            const type = document.querySelector('input[name="txType"]:checked').value;
-            const amount = document.getElementById('amount').value;
-            const desc = document.getElementById('desc').value;
-            const submitBtn = document.getElementById('submitBtn');
-            const statusDiv = document.getElementById('status');
-
-            if (!amount || !desc) {
-                alert("Please enter both the amount and description.");
-                return;
-            }
-
-            submitBtn.disabled = true;
-            submitBtn.innerText = "Processing...";
-            statusDiv.className = '';
-            statusDiv.style.display = 'none';
-
-            const formData = new FormData();
-            formData.append('type', type);
-            formData.append('amount', amount);
-            formData.append('desc', desc);
-
-            fetch(scriptURL, { method: 'POST', body: formData })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        statusDiv.innerText = `Success! ₹${amount} ${type} recorded.`;
-                        statusDiv.className = 'status-success';
-                        document.getElementById('amount').value = '';
-                        document.getElementById('desc').value = '';
-                    } else {
-                        statusDiv.innerText = `Error: ${data.message}`;
-                        statusDiv.className = 'status-error';
-                    }
-                    submitBtn.disabled = false;
-                    submitBtn.innerText = "Record Transaction";
-                    setTimeout(() => { statusDiv.style.display = 'none'; }, 5000);
-                })
-                .catch(error => {
-                    statusDiv.innerText = 'Network error. Please try again.';
-                    statusDiv.className = 'status-error';
-                    submitBtn.disabled = false;
-                    submitBtn.innerText = "Record Transaction";
-                });
+async function deleteEntry(id){
+  if(!confirm('Delete this transaction?')) return;
+  if(editingId===id) cancelEdit();
+  try{
+    const res = await gasCall({action:'delete', id});
+    if(res.status==='ok'){ showToast('Deleted'); await loadAll(); }
+    else showToast('Delete failed: '+res.message, 'error');
+  } catch(e){
+    console.warn('Delete fetch threw, verifying...', e);
+    try {
+      await new Promise(r => setTimeout(r, 2500));
+      const check = await gasCall({action:'getAll'});
+      if(check.status === 'ok'){
+        const stillExists = (check.transactions||[]).some(t => t.id === id);
+        if(!stillExists){
+          showToast('Deleted ✓ (verified OK)');
+          entries = check.transactions || []; render();
+        } else {
+          showToast('Delete failed — please try again', 'error');
         }
-    </script>
+      }
+    } catch(e2){ showToast('Delete failed — check connection', 'error'); }
+  }
+}
+
+function filtered(){
+  const type=document.getElementById('filterType').value, sort=document.getElementById('filterSort').value,
+        q=document.getElementById('filterSearch').value.toLowerCase();
+  let list=entries.filter(e=>{
+    if(type!=='all'&&e.type!==type) return false;
+    if(q&&!`${e.description}${e.party}${e.note}`.toLowerCase().includes(q)) return false;
+    return true;
+  });
+  list.sort((a,b)=>sort==='date-asc'?(a.date||'').localeCompare(b.date||''):sort==='date-desc'?(b.date||'').localeCompare(a.date||''):b.amount-a.amount);
+  return list;
+}
+
+function render(){
+  const list=filtered(), body=document.getElementById('txBody'), empty=document.getElementById('emptyState');
+  const income=entries.filter(e=>e.type==='income').reduce((s,e)=>s+e.amount,0);
+  const expense=entries.filter(e=>e.type==='expense').reduce((s,e)=>s+e.amount,0);
+  const net=income-expense;
+  document.getElementById('sumIncome').textContent=fmt(income);
+  document.getElementById('sumExpense').textContent=fmt(expense);
+  const netEl=document.getElementById('sumNet');
+  netEl.textContent=fmt(net); netEl.className='metric-value '+(net>=0?'positive':'negative');
+  document.getElementById('sumCount').textContent=entries.length;
+  document.getElementById('countBadge').textContent=list.length;
+  const pending=entries.filter(e=>e.note&&/pending|hold|balance/i.test(e.note));
+  const ps=document.getElementById('pendingSection');
+  if(pending.length){
+    ps.style.display='block';
+    document.getElementById('pendingList').innerHTML=pending.map(e=>`<div class="pending-item"><span>${fmtDate(e.date)} &mdash; ${e.description} (${e.party})</span><span>${e.note}</span></div>`).join('');
+  } else ps.style.display='none';
+  if(!list.length){ body.innerHTML=''; empty.style.display='block'; return; }
+  empty.style.display='none';
+  body.innerHTML=list.map((e,i)=>`
+    <tr class="${editingId===e.id?'row-editing':''}">
+      <td style="color:var(--text2)">${i+1}</td>
+      <td style="color:var(--text2);font-size:12px">${fmtDate(e.date)}</td>
+      <td><span class="pill ${e.type}">${e.type==='income'?'<i class="ti ti-arrow-down-circle"></i> Income':'<i class="ti ti-arrow-up-circle"></i> Expense'}</span></td>
+      <td title="${e.description}">${e.description}</td>
+      <td title="${e.party}" style="color:var(--text2)">${e.party}</td>
+      <td style="text-align:right" class="amt-${e.type}">${e.type==='income'?'+':'−'}${fmt(e.amount)}</td>
+      <td style="color:var(--text2);font-size:12px;font-style:italic" title="${e.note||''}">${e.note||'—'}</td>
+      <td><div class="action-cell">
+        <button class="action-btn edit" onclick="startEdit('${e.id}')" title="Edit"><i class="ti ti-pencil"></i></button>
+        <button class="action-btn del"  onclick="deleteEntry('${e.id}')" title="Delete"><i class="ti ti-trash"></i></button>
+      </div></td>
+    </tr>`).join('');
+}
+
+function exportCSV(){
+  if(!entries.length){ showToast('No data to export','error'); return; }
+  const sorted=[...entries].sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+  const rows=[['#','Date','Type','Description','Party','Amount','Note']];
+  sorted.forEach((e,i)=>rows.push([i+1,fmtDate(e.date),e.type,e.description,e.party,e.amount,e.note||'']));
+  const income=entries.filter(e=>e.type==='income').reduce((s,e)=>s+e.amount,0);
+  const expense=entries.filter(e=>e.type==='expense').reduce((s,e)=>s+e.amount,0);
+  rows.push([],[' ',' ',' ',' ','Total Income',income,''],[' ',' ',' ',' ','Total Expense',expense,''],[' ',' ',' ',' ','Net Balance',income-expense,'']);
+  const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"` ).join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,﻿'+encodeURIComponent(csv);
+  a.download='ibi_finance_transactions.csv'; a.click();
+}
+
+// ── SERVICE WORKER ──
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+
+loadAll();
+</script>
 </body>
 </html>
