@@ -1,4 +1,4 @@
-// IBI Finance Tracker — GAS Backend v2.1
+// IBI Finance Tracker — GAS Backend v2.2
 // India Business International — Finance & Accounts Ledger
 // Sheet ID: 1hbh5E9kzX4632d4kaMHLXC-Aqhi5exgEJWOxMtSrttE
 // All requests via GET (URL params) — avoids CORS/redirect issues
@@ -8,6 +8,9 @@
 //       Cumulative Balance) into the new "Transactions" schema the first time the app
 //       loads, so existing data shows up. Runs once (guarded by a script property).
 //       To re-import manually: Run → migrateLedgerToTransactions() in the editor.
+// v2.2: read the Ledger with getDisplayValues() so dates are parsed from the literal
+//       DD-MM-YYYY text the user sees (the raw cells were locale-swapped Date objects,
+//       which sent day<=12 rows to the wrong month). toISO_ now auto-corrects order.
 
 const SHEET_ID    = "1hbh5E9kzX4632d4kaMHLXC-Aqhi5exgEJWOxMtSrttE";
 const SHEET_NAME  = "Transactions";
@@ -45,7 +48,7 @@ function doGet(e) {
   try {
     switch (action) {
       case 'ping':
-        result = { status:'ok', message:'IBI Finance Tracker GAS v2.1 is live!' };
+        result = { status:'ok', message:'IBI Finance Tracker GAS v2.2 is live!' };
         break;
       case 'getAll':
         result = getAllTransactions();
@@ -183,7 +186,9 @@ function migrateFromLedger_(force) {
   }
   if (!led) return 0;
 
-  const lv = led.getDataRange().getValues();
+  // Read DISPLAY values (the literal "01-04-2026" text the user sees). The raw cell
+  // values are locale-swapped Date objects, so getValues() would mangle day<=12 dates.
+  const lv = led.getDataRange().getDisplayValues();
   if (lv.length <= 1) return 0;
 
   const out = [];
@@ -229,8 +234,16 @@ function migrateFromLedger_(force) {
 function toISO_(d) {
   if (d instanceof Date) return Utilities.formatDate(d, 'Asia/Kolkata', 'yyyy-MM-dd');
   const s = String(d || '').trim();
-  const m = s.match(/^(\d{1,2})[-\/](\d{1,2})[-\/](\d{4})$/);  // DD-MM-YYYY (Indian format)
-  if (m) return m[3] + '-' + ('0' + m[2]).slice(-2) + '-' + ('0' + m[1]).slice(-2);
+  const m = s.match(/^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{4})$/);  // day/month order, Indian default
+  if (m) {
+    let a = parseInt(m[1], 10), b = parseInt(m[2], 10);
+    const y = m[3];
+    let day, mon;
+    if (a > 12 && b <= 12)      { day = a; mon = b; }   // unambiguous DD-MM
+    else if (b > 12 && a <= 12) { day = b; mon = a; }   // unambiguous MM-DD → swap to DD-MM
+    else                        { day = a; mon = b; }   // ambiguous → assume DD-MM (Indian)
+    return y + '-' + ('0' + mon).slice(-2) + '-' + ('0' + day).slice(-2);
+  }
   const dd = new Date(s);
   if (!isNaN(dd.getTime())) return Utilities.formatDate(dd, 'Asia/Kolkata', 'yyyy-MM-dd');
   return s;
