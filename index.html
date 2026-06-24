@@ -175,10 +175,12 @@ tr.row-editing td{background:var(--info-bg) !important}
 .pill.expense{background:var(--danger-bg);color:var(--danger-text)}
 .amt-income{color:var(--success-text);font-weight:700}
 .amt-expense{color:var(--danger-text);font-weight:700}
-.action-btn{background:none;border:none;cursor:pointer;padding:4px 8px;border-radius:6px;font-size:16px;line-height:1;color:var(--text3)}
+.action-btn{background:none;border:none;cursor:pointer;padding:6px 9px;border-radius:7px;font-size:17px;line-height:1;color:var(--text3)}
 .action-btn.edit:hover{color:var(--cyan);background:rgba(0,197,255,0.1)}
 .action-btn.del:hover{color:var(--danger-text);background:var(--danger-bg)}
-.action-cell{display:flex;gap:2px;align-items:center}
+.action-cell{display:flex;gap:10px;align-items:center;justify-content:center}
+.dt-cell{white-space:normal !important;line-height:1.35}
+.dt-sub{font-size:11px;color:var(--text3);margin-top:1px;white-space:nowrap}
 .count-badge{font-size:11px;background:var(--bg3);color:var(--text2);padding:2px 9px;border-radius:20px;font-weight:400}
 
 /* ── EMPTY / LOADING ── */
@@ -384,8 +386,8 @@ tr.row-editing td{background:var(--info-bg) !important}
         <option value="expense">Expense</option>
       </select>
       <select id="filterSort" onchange="render()">
-        <option value="date-asc">Date ↑</option>
-        <option value="date-desc">Date ↓</option>
+        <option value="date-desc">Date ↓ (newest first)</option>
+        <option value="date-asc">Date ↑ (oldest first)</option>
         <option value="amount-desc">Amount ↓</option>
       </select>
       <input type="text" id="filterSearch" placeholder="Search..." oninput="render()" style="width:140px">
@@ -395,13 +397,13 @@ tr.row-editing td{background:var(--info-bg) !important}
         <thead>
           <tr>
             <th style="width:54px">#</th>
-            <th style="width:100px">Date</th>
+            <th style="width:158px">Date &amp; Time</th>
             <th style="width:88px">Type</th>
-            <th style="width:185px">Description</th>
+            <th style="width:180px">Description</th>
             <th style="width:120px">Party</th>
             <th style="width:110px;text-align:right">Amount</th>
             <th>Note</th>
-            <th style="width:68px">Actions</th>
+            <th style="width:98px">Actions</th>
           </tr>
         </thead>
         <tbody id="txBody"></tbody>
@@ -525,6 +527,30 @@ function fmtDate(s){
     return `${String(d.getDate()).padStart(2,'0')} ${M[d.getMonth()]} ${d.getFullYear()}`;
   } catch(e){ return s; }
 }
+const _DOW=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const _MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+// Date + weekday come from the entry date; time-of-day comes from createdAt (shown in IST).
+function fmtDTParts(e){
+  const m = String(e.date||'').match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if(!m) return { date: fmtDate(e.date), sub: '' };
+  const dObj = new Date(+m[1], +m[2]-1, +m[3]);
+  const datePart = `${String(dObj.getDate()).padStart(2,'0')} ${_MON[dObj.getMonth()]} ${dObj.getFullYear()}`;
+  const dow = _DOW[dObj.getDay()];
+  let time = '';
+  if(e.createdAt){
+    const ca = new Date(e.createdAt);
+    if(!isNaN(ca.getTime())){
+      time = ca.toLocaleTimeString('en-US', {timeZone:'Asia/Kolkata', hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:true});
+    } else {
+      const t = String(e.createdAt).match(/(\d{1,2}):(\d{2})(?::(\d{2}))?\s*([AaPp][Mm])?/);
+      if(t){ let hh=+t[1]; const mm=t[2], ss=t[3]||'00'; let ap=(t[4]||'').toUpperCase();
+        if(!ap){ ap = hh>=12?'PM':'AM'; hh = hh%12 || 12; }
+        time = `${String(hh).padStart(2,'0')}:${mm}:${ss} ${ap}`; }
+    }
+  }
+  return { date: datePart, sub: time ? `${dow}, ${time}` : dow };
+}
+function fmtDTLine(e){ const p = fmtDTParts(e); return p.sub ? `${p.date}, ${p.sub}` : p.date; }
 function setStatus(online, msg){
   document.getElementById('statusDot').className = 'status-dot ' + (online ? 'online' : 'error');
   document.getElementById('statusTxt').textContent = msg;
@@ -545,12 +571,12 @@ function today(){ return new Date().toISOString().split('T')[0]; }
 document.getElementById('fDate').value = today();
 
 // ── GAS — all via GET, with auto-retry on failure ──
-async function gasCall(params, retries=2){
+async function gasCall(params, retries=2, timeoutMs=20000){
   const url = GAS_URL + '?' + new URLSearchParams(params).toString();
   for(let attempt = 1; attempt <= retries; attempt++){
     try{
       const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 12000); // 12s timeout
+      const timer = setTimeout(() => controller.abort(), timeoutMs);
       const r = await fetch(url, {redirect:'follow', signal: controller.signal});
       clearTimeout(timer);
       const text = await r.text();
@@ -616,45 +642,46 @@ async function saveEntry(){
   btn.disabled=true;
   btn.innerHTML='<div class="spinner" style="width:16px;height:16px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:6px"></div> '+(editingId?'Updating...':'Saving...');
   const wasEditing = editingId;
-  const savedDesc  = desc;
-  const savedDate  = date;
+  const preCount   = entries.length;
+  const params = editingId
+    ? {action:'update', id:editingId, date, type:txType, description:desc, party, amount, note}
+    : {action:'add', date, type:txType, description:desc, party, amount, note};
+
+  // Has the entry actually landed in a freshly-fetched list?
+  const matches = t => String(t.description).trim()===desc
+                     && Math.round(parseFloat(t.amount)||0)===Math.round(amount)
+                     && t.type===txType;
+  const isSaved = list => editingId
+    ? list.some(t => t.id===editingId && matches(t))
+    : (list.length > preCount && list.some(t => matches(t) && (t.date||'')===date));
+
+  let ok=false, hardErr=false, fresh=null;
   try{
-    const params = editingId
-      ? {action:'update', id:editingId, date, type:txType, description:desc, party, amount, note}
-      : {action:'add', date, type:txType, description:desc, party, amount, note};
-    const res = await gasCall(params);
-    if(res.status==='ok'){
-      showToast(wasEditing ? 'Updated in Google Drive!' : 'Saved to Google Drive!');
-      cancelEdit(); await loadAll();
-    } else {
-      showToast('Error: '+res.message, 'error');
-    }
+    // ONE attempt (no auto-retry → never double-inserts); long timeout absorbs GAS cold starts.
+    const res = await gasCall(params, 1, 25000);
+    if(res && res.status==='ok') ok=true;
+    else if(res){ showToast('Error: '+res.message, 'error'); hardErr=true; }
   } catch(e){
-    // GAS cold-start or network blip — verify by re-fetching before showing error
-    console.warn('Fetch threw, verifying if GAS actually saved...', e);
-    try {
-      await new Promise(r => setTimeout(r, 2500)); // wait 2.5s for GAS to finish
-      const check = await gasCall({action:'getAll'});
-      if(check.status === 'ok'){
-        const saved = check.transactions || [];
-        // Check if the entry exists in the sheet
-        const found = saved.some(t =>
-          t.description === savedDesc &&
-          (t.date || '').startsWith(savedDate.slice(0,7)) // same month
-        );
-        if(found){
-          showToast((wasEditing ? 'Updated' : 'Saved') + ' ✓ (GAS cold start — verified OK)');
-          entries = saved; cancelEdit(); render();
-        } else {
-          showToast('Not saved — please try again', 'error');
-        }
-      } else {
-        showToast('Failed — check connection', 'error');
-      }
-    } catch(e2){
-      showToast('Failed — check connection', 'error');
-      console.error(e2);
+    console.warn('Save response not received — will verify server-side.', e);
+  }
+  // Cold start often saves the row but the response is lost. Re-fetch and confirm instead of crying failure.
+  if(!ok && !hardErr){
+    for(let i=0; i<4 && !ok; i++){
+      await new Promise(r => setTimeout(r, 1800));
+      try{
+        const check = await gasCall({action:'getAll'}, 1, 20000);
+        if(check && check.status==='ok'){ fresh = check.transactions||[]; if(isSaved(fresh)) ok=true; }
+      } catch(_){ /* keep verifying */ }
     }
+  }
+
+  if(ok){
+    showToast(wasEditing ? 'Updated in Google Drive!' : 'Saved to Google Drive!');
+    cancelEdit();
+    if(fresh){ entries=fresh; setStatus(true,'Connected — Google Drive'); render(); }
+    else { await loadAll(); }
+  } else if(!hardErr){
+    showToast('Could not confirm — tap Sync to check', 'error');
   }
   btn.disabled=false;
   btn.innerHTML='<i class="ti ti-device-floppy"></i> <span id="btnSaveLabel">'+(editingId?'Update in Google Drive':'Save to Google Drive')+'</span>';
@@ -693,7 +720,13 @@ function filtered(){
     if(q&&!`${e.description}${e.party}${e.note}`.toLowerCase().includes(q)) return false;
     return true;
   });
-  list.sort((a,b)=>sort==='date-asc'?(a.date||'').localeCompare(b.date||''):sort==='date-desc'?(b.date||'').localeCompare(a.date||''):b.amount-a.amount);
+  const tcmp=(a,b)=>(Date.parse(a.createdAt)||0)-(Date.parse(b.createdAt)||0);
+  list.sort((a,b)=>{
+    if(sort==='amount-desc') return b.amount-a.amount;
+    const d=(a.date||'').localeCompare(b.date||'');
+    if(sort==='date-asc') return d!==0 ? d : tcmp(a,b);
+    return d!==0 ? -d : -tcmp(a,b);   // date-desc default: newest date, then newest time
+  });
   return list;
 }
 
@@ -716,10 +749,12 @@ function render(){
   } else ps.style.display='none';
   if(!list.length){ body.innerHTML=''; empty.style.display='block'; return; }
   empty.style.display='none';
-  body.innerHTML=list.map((e,i)=>`
+  body.innerHTML=list.map((e,i)=>{
+    const dt=fmtDTParts(e);
+    return `
     <tr class="${editingId===e.id?'row-editing':''}">
       <td style="color:var(--text2)">${i+1}</td>
-      <td style="color:var(--text2);font-size:12px">${fmtDate(e.date)}</td>
+      <td class="dt-cell" style="color:var(--text2);font-size:12px"><div>${dt.date}</div>${dt.sub?`<div class="dt-sub">${dt.sub}</div>`:''}</td>
       <td><span class="pill ${e.type}">${e.type==='income'?'<i class="ti ti-arrow-down-circle"></i> Income':'<i class="ti ti-arrow-up-circle"></i> Expense'}</span></td>
       <td title="${e.description}">${e.description}</td>
       <td title="${e.party}" style="color:var(--text2)">${e.party}</td>
@@ -729,14 +764,15 @@ function render(){
         <button class="action-btn edit" onclick="startEdit('${e.id}')" title="Edit"><i class="ti ti-pencil"></i></button>
         <button class="action-btn del"  onclick="deleteEntry('${e.id}')" title="Delete"><i class="ti ti-trash"></i></button>
       </div></td>
-    </tr>`).join('');
+    </tr>`;
+  }).join('');
 }
 
 function exportCSV(){
   if(!entries.length){ showToast('No data to export','error'); return; }
   const sorted=[...entries].sort((a,b)=>(a.date||'').localeCompare(b.date||''));
-  const rows=[['#','Date','Type','Description','Party','Amount','Note']];
-  sorted.forEach((e,i)=>rows.push([i+1,fmtDate(e.date),e.type,e.description,e.party,e.amount,e.note||'']));
+  const rows=[['#','Date & Time','Type','Description','Party','Amount','Note']];
+  sorted.forEach((e,i)=>rows.push([i+1,fmtDTLine(e),e.type,e.description,e.party,e.amount,e.note||'']));
   const income=entries.filter(e=>e.type==='income').reduce((s,e)=>s+e.amount,0);
   const expense=entries.filter(e=>e.type==='expense').reduce((s,e)=>s+e.amount,0);
   rows.push([],[' ',' ',' ',' ','Total Income',income,''],[' ',' ',' ',' ','Total Expense',expense,''],[' ',' ',' ',' ','Net Balance',income-expense,'']);
