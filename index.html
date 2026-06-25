@@ -574,15 +574,16 @@ document.getElementById('fDate').value = today();
 async function gasCall(params, retries=2, timeoutMs=20000){
   const url = GAS_URL + '?' + new URLSearchParams(params).toString();
   for(let attempt = 1; attempt <= retries; attempt++){
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
     try{
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), timeoutMs);
       const r = await fetch(url, {redirect:'follow', signal: controller.signal});
+      const text = await r.text();          // keep the abort timer armed through the body read
       clearTimeout(timer);
-      const text = await r.text();
       try{ return JSON.parse(text); }
       catch(e){ throw new Error('Bad JSON: '+text.slice(0,80)); }
     } catch(e){
+      clearTimeout(timer);
       if(attempt === retries) throw e;
       console.warn(`gasCall attempt ${attempt} failed, retrying...`, e.message);
       await new Promise(r => setTimeout(r, 1500 * attempt)); // 1.5s, then 3s
@@ -629,7 +630,9 @@ function cancelEdit(){
   document.getElementById('formCard').classList.remove('editing');
   document.getElementById('formTitle').innerHTML = '<i class="ti ti-plus"></i> Add Transaction';
   document.getElementById('btnSave').classList.remove('mode-edit');
-  document.getElementById('btnSaveLabel').textContent = 'Save to Google Drive';
+  // The label span is gone while a save spinner is showing — guard so cancelEdit() never throws.
+  const _lbl = document.getElementById('btnSaveLabel');
+  if(_lbl) _lbl.textContent = 'Save to Google Drive';
   render();
 }
 
@@ -657,34 +660,38 @@ async function saveEntry(){
 
   let ok=false, hardErr=false, fresh=null;
   try{
-    // ONE attempt (no auto-retry → never double-inserts); long timeout absorbs GAS cold starts.
-    const res = await gasCall(params, 1, 25000);
-    if(res && res.status==='ok') ok=true;
-    else if(res){ showToast('Error: '+res.message, 'error'); hardErr=true; }
-  } catch(e){
-    console.warn('Save response not received — will verify server-side.', e);
-  }
-  // Cold start often saves the row but the response is lost. Re-fetch and confirm instead of crying failure.
-  if(!ok && !hardErr){
-    for(let i=0; i<4 && !ok; i++){
-      await new Promise(r => setTimeout(r, 1800));
-      try{
-        const check = await gasCall({action:'getAll'}, 1, 20000);
-        if(check && check.status==='ok'){ fresh = check.transactions||[]; if(isSaved(fresh)) ok=true; }
-      } catch(_){ /* keep verifying */ }
+    try{
+      // ONE attempt (no auto-retry → never double-inserts); long timeout absorbs GAS cold starts.
+      const res = await gasCall(params, 1, 25000);
+      if(res && res.status==='ok') ok=true;
+      else if(res){ showToast('Error: '+res.message, 'error'); hardErr=true; }
+    } catch(e){
+      console.warn('Save response not received — will verify server-side.', e);
     }
-  }
+    // Cold start often saves the row but the response is lost. Re-fetch and confirm instead of crying failure.
+    if(!ok && !hardErr){
+      for(let i=0; i<4 && !ok; i++){
+        await new Promise(r => setTimeout(r, 1800));
+        try{
+          const check = await gasCall({action:'getAll'}, 1, 20000);
+          if(check && check.status==='ok'){ fresh = check.transactions||[]; if(isSaved(fresh)) ok=true; }
+        } catch(_){ /* keep verifying */ }
+      }
+    }
 
-  if(ok){
-    showToast(wasEditing ? 'Updated in Google Drive!' : 'Saved to Google Drive!');
-    cancelEdit();
-    if(fresh){ entries=fresh; setStatus(true,'Connected — Google Drive'); render(); }
-    else { await loadAll(); }
-  } else if(!hardErr){
-    showToast('Could not confirm — tap Sync to check', 'error');
+    if(ok){
+      showToast(wasEditing ? 'Updated in Google Drive!' : 'Saved to Google Drive!');
+      cancelEdit();
+      if(fresh){ entries=fresh; setStatus(true,'Connected — Google Drive'); render(); }
+      else { await loadAll(); }
+    } else if(!hardErr){
+      showToast('Could not confirm — tap Sync to check', 'error');
+    }
+  } finally {
+    // ALWAYS restore the button — even if a step above throws — so it never sticks on "Saving...".
+    btn.disabled=false;
+    btn.innerHTML='<i class="ti ti-device-floppy"></i> <span id="btnSaveLabel">'+(editingId?'Update in Google Drive':'Save to Google Drive')+'</span>';
   }
-  btn.disabled=false;
-  btn.innerHTML='<i class="ti ti-device-floppy"></i> <span id="btnSaveLabel">'+(editingId?'Update in Google Drive':'Save to Google Drive')+'</span>';
 }
 
 async function deleteEntry(id){
