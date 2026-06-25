@@ -235,6 +235,8 @@ tr.row-editing td{background:var(--info-bg) !important}
 .rep-table th{text-align:left;padding:7px 8px;color:var(--text2);border-bottom:1px solid var(--border);font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:0.04em}
 .rep-table td{padding:7px 8px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:top}
 .rep-table tfoot td{font-weight:700;border-top:2px solid var(--border2);border-bottom:none;color:var(--text)}
+.rep-table th:first-child,.rep-table td:first-child{width:88px}
+.rep-table th:nth-child(4),.rep-table td:nth-child(4){width:92px}
 .rep-empty{text-align:center;color:var(--text3);padding:20px;font-size:13px}
 .rep-empty i{display:block;font-size:30px;margin-bottom:8px}
 
@@ -265,6 +267,22 @@ tr.row-editing td{background:var(--info-bg) !important}
   .toast{left:10px;right:10px;bottom:10px;max-width:none}
   .install-banner{padding:10px 12px}
   .app-name{font-size:13px}
+  /* Report statement: 4 columns in a narrow modal — wrap instead of truncate,
+     and shrink Date/Amount to their content so Description/Party get the room. */
+  .rep-table{table-layout:auto}
+  .rep-table th,.rep-table td{white-space:normal;overflow:visible;text-overflow:clip;padding:7px 6px}
+  .rep-table th:first-child,.rep-table td:first-child,
+  .rep-table th:nth-child(4),.rep-table td:nth-child(4){width:1%;white-space:nowrap}
+}
+@media(max-width:360px){
+  /* Very small phones: shrink the summary cards and tighten the table so the
+     four-column statement still fits without a horizontal scroll. */
+  .rep-summary{gap:6px}
+  .rep-card{padding:10px 6px}
+  .rep-card .lbl{font-size:9px}
+  .rep-card .val{font-size:15px}
+  .rep-table{font-size:11px}
+  .rep-table th,.rep-table td{padding:6px 4px}
 }
 </style>
 </head>
@@ -923,7 +941,7 @@ function generateReport(){
   const sec=(rows,kind)=>{
     if(!rows.length) return `<div class="rep-empty" style="padding:10px 0">No ${kind} entries in this period.</div>`;
     const sub=rows.reduce((s,e)=>s+e.amount,0);
-    return `<table class="rep-table"><thead><tr><th style="width:88px">Date</th><th>Description</th><th>Party</th><th style="width:92px;text-align:right">Amount</th></tr></thead><tbody>`
+    return `<table class="rep-table"><thead><tr><th>Date</th><th>Description</th><th>Party</th><th style="text-align:right">Amount</th></tr></thead><tbody>`
       +rows.map(e=>`<tr><td>${fmtDate(e.date)}</td><td>${esc(e.description)}</td><td style="color:var(--text2)">${esc(e.party)}</td><td style="text-align:right" class="amt-${e.type}">${fmt(e.amount)}</td></tr>`).join('')
       +`</tbody><tfoot><tr><td colspan="3">Subtotal — ${rows.length} entr${rows.length===1?'y':'ies'}</td><td style="text-align:right">${fmt(sub)}</td></tr></tfoot></table>`;
   };
