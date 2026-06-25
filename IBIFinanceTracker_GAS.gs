@@ -1,4 +1,4 @@
-// IBI Finance Tracker — GAS Backend v2.4
+// IBI Finance Tracker — GAS Backend v2.5
 // India Business International — Finance & Accounts Ledger
 // Sheet ID: 1hbh5E9kzX4632d4kaMHLXC-Aqhi5exgEJWOxMtSrttE
 // All requests via GET (URL params) — avoids CORS/redirect issues
@@ -17,6 +17,11 @@
 // v2.4: version label unified with the frontend (one app version). No backend logic
 //       change — the v2.4 release is the frontend "Saving..." freeze fix; backend
 //       behaviour is identical to v2.3. (Live ping reflects v2.4 only after a redeploy.)
+// v2.5: frontend adds Report Generation — month-wise and "From Date → To Date" range —
+//       with an on-screen statement (running balance + totals), period CSV export, and a
+//       branded Print / Save-as-PDF view. PURE FRONTEND: reports run on the data already
+//       returned by getAll, so NO redeploy is required for the feature to work. This file's
+//       only change is the version label, kept in sync with the frontend (one app version).
 
 const SHEET_ID    = "1hbh5E9kzX4632d4kaMHLXC-Aqhi5exgEJWOxMtSrttE";
 const SHEET_NAME  = "Transactions";
@@ -54,7 +59,7 @@ function doGet(e) {
   try {
     switch (action) {
       case 'ping':
-        result = { status:'ok', message:'IBI Finance Tracker GAS v2.4 is live!' };
+        result = { status:'ok', message:'IBI Finance Tracker GAS v2.5 is live!' };
         break;
       case 'getAll':
         result = getAllTransactions();

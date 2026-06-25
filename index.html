@@ -212,8 +212,59 @@ tr.row-editing td{background:var(--info-bg) !important}
 .drawer-item i{font-size:18px;color:var(--cyan);width:22px;flex-shrink:0}
 .drawer-section-label{padding:10px 16px 4px;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;font-weight:600}
 
+/* ── REPORTS ── */
+.report-period{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;color:var(--text2);padding:10px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:12px}
+.report-period strong{color:var(--cyan);font-size:14px}
+.report-period .report-count{margin-left:auto;font-size:11px;background:var(--bg2);color:var(--text2);padding:3px 10px;border-radius:20px;white-space:nowrap}
+.report-summary{margin-bottom:12px !important}
+.report-actions{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.rpt-act-btn{flex:1;min-width:140px;padding:11px;font-size:14px;font-weight:600;border:1px solid var(--border2);border-radius:var(--radius);background:transparent;color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;font-family:var(--font)}
+.rpt-act-btn:hover{border-color:var(--cyan);color:var(--cyan)}
+.rpt-act-btn.primary{background:var(--cyan);color:#000;border-color:var(--cyan)}
+.rpt-act-btn.primary:hover{opacity:0.85;color:#000}
+.report-table-wrap{border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.report-table-wrap table{table-layout:auto}
+.report-table-wrap th.num,.report-table-wrap td.num{text-align:right;font-variant-numeric:tabular-nums}
+.report-table-wrap tfoot td{font-weight:700;background:var(--bg3);color:var(--text);border-top:2px solid var(--cyan)}
+.report-empty{padding:2.4rem 1rem;text-align:center;color:var(--text2);font-size:14px}
+.report-empty i{font-size:34px;display:block;margin-bottom:8px;color:var(--text3)}
+
+/* ── PRINT REPORT (hidden on screen, shown only when printing) ── */
+#printArea{display:none;color:#111;font-family:var(--font);font-size:12px;line-height:1.45}
+#printArea .pr-head{display:flex;align-items:center;gap:14px;border-bottom:3px solid #00c5ff;padding-bottom:12px;margin-bottom:14px}
+#printArea .pr-logo{width:58px;height:58px;border-radius:50%;border:3px solid #00c5ff;display:flex;align-items:center;justify-content:center;font-weight:700;color:#0086ad;font-size:17px;flex-shrink:0;letter-spacing:1px}
+#printArea .pr-co{font-size:19px;font-weight:700;color:#000;letter-spacing:0.3px}
+#printArea .pr-sub{font-size:11px;color:#555;margin-top:2px}
+#printArea .pr-meta{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+#printArea .pr-title{font-size:15px;font-weight:700;color:#0086ad}
+#printArea .pr-gen{font-size:10px;color:#777;text-align:right;line-height:1.5}
+#printArea .pr-cards{display:flex;gap:10px;margin-bottom:14px}
+#printArea .pr-card{flex:1;border:1px solid #ccc;border-radius:8px;padding:9px 11px}
+#printArea .pr-card .l{font-size:9px;text-transform:uppercase;letter-spacing:0.06em;color:#666}
+#printArea .pr-card .v{font-size:16px;font-weight:700;margin-top:3px}
+#printArea .pr-inc{color:#1a7a1a}
+#printArea .pr-exp{color:#b11515}
+#printArea .pr-net{color:#0086ad}
+#printArea table{width:100%;border-collapse:collapse;font-size:11px}
+#printArea th{background:#000;color:#00c5ff;text-align:left;padding:7px 8px;border:1px solid #222;font-size:10px;text-transform:uppercase;letter-spacing:0.04em}
+#printArea td{padding:6px 8px;border:1px solid #cfcfcf;vertical-align:top}
+#printArea th.num,#printArea td.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+#printArea tfoot td{font-weight:700;background:#f0f0f0;border-top:2px solid #00c5ff}
+#printArea .pr-foot{margin-top:20px;display:flex;justify-content:space-between;align-items:flex-end;gap:20px}
+#printArea .pr-note{font-size:9px;color:#888;line-height:1.5}
+#printArea .pr-sign{border-top:1px solid #000;padding-top:5px;font-size:10px;color:#333;min-width:170px;text-align:center}
+@media print{
+  @page{margin:12mm}
+  html,body{background:#fff !important}
+  body > *:not(#printArea){display:none !important}
+  #printArea{display:block !important}
+  #printArea *{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important}
+}
+
 /* ── MOBILE ── */
 @media(max-width:600px){
+  .report-summary{padding:0 !important}
+  .rpt-act-btn{min-width:0}
   html,body{padding:0;margin:0}
   .topbar{padding:0 10px}
   .topbar-inner{height:50px}
@@ -250,7 +301,7 @@ tr.row-editing td{background:var(--info-bg) !important}
     <div class="topbar-left">
       <div class="ibi-logo"><span>IBI</span></div>
       <div>
-        <div class="app-name">IBI Finance Tracker <span class="ver-badge">v2.4</span></div>
+        <div class="app-name">IBI Finance Tracker <span class="ver-badge">v2.5</span></div>
       </div>
     </div>
     <div class="topbar-right">
@@ -317,6 +368,7 @@ tr.row-editing td{background:var(--info-bg) !important}
     <span class="status-txt"><span class="status-dot" id="statusDot"></span><span id="statusTxt">Connecting...</span></span>
     <div class="status-actions">
       <button class="s-btn" onclick="loadAll()"><i class="ti ti-refresh"></i> Sync</button>
+      <button class="s-btn" onclick="scrollToReports()"><i class="ti ti-report-analytics"></i> Report</button>
       <a class="s-btn" href="https://docs.google.com/spreadsheets/d/1hbh5E9kzX4632d4kaMHLXC-Aqhi5exgEJWOxMtSrttE/edit?gid=0#gid=0" target="_blank"><i class="ti ti-external-link"></i> Sheet</a>
       <button class="s-btn" onclick="exportCSV()"><i class="ti ti-download"></i> CSV</button>
     </div>
@@ -418,7 +470,37 @@ tr.row-editing td{background:var(--info-bg) !important}
     </div>
   </div>
 
-  <div class="footer">IBI Finance Tracker v2.4 &mdash; India Business International &mdash; indiabusinessinternational@gmail.com</div>
+  <!-- REPORTS -->
+  <div class="section-hdr" id="reportSection" style="border-radius:var(--radius-lg) var(--radius-lg) 0 0;margin-top:4px">
+    <div class="section-title"><i class="ti ti-report-analytics"></i> Generate Report</div>
+  </div>
+  <div class="form-card" id="reportCard">
+    <div class="type-toggle" style="margin-bottom:14px">
+      <button class="type-btn active-income" id="btnRptMonth" onclick="setReportMode('month')"><i class="ti ti-calendar-month"></i> Month-wise</button>
+      <button class="type-btn" id="btnRptRange" onclick="setReportMode('range')"><i class="ti ti-calendar-stats"></i> From Date → To Date</button>
+    </div>
+    <div class="form-grid">
+      <div class="form-group full" id="rptMonthWrap">
+        <label for="rptMonth">Select Month</label>
+        <input type="month" id="rptMonth">
+      </div>
+      <div class="form-group" id="rptFromWrap" style="display:none">
+        <label for="rptFrom">From Date</label>
+        <input type="date" id="rptFrom">
+      </div>
+      <div class="form-group" id="rptToWrap" style="display:none">
+        <label for="rptTo">To Date</label>
+        <input type="date" id="rptTo">
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn-save" onclick="generateReport()"><i class="ti ti-file-analytics"></i> Generate Report</button>
+      <button class="btn-clear" onclick="clearReport()">Clear</button>
+    </div>
+    <div id="reportOutput" style="display:none;margin-top:18px"></div>
+  </div>
+
+  <div class="footer">IBI Finance Tracker v2.5 &mdash; India Business International &mdash; indiabusinessinternational@gmail.com</div>
 </div>
 
 <!-- DRAWER MENU -->
@@ -430,14 +512,18 @@ tr.row-editing td{background:var(--info-bg) !important}
   </div>
   <div class="drawer-section-label">App</div>
   <button class="drawer-item" onclick="loadAll();closeDrawer()"><i class="ti ti-refresh"></i> Sync with Google Drive</button>
+  <button class="drawer-item" onclick="scrollToReports();closeDrawer()"><i class="ti ti-report-analytics"></i> Generate Report</button>
   <button class="drawer-item" onclick="exportCSV();closeDrawer()"><i class="ti ti-download"></i> Export CSV</button>
   <a class="drawer-item" href="https://docs.google.com/spreadsheets/d/1hbh5E9kzX4632d4kaMHLXC-Aqhi5exgEJWOxMtSrttE/edit?gid=0#gid=0" target="_blank" onclick="closeDrawer()"><i class="ti ti-external-link"></i> Open Google Sheet</a>
   <div class="drawer-section-label">Settings</div>
   <button class="drawer-item" onclick="toggleTheme();closeDrawer()"><i class="ti ti-sun"></i> Toggle Dark / Light Mode</button>
   <button class="drawer-item" id="drawerInstallBtn" style="display:none" onclick="triggerInstall();closeDrawer()"><i class="ti ti-device-mobile-down"></i> Install as App (PWA)</button>
   <div class="drawer-section-label">About</div>
-  <div class="drawer-item" style="cursor:default;color:var(--text2);font-size:12px"><i class="ti ti-info-circle"></i> Version 2.4 — June 2026</div>
+  <div class="drawer-item" style="cursor:default;color:var(--text2);font-size:12px"><i class="ti ti-info-circle"></i> Version 2.5 — June 2026</div>
 </div>
+
+<!-- PRINTABLE REPORT (populated on demand, visible only when printing) -->
+<div id="printArea"></div>
 
 <div class="toast" id="toast"></div>
 
@@ -789,11 +875,216 @@ function exportCSV(){
   a.download='ibi_finance_transactions.csv'; a.click();
 }
 
+// ── REPORTS ──
+let reportMode = 'month';
+let reportRows = [];
+let reportMeta = null;
+const _RPT_MON = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function fmtNum(n){ return Math.round(n||0).toLocaleString('en-IN'); }
+function nowStamp(){
+  const n=new Date(); let h=n.getHours(); const ap=h>=12?'PM':'AM'; h=h%12||12;
+  return `${String(n.getDate()).padStart(2,'0')} ${_MON[n.getMonth()]} ${n.getFullYear()}, ${String(h).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')} ${ap}`;
+}
+
+function setReportMode(m){
+  reportMode = m;
+  document.getElementById('btnRptMonth').className = 'type-btn' + (m==='month' ? ' active-income' : '');
+  document.getElementById('btnRptRange').className = 'type-btn' + (m==='range' ? ' active-income' : '');
+  document.getElementById('rptMonthWrap').style.display = m==='month' ? '' : 'none';
+  document.getElementById('rptFromWrap').style.display  = m==='range' ? '' : 'none';
+  document.getElementById('rptToWrap').style.display    = m==='range' ? '' : 'none';
+}
+
+function initReportDefaults(){
+  const n  = new Date();
+  const ym = n.getFullYear() + '-' + String(n.getMonth()+1).padStart(2,'0');
+  const mEl=document.getElementById('rptMonth'); if(mEl) mEl.value = ym;
+  const fEl=document.getElementById('rptFrom');  if(fEl) fEl.value = ym + '-01';
+  const tEl=document.getElementById('rptTo');    if(tEl) tEl.value = today();
+}
+
+function scrollToReports(){
+  const el = document.getElementById('reportSection');
+  if(el) el.scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function generateReport(){
+  let from, to, label;
+  if(reportMode === 'month'){
+    const v = document.getElementById('rptMonth').value;
+    if(!v){ showToast('Pick a month','error'); return; }
+    const [y,mo] = v.split('-').map(Number);
+    from  = `${y}-${String(mo).padStart(2,'0')}-01`;
+    const last = new Date(y, mo, 0).getDate();          // day 0 of next month = last day of this one
+    to    = `${y}-${String(mo).padStart(2,'0')}-${String(last).padStart(2,'0')}`;
+    label = `${_RPT_MON[mo-1]} ${y}`;
+  } else {
+    from = document.getElementById('rptFrom').value;
+    to   = document.getElementById('rptTo').value;
+    if(!from || !to){ showToast('Pick both From and To dates','error'); return; }
+    if(from > to){ showToast('From date is after To date','error'); return; }
+    label = `${fmtDate(from)} → ${fmtDate(to)}`;
+  }
+  // ISO yyyy-mm-dd strings compare lexicographically, so range test is a plain string compare.
+  const rows = entries.filter(e=>{
+    const d = String(e.date||'').slice(0,10);
+    return d && d >= from && d <= to;
+  }).sort((a,b)=>{
+    const d = (a.date||'').localeCompare(b.date||'');
+    return d!==0 ? d : (Date.parse(a.createdAt)||0)-(Date.parse(b.createdAt)||0);   // chronological
+  });
+  const income  = rows.filter(e=>e.type==='income').reduce((s,e)=>s+e.amount,0);
+  const expense = rows.filter(e=>e.type==='expense').reduce((s,e)=>s+e.amount,0);
+  reportRows = rows;
+  reportMeta = { label, from, to, income, expense, net: income-expense };
+  renderReportOutput();
+}
+
+function renderReportOutput(){
+  const out = document.getElementById('reportOutput');
+  const m   = reportMeta;
+  out.style.display = 'block';
+
+  let html = `<div class="report-period"><i class="ti ti-calendar-event"></i> Report Period: <strong>${esc(m.label)}</strong><span class="report-count">${reportRows.length} ${reportRows.length===1?'entry':'entries'}</span></div>`;
+
+  html += `<div class="summary-grid report-summary">
+    <div class="metric m-income"><div class="metric-label"><i class="ti ti-arrow-down-circle"></i> Income</div><div class="metric-value income">${fmt(m.income)}</div></div>
+    <div class="metric m-expense"><div class="metric-label"><i class="ti ti-arrow-up-circle"></i> Expense</div><div class="metric-value expense">${fmt(m.expense)}</div></div>
+    <div class="metric m-net"><div class="metric-label"><i class="ti ti-scale"></i> Net Balance</div><div class="metric-value ${m.net>=0?'positive':'negative'}">${fmt(m.net)}</div></div>
+    <div class="metric m-count"><div class="metric-label"><i class="ti ti-list-numbers"></i> Entries</div><div class="metric-value count">${reportRows.length}</div></div>
+  </div>`;
+
+  html += `<div class="report-actions">
+    <button class="rpt-act-btn primary" onclick="printReport()"><i class="ti ti-printer"></i> Print / Save as PDF</button>
+    <button class="rpt-act-btn" onclick="exportReportCSV()"><i class="ti ti-file-spreadsheet"></i> Export CSV</button>
+  </div>`;
+
+  if(!reportRows.length){
+    html += `<div class="report-table-wrap"><div class="report-empty"><i class="ti ti-inbox"></i>No transactions in this period.</div></div>`;
+  } else {
+    let bal = 0;
+    const rowsHtml = reportRows.map((e,i)=>{
+      const dt  = fmtDTParts(e);
+      const inc = e.type==='income'  ? e.amount : 0;
+      const exp = e.type==='expense' ? e.amount : 0;
+      bal += inc - exp;
+      return `<tr>
+        <td style="color:var(--text2)">${i+1}</td>
+        <td class="dt-cell" style="color:var(--text2);font-size:12px"><div>${dt.date}</div>${dt.sub?`<div class="dt-sub">${dt.sub}</div>`:''}</td>
+        <td title="${esc(e.description)}">${esc(e.description)}</td>
+        <td style="color:var(--text2)" title="${esc(e.party)}">${esc(e.party)}</td>
+        <td class="num amt-income">${inc?('+'+fmt(inc)):'—'}</td>
+        <td class="num amt-expense">${exp?('−'+fmt(exp)):'—'}</td>
+        <td class="num" style="font-weight:600;color:${bal>=0?'var(--cyan)':'var(--danger-text)'}">${fmt(bal)}</td>
+      </tr>`;
+    }).join('');
+    html += `<div class="report-table-wrap" style="overflow-x:auto"><table>
+      <thead><tr>
+        <th style="width:42px">#</th><th>Date &amp; Time</th><th>Description</th><th>Party</th>
+        <th class="num">Income</th><th class="num">Expense</th><th class="num">Balance</th>
+      </tr></thead>
+      <tbody>${rowsHtml}</tbody>
+      <tfoot><tr>
+        <td colspan="4" style="text-align:right">Totals</td>
+        <td class="num amt-income">${fmt(m.income)}</td>
+        <td class="num amt-expense">${fmt(m.expense)}</td>
+        <td class="num" style="color:${m.net>=0?'var(--cyan)':'var(--danger-text)'}">${fmt(m.net)}</td>
+      </tr></tfoot>
+    </table></div>`;
+  }
+
+  out.innerHTML = html;
+  out.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+function clearReport(){
+  const out = document.getElementById('reportOutput');
+  out.style.display = 'none';
+  out.innerHTML = '';
+  reportRows = [];
+  reportMeta = null;
+}
+
+function exportReportCSV(){
+  if(!reportMeta || !reportRows.length){ showToast('Generate a report first','error'); return; }
+  const m = reportMeta;
+  const rows = [
+    ['IBI Finance Tracker — Financial Report'],
+    ['Period', m.label],
+    ['Generated', nowStamp()],
+    [],
+    ['#','Date & Time','Type','Description','Party','Income','Expense','Balance']
+  ];
+  let bal = 0;
+  reportRows.forEach((e,i)=>{
+    const inc = e.type==='income'  ? e.amount : 0;
+    const exp = e.type==='expense' ? e.amount : 0;
+    bal += inc - exp;
+    rows.push([i+1, fmtDTLine(e), e.type, e.description, e.party, inc||'', exp||'', bal]);
+  });
+  rows.push([], ['','','','','Total Income', m.income], ['','','','','Total Expense', m.expense], ['','','','','Net Balance', m.net]);
+  const csv = rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const fname = 'ibi_report_' + m.label.replace(/[^a-z0-9]+/gi,'_').replace(/^_+|_+$/g,'').toLowerCase() + '.csv';
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,﻿' + encodeURIComponent(csv);
+  a.download = fname; a.click();
+}
+
+function printReport(){
+  if(!reportMeta){ showToast('Generate a report first','error'); return; }
+  document.getElementById('printArea').innerHTML = buildPrintHTML();
+  setTimeout(()=>window.print(), 60);   // let the DOM paint before the print dialog opens
+}
+
+function buildPrintHTML(){
+  const m = reportMeta;
+  let bal = 0;
+  const body = reportRows.map((e,i)=>{
+    const inc = e.type==='income'  ? e.amount : 0;
+    const exp = e.type==='expense' ? e.amount : 0;
+    bal += inc - exp;
+    return `<tr>
+      <td>${i+1}</td><td>${esc(fmtDTLine(e))}</td><td>${esc(e.description)}</td><td>${esc(e.party)}</td>
+      <td class="num pr-inc">${inc?fmtNum(inc):''}</td>
+      <td class="num pr-exp">${exp?fmtNum(exp):''}</td>
+      <td class="num">${fmtNum(bal)}</td>
+    </tr>`;
+  }).join('');
+  const table = reportRows.length ? `<table>
+    <thead><tr><th>#</th><th>Date &amp; Time</th><th>Description</th><th>Party</th><th class="num">Income (₹)</th><th class="num">Expense (₹)</th><th class="num">Balance (₹)</th></tr></thead>
+    <tbody>${body}</tbody>
+    <tfoot><tr><td colspan="4" style="text-align:right">Totals (₹)</td><td class="num pr-inc">${fmtNum(m.income)}</td><td class="num pr-exp">${fmtNum(m.expense)}</td><td class="num pr-net">${fmtNum(m.net)}</td></tr></tfoot>
+  </table>` : `<p style="padding:24px;text-align:center;color:#777">No transactions in this period.</p>`;
+  return `
+    <div class="pr-head">
+      <div class="pr-logo">IBI</div>
+      <div><div class="pr-co">India Business International</div><div class="pr-sub">Finance &amp; Accounts Ledger — Kanyakumari</div></div>
+    </div>
+    <div class="pr-meta">
+      <div><div class="pr-title">Financial Report</div><div style="font-size:12px;color:#333;margin-top:3px">Period: <strong>${esc(m.label)}</strong></div></div>
+      <div class="pr-gen">Generated: ${esc(nowStamp())}<br>Total entries: ${reportRows.length}</div>
+    </div>
+    <div class="pr-cards">
+      <div class="pr-card"><div class="l">Total Income</div><div class="v pr-inc">₹${fmtNum(m.income)}</div></div>
+      <div class="pr-card"><div class="l">Total Expense</div><div class="v pr-exp">₹${fmtNum(m.expense)}</div></div>
+      <div class="pr-card"><div class="l">Net Balance</div><div class="v pr-net">₹${fmtNum(m.net)}</div></div>
+    </div>
+    ${table}
+    <div class="pr-foot">
+      <div class="pr-note">This is a system-generated report from IBI Finance Tracker.<br>indiabusinessinternational@gmail.com</div>
+      <div class="pr-sign">Authorised Signature</div>
+    </div>`;
+}
+
 // ── SERVICE WORKER ──
 if('serviceWorker' in navigator){
   navigator.serviceWorker.register('sw.js').catch(()=>{});
 }
 
+initReportDefaults();
+setReportMode('month');
 loadAll();
 </script>
 </body>
