@@ -1,4 +1,4 @@
-// IBI Finance Tracker — GAS Backend v2.3
+// IBI Finance Tracker — GAS Backend v2.4
 // India Business International — Finance & Accounts Ledger
 // Sheet ID: 1hbh5E9kzX4632d4kaMHLXC-Aqhi5exgEJWOxMtSrttE
 // All requests via GET (URL params) — avoids CORS/redirect issues
@@ -14,6 +14,9 @@
 // v2.3: the Ledger date column is MIXED — day<=12 dates became US (month-first) Date
 //       objects while day>12 stayed DD-MM text. Read raw values and swap month<->day on
 //       the Date cells to recover the intended Indian dates; text stays day-first.
+// v2.4: version label unified with the frontend (one app version). No backend logic
+//       change — the v2.4 release is the frontend "Saving..." freeze fix; backend
+//       behaviour is identical to v2.3. (Live ping reflects v2.4 only after a redeploy.)
 
 const SHEET_ID    = "1hbh5E9kzX4632d4kaMHLXC-Aqhi5exgEJWOxMtSrttE";
 const SHEET_NAME  = "Transactions";
@@ -51,7 +54,7 @@ function doGet(e) {
   try {
     switch (action) {
       case 'ping':
-        result = { status:'ok', message:'IBI Finance Tracker GAS v2.3 is live!' };
+        result = { status:'ok', message:'IBI Finance Tracker GAS v2.4 is live!' };
         break;
       case 'getAll':
         result = getAllTransactions();
