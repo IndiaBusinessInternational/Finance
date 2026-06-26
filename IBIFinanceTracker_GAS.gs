@@ -180,6 +180,75 @@ function updateTransaction(p) {
   return { status:'error', message:'ID not found: ' + p.id };
 }
 
+// ─────────────────────────────────────────────────────────────────────────
+//  PARTY BACKFILL (v2.6.1) — run ONCE from the Apps Script editor
+//  Rows imported from the legacy Ledger (and anything saved before the Party
+//  field existed) have an empty Party. Derive it from the Description for the
+//  unambiguous e-commerce payouts only. Banks, cash, staff expenses, etc. are
+//  LEFT BLANK on purpose (no reliable party in the text).
+//
+//  HOW TO RUN:
+//    1. previewBackfillParties()  → writes NOTHING; logs every change it would make.
+//    2. backfillParties()         → applies the fill (only touches EMPTY Party cells).
+//  Safe to re-run: existing Party values are never overwritten.
+//  No web-app redeploy needed — these run directly in the editor.
+// ─────────────────────────────────────────────────────────────────────────
+
+// Description keyword (lowercase) → Party. First match wins.
+// Add a line here to onboard a new platform, e.g. ['glowroad', 'Glowroad'].
+const PARTY_RULES = [
+  ['amazon',   'Amazon'],
+  ['meesho',   'Meesho'],
+  ['flipkart', 'Flipkart']
+];
+
+function derivePartyFromDesc_(desc) {
+  const d = String(desc || '').toLowerCase();
+  for (let i = 0; i < PARTY_RULES.length; i++) {
+    if (d.indexOf(PARTY_RULES[i][0]) !== -1) return PARTY_RULES[i][1];
+  }
+  return '';   // no confident match → leave blank
+}
+
+function backfillParties_(apply) {
+  const sh   = getSheet();
+  const last = sh.getLastRow();
+  if (last <= 1) return { scanned:0, filled:0, changes:[] };
+
+  // Columns are 1-based: Description = 4, Party = 5.
+  const descs   = sh.getRange(2, 4, last - 1, 1).getValues();   // [[desc], ...]
+  const parties = sh.getRange(2, 5, last - 1, 1).getValues();   // [[party], ...]
+
+  let filled = 0;
+  const changes = [];
+  for (let i = 0; i < parties.length; i++) {
+    if (String(parties[i][0] || '').trim() !== '') continue;     // never overwrite an existing party
+    const party = derivePartyFromDesc_(descs[i][0]);
+    if (party) {
+      parties[i][0] = party;
+      filled++;
+      changes.push('row ' + (i + 2) + ': "' + String(descs[i][0]) + '" → ' + party);
+    }
+  }
+
+  if (apply && filled) sh.getRange(2, 5, parties.length, 1).setValues(parties);  // single write, Party column only
+  return { scanned: parties.length, filled: filled, changes: changes };
+}
+
+// Run me FIRST — dry run, writes nothing, logs every proposed change.
+function previewBackfillParties() {
+  const r = backfillParties_(false);
+  Logger.log('DRY RUN — would fill ' + r.filled + ' of ' + r.scanned + ' empty-Party rows:\n' + r.changes.join('\n'));
+  return r;
+}
+
+// Run me to APPLY — fills only empty Party cells, never overwrites.
+function backfillParties() {
+  const r = backfillParties_(true);
+  Logger.log('APPLIED — filled ' + r.filled + ' of ' + r.scanned + ' rows.');
+  return r;
+}
+
 function deleteTransaction(id) {
   if (!id) return { status:'error', message:'No ID provided.' };
   const sh   = getSheet();

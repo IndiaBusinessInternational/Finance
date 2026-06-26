@@ -834,7 +834,7 @@ function render(){
   const ps=document.getElementById('pendingSection');
   if(pending.length){
     ps.style.display='block';
-    document.getElementById('pendingList').innerHTML=pending.map(e=>`<div class="pending-item"><span>${fmtDate(e.date)} &mdash; ${e.description} (${e.party})</span><span>${e.note}</span></div>`).join('');
+    document.getElementById('pendingList').innerHTML=pending.map(e=>`<div class="pending-item"><span>${fmtDate(e.date)} &mdash; ${e.description}${e.party?` (${e.party})`:''}</span><span>${e.note}</span></div>`).join('');
   } else ps.style.display='none';
   if(!list.length){ body.innerHTML=''; empty.style.display='block'; return; }
   empty.style.display='none';
@@ -846,7 +846,7 @@ function render(){
       <td class="dt-cell" style="color:var(--text2);font-size:12px"><div>${dt.date}</div>${dt.sub?`<div class="dt-sub">${dt.sub}</div>`:''}</td>
       <td><span class="pill ${e.type}">${e.type==='income'?'<i class="ti ti-arrow-down-circle"></i> Income':'<i class="ti ti-arrow-up-circle"></i> Expense'}</span></td>
       <td title="${e.description}">${e.description}</td>
-      <td title="${e.party}" style="color:var(--text2)">${e.party}</td>
+      <td title="${e.party||''}" style="color:var(--text2)">${e.party||'—'}</td>
       <td style="text-align:right" class="amt-${e.type}">${e.type==='income'?'+':'−'}${fmt(e.amount)}</td>
       <td style="color:var(--text2);font-size:12px;font-style:italic" title="${e.note||''}">${e.note||'—'}</td>
       <td><div class="action-cell">
@@ -947,7 +947,7 @@ function generateReport(){
     if(!rows.length) return `<div class="rep-empty" style="padding:10px 0">No ${kind} entries in this period.</div>`;
     const sub=rows.reduce((s,e)=>s+e.amount,0);
     return `<table class="rep-table"><thead><tr><th>Date</th><th>Description</th><th>Party</th><th style="text-align:right">Amount</th></tr></thead><tbody>`
-      +rows.map(e=>`<tr><td>${fmtDate(e.date)}</td><td>${esc(e.description)}</td><td style="color:var(--text2)">${esc(e.party)}</td><td style="text-align:right" class="amt-${e.type}">${fmt(e.amount)}</td></tr>`).join('')
+      +rows.map(e=>`<tr><td>${fmtDate(e.date)}</td><td>${esc(e.description)}</td><td style="color:var(--text2)">${esc(e.party)||'—'}</td><td style="text-align:right" class="amt-${e.type}">${fmt(e.amount)}</td></tr>`).join('')
       +`</tbody><tfoot><tr><td colspan="3">Subtotal — ${rows.length} entr${rows.length===1?'y':'ies'}</td><td style="text-align:right">${fmt(sub)}</td></tr></tfoot></table>`;
   };
   out.innerHTML=`
@@ -975,7 +975,7 @@ function printReport(){
     const sub=rows.reduce((s,e)=>s+e.amount,0);
     return `<h3 style="color:${color};margin:16px 0 6px">${title}</h3>`
       +`<table><thead><tr><th>Date &amp; Time</th><th>Description</th><th>Party</th><th class="r">Amount</th></tr></thead><tbody>`
-      +rows.map(e=>`<tr><td>${esc(fmtDTLine(e))}</td><td>${esc(e.description)}</td><td>${esc(e.party)}</td><td class="r">${M(e.amount)}</td></tr>`).join('')
+      +rows.map(e=>`<tr><td>${esc(fmtDTLine(e))}</td><td>${esc(e.description)}</td><td>${esc(e.party)||'—'}</td><td class="r">${M(e.amount)}</td></tr>`).join('')
       +`</tbody><tfoot><tr><td colspan="3">Subtotal (${rows.length})</td><td class="r">${M(sub)}</td></tr></tfoot></table>`;
   };
   const html=`<!doctype html><html><head><meta charset="utf-8"><title>IBI Finance — ${esc(p.label)}</title>
