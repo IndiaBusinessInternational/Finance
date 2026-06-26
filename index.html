@@ -294,7 +294,7 @@ tr.row-editing td{background:var(--info-bg) !important}
     <div class="topbar-left">
       <div class="ibi-logo"><span>IBI</span></div>
       <div>
-        <div class="app-name">IBI Finance Tracker <span class="ver-badge">v2.5</span></div>
+        <div class="app-name">IBI Finance Tracker <span class="ver-badge">v2.6</span></div>
       </div>
     </div>
     <div class="topbar-right">
@@ -463,7 +463,7 @@ tr.row-editing td{background:var(--info-bg) !important}
     </div>
   </div>
 
-  <div class="footer">IBI Finance Tracker v2.5 &mdash; India Business International &mdash; indiabusinessinternational@gmail.com</div>
+  <div class="footer">IBI Finance Tracker v2.6 &mdash; India Business International &mdash; indiabusinessinternational@gmail.com</div>
 </div>
 
 <!-- DRAWER MENU -->
@@ -482,7 +482,7 @@ tr.row-editing td{background:var(--info-bg) !important}
   <button class="drawer-item" onclick="toggleTheme();closeDrawer()"><i class="ti ti-sun"></i> Toggle Dark / Light Mode</button>
   <button class="drawer-item" id="drawerInstallBtn" style="display:none" onclick="triggerInstall();closeDrawer()"><i class="ti ti-device-mobile-down"></i> Install as App (PWA)</button>
   <div class="drawer-section-label">About</div>
-  <div class="drawer-item" style="cursor:default;color:var(--text2);font-size:12px"><i class="ti ti-info-circle"></i> Version 2.5 — June 2026</div>
+  <div class="drawer-item" style="cursor:default;color:var(--text2);font-size:12px"><i class="ti ti-info-circle"></i> Version 2.6 — June 2026</div>
 </div>
 
 <!-- REPORT MODAL -->
@@ -523,6 +523,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbxosA5MhEcSAIx68X2iOjF7
 let entries   = [];
 let txType    = 'income';
 let editingId = null;
+let _saving   = false;   // re-entrancy guard — blocks a second save while one is in flight
 let deferredPrompt = null;
 
 // ── THEME ──
@@ -718,6 +719,9 @@ async function saveEntry(){
         party=document.getElementById('fParty').value.trim(), amount=parseFloat(document.getElementById('fAmount').value),
         note=document.getElementById('fNote').value.trim();
   if(!date||!desc||!party||!amount||amount<=0){ showToast('Fill date, description, party & amount','error'); return; }
+  // Guard against a double-tap / rapid re-fire while the first save is still running.
+  if(_saving){ return; }
+  _saving=true;
   const btn=document.getElementById('btnSave');
   btn.disabled=true;
   btn.innerHTML='<div class="spinner" style="width:16px;height:16px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:6px"></div> '+(editingId?'Updating...':'Saving...');
@@ -766,6 +770,7 @@ async function saveEntry(){
     }
   } finally {
     // ALWAYS restore the button — even if a step above throws — so it never sticks on "Saving...".
+    _saving=false;
     btn.disabled=false;
     btn.innerHTML='<i class="ti ti-device-floppy"></i> <span id="btnSaveLabel">'+(editingId?'Update in Google Drive':'Save to Google Drive')+'</span>';
   }

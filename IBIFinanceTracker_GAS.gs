@@ -1,4 +1,4 @@
-// IBI Finance Tracker — GAS Backend v2.5
+// IBI Finance Tracker — GAS Backend v2.6
 // India Business International — Finance & Accounts Ledger
 // Sheet ID: 1hbh5E9kzX4632d4kaMHLXC-Aqhi5exgEJWOxMtSrttE
 // All requests via GET (URL params) — avoids CORS/redirect issues
@@ -22,6 +22,11 @@
 //       branded Print / Save-as-PDF view. PURE FRONTEND: reports run on the data already
 //       returned by getAll, so NO redeploy is required for the feature to work. This file's
 //       only change is the version label, kept in sync with the frontend (one app version).
+// v2.6: fix duplicate entries (same row saved twice seconds apart). addTransaction now
+//       fingerprints the payload and suppresses an identical add seen within 90s via the
+//       shared CacheService — so a cold-start reload-and-resubmit or a double-tap can no
+//       longer create a second row. Frontend also adds an in-flight save guard. REQUIRES A
+//       REDEPLOY for the server-side guard to take effect (frontend guard works immediately).
 
 const SHEET_ID    = "1hbh5E9kzX4632d4kaMHLXC-Aqhi5exgEJWOxMtSrttE";
 const SHEET_NAME  = "Transactions";
@@ -59,7 +64,7 @@ function doGet(e) {
   try {
     switch (action) {
       case 'ping':
-        result = { status:'ok', message:'IBI Finance Tracker GAS v2.5 is live!' };
+        result = { status:'ok', message:'IBI Finance Tracker GAS v2.6 is live!' };
         break;
       case 'getAll':
         result = getAllTransactions();
@@ -120,6 +125,23 @@ function getAllTransactions() {
 
 function addTransaction(p) {
   const sh  = getSheet();
+
+  // ── Duplicate-submit guard ────────────────────────────────────────────────
+  // A cold start can make a save feel stuck, so the user reloads and resubmits
+  // the same row (seen as two identical entries seconds apart); a double-tap can
+  // also fire twice. Fingerprint the payload and suppress an identical add seen
+  // within a short window. Shared, cross-execution CacheService = no schema change.
+  const cache = CacheService.getScriptCache();
+  const fp = [p.date, p.type, p.description, p.party,
+              parseFloat(p.amount) || 0, p.note]
+              .map(x => String(x == null ? '' : x).trim()).join('|');
+  const key = 'add_' + Utilities.base64EncodeWebSafe(
+              Utilities.computeDigest(Utilities.DigestAlgorithm.MD5, fp));
+  const seen = cache.get(key);
+  if (seen) {
+    return { status:'ok', id: seen, duplicate:true, message:'Duplicate suppressed — already saved.' };
+  }
+
   const id  = 'TX' + Date.now();
   const now = Utilities.formatDate(new Date(), 'Asia/Kolkata', 'dd-MMM-yyyy HH:mm:ss');
 
@@ -134,6 +156,7 @@ function addTransaction(p) {
     now
   ]);
 
+  cache.put(key, id, 90);   // 90-second idempotency window for this exact payload
   return { status:'ok', id: id, message:'Added successfully.' };
 }
 
