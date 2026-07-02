@@ -164,6 +164,12 @@ input:focus,select:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(0,19
 .table-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:0 0 var(--radius-lg) var(--radius-lg);overflow:hidden;margin-bottom:16px}
 .filter-row{display:flex;gap:8px;padding:10px 14px;border-bottom:1px solid var(--border);background:var(--bg3);flex-wrap:wrap}
 .filter-row select,.filter-row input{width:auto;font-size:13px;padding:6px 10px;background:var(--bg2)}
+.filter-summary{display:none;flex-wrap:wrap;align-items:center;gap:6px 18px;padding:9px 14px;border-bottom:1px solid var(--border);background:var(--bg2);font-size:13px}
+.filter-summary .fs-label{display:flex;align-items:center;gap:5px;color:var(--cyan);font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.filter-summary .fs-item{color:var(--text2);white-space:nowrap}
+.filter-summary .fs-item b{font-weight:700;margin-left:4px}
+.filter-summary .positive{color:var(--cyan)}
+.filter-summary .negative{color:var(--danger-text)}
 table{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed}
 th{padding:10px 13px;text-align:left;font-weight:600;font-size:11px;color:var(--cyan);border-bottom:1px solid var(--border);background:var(--black);text-transform:uppercase;letter-spacing:0.06em;font-family:var(--font)}
 td{padding:11px 13px;border-bottom:1px solid var(--border);vertical-align:middle;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--font)}
@@ -436,6 +442,13 @@ tr.row-editing td{background:var(--info-bg) !important}
         <option value="amount-desc">Amount ↓</option>
       </select>
       <input type="text" id="filterSearch" placeholder="Search..." oninput="render()" style="width:140px">
+    </div>
+    <div class="filter-summary" id="filterSummary">
+      <span class="fs-label" id="fsLabel"></span>
+      <span class="fs-item">Income <b class="amt-income" id="fsIncome">₹0</b></span>
+      <span class="fs-item">Expense <b class="amt-expense" id="fsExpense">₹0</b></span>
+      <span class="fs-item">Net <b id="fsNet">₹0</b></span>
+      <span class="fs-item">Entries <b id="fsCount">0</b></span>
     </div>
     <div style="overflow-x:auto">
       <table>
@@ -830,6 +843,22 @@ function render(){
   netEl.textContent=fmt(net); netEl.className='metric-value '+(net>=0?'positive':'negative');
   document.getElementById('sumCount').textContent=entries.length;
   document.getElementById('countBadge').textContent=list.length;
+  // summary of the filtered rows — shown whenever a search term or type filter is active
+  const fq=document.getElementById('filterSearch').value.trim(), fType=document.getElementById('filterType').value;
+  const fsBox=document.getElementById('filterSummary');
+  if(fq||fType!=='all'){
+    const fInc=list.filter(e=>e.type==='income').reduce((s,e)=>s+e.amount,0);
+    const fExp=list.filter(e=>e.type==='expense').reduce((s,e)=>s+e.amount,0);
+    const fNet=fInc-fExp;
+    const parts=[]; if(fq) parts.push(`&ldquo;${esc(fq)}&rdquo;`); if(fType!=='all') parts.push(fType==='income'?'Income only':'Expense only');
+    document.getElementById('fsLabel').innerHTML='<i class="ti ti-report-money"></i> Summary: '+parts.join(' &middot; ');
+    document.getElementById('fsIncome').textContent='+'+fmt(fInc);
+    document.getElementById('fsExpense').textContent='−'+fmt(fExp);
+    const fn=document.getElementById('fsNet');
+    fn.textContent=(fNet<0?'−':'')+fmt(Math.abs(fNet)); fn.className=fNet>=0?'positive':'negative';
+    document.getElementById('fsCount').textContent=list.length;
+    fsBox.style.display='flex';
+  } else fsBox.style.display='none';
   const pending=entries.filter(e=>e.note&&/pending|hold|balance/i.test(e.note));
   const ps=document.getElementById('pendingSection');
   if(pending.length){

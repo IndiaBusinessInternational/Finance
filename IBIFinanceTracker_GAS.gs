@@ -27,6 +27,10 @@
 //       shared CacheService — so a cold-start reload-and-resubmit or a double-tap can no
 //       longer create a second row. Frontend also adds an in-flight save guard. REQUIRES A
 //       REDEPLOY for the server-side guard to take effect (frontend guard works immediately).
+//       Also adds a search/filter summary bar (match Personal Transactions Tracker): while
+//       a search term or type filter is active, a bar under the filter row shows Income /
+//       Expense / Net / Entries for just the matching rows. PURE FRONTEND — no redeploy
+//       needed for this part.
 
 const SHEET_ID    = "1hbh5E9kzX4632d4kaMHLXC-Aqhi5exgEJWOxMtSrttE";
 const SHEET_NAME  = "Transactions";
