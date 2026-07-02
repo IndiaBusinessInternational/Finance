@@ -31,6 +31,9 @@
 //       a search term or type filter is active, a bar under the filter row shows Income /
 //       Expense / Net / Entries for just the matching rows. PURE FRONTEND — no redeploy
 //       needed for this part.
+//       Also: date fields open the native calendar from a click anywhere on the field
+//       (showPicker), and the calendar/dropdown widgets follow the app's dark/light theme
+//       (color-scheme). PURE FRONTEND — no redeploy needed for this part.
 
 const SHEET_ID    = "1hbh5E9kzX4632d4kaMHLXC-Aqhi5exgEJWOxMtSrttE";
 const SHEET_NAME  = "Transactions";

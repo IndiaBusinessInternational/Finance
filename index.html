@@ -51,6 +51,9 @@ body[data-theme="light"]{
 }
 
 html,body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
+/* Native widgets (date calendar, select dropdown) follow the app theme */
+body{color-scheme:dark}
+body[data-theme="light"]{color-scheme:light}
 
 /* ── TOPBAR ── */
 .topbar{background:var(--black);border-bottom:2px solid var(--cyan);position:sticky;top:0;z-index:200;padding:0 16px}
@@ -132,6 +135,9 @@ html,body{font-family:var(--font);background:var(--bg);color:var(--text);min-hei
 label{font-size:12px;color:var(--text2);font-weight:500;font-family:var(--font)}
 input,select{width:100%;padding:10px 12px;font-size:15px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg3);color:var(--text);outline:none;transition:border-color 0.15s;font-family:var(--font)}
 input:focus,select:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(0,197,255,0.12)}
+/* Date fields: theme-matched native calendar, visible indicator, whole field clickable */
+input[type="date"]{cursor:pointer}
+input[type="date"]::-webkit-calendar-picker-indicator{cursor:pointer;opacity:0.85}
 .type-toggle{display:flex;gap:8px}
 .type-btn{flex:1;padding:10px;font-size:13px;border:1px solid var(--border2);border-radius:var(--radius);background:transparent;color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;transition:all 0.15s;font-family:var(--font);font-weight:500}
 .type-btn.active-income{background:var(--success-bg);color:var(--success-text);border-color:var(--success-border)}
@@ -660,6 +666,13 @@ function setType(t){
 }
 function today(){ return new Date().toISOString().split('T')[0]; }
 document.getElementById('fDate').value = today();
+
+// Date fields: open the native calendar from a click/tap anywhere on the field,
+// not just the tiny indicator icon. showPicker needs a user gesture; browsers
+// without it (older Safari) keep their default behaviour via the try/catch.
+document.querySelectorAll('input[type="date"]').forEach(el=>{
+  el.addEventListener('click',()=>{ try{ if(el.showPicker) el.showPicker(); }catch(_){} });
+});
 
 // ── GAS — all via GET, with auto-retry on failure ──
 async function gasCall(params, retries=2, timeoutMs=20000){
