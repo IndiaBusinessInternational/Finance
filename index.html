@@ -306,7 +306,7 @@ tr.row-editing td{background:var(--info-bg) !important}
     <div class="topbar-left">
       <div class="ibi-logo"><span>IBI</span></div>
       <div>
-        <div class="app-name">IBI Finance Tracker <span class="ver-badge">v2.6</span></div>
+        <div class="app-name">IBI Finance Tracker <span class="ver-badge">v2.7</span></div>
       </div>
     </div>
     <div class="topbar-right">
@@ -482,7 +482,7 @@ tr.row-editing td{background:var(--info-bg) !important}
     </div>
   </div>
 
-  <div class="footer">IBI Finance Tracker v2.6 &mdash; India Business International &mdash; indiabusinessinternational@gmail.com</div>
+  <div class="footer">IBI Finance Tracker v2.7 &mdash; India Business International &mdash; indiabusinessinternational@gmail.com</div>
 </div>
 
 <!-- DRAWER MENU -->
@@ -501,7 +501,7 @@ tr.row-editing td{background:var(--info-bg) !important}
   <button class="drawer-item" onclick="toggleTheme();closeDrawer()"><i class="ti ti-sun"></i> Toggle Dark / Light Mode</button>
   <button class="drawer-item" id="drawerInstallBtn" style="display:none" onclick="triggerInstall();closeDrawer()"><i class="ti ti-device-mobile-down"></i> Install as App (PWA)</button>
   <div class="drawer-section-label">About</div>
-  <div class="drawer-item" style="cursor:default;color:var(--text2);font-size:12px"><i class="ti ti-info-circle"></i> Version 2.6 — June 2026</div>
+  <div class="drawer-item" style="cursor:default;color:var(--text2);font-size:12px"><i class="ti ti-info-circle"></i> Version 2.7 — July 2026</div>
 </div>
 
 <!-- REPORT MODAL -->
@@ -615,7 +615,7 @@ function openDrawer(){ document.getElementById('drawer').classList.add('open'); 
 function closeDrawer(){ document.getElementById('drawer').classList.remove('open'); document.getElementById('drawerOverlay').classList.remove('open'); }
 
 // ── UTILS ──
-function fmt(n){ return '₹' + Math.round(n).toLocaleString('en-IN'); }
+function fmt(n){ return '₹' + (Number(n)||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2}); }
 function fmtDate(s){
   if(!s) return '';
   try{
@@ -1010,7 +1010,7 @@ function generateReport(){
 function printReport(){
   if(!lastReport){ showToast('Generate a report first','error'); return; }
   const {p,incomes,expenses,tInc,tExp,net}=lastReport;
-  const M=n=>'₹'+Math.round(n).toLocaleString('en-IN');
+  const M=n=>'₹'+(Number(n)||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
   const genAt=new Date().toLocaleString('en-US',{timeZone:'Asia/Kolkata',day:'2-digit',month:'short',year:'numeric',weekday:'short',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true});
   const block=(rows,title,color)=>{
     if(!rows.length) return `<h3 style="color:${color};margin:16px 0 4px">${title}</h3><p style="color:#777;margin:0 0 12px">No entries in this period.</p>`;
