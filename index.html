@@ -321,7 +321,7 @@ tr.row-editing td{background:var(--info-bg) !important}
     <div class="topbar-left">
       <div class="ibi-logo"><span>IBI</span></div>
       <div>
-        <div class="app-name">IBI Finance Tracker <span class="ver-badge">v2.8</span></div>
+        <div class="app-name">IBI Finance Tracker <span class="ver-badge">v2.9</span></div>
       </div>
     </div>
     <div class="topbar-right">
@@ -497,7 +497,7 @@ tr.row-editing td{background:var(--info-bg) !important}
     </div>
   </div>
 
-  <div class="footer">IBI Finance Tracker v2.8 &mdash; India Business International &mdash; indiabusinessinternational@gmail.com</div>
+  <div class="footer">IBI Finance Tracker v2.9 &mdash; India Business International &mdash; indiabusinessinternational@gmail.com</div>
 </div>
 
 <!-- DRAWER MENU -->
@@ -540,6 +540,7 @@ tr.row-editing td{background:var(--info-bg) !important}
         <div class="form-group"><label for="rFrom">From Date</label><input type="date" id="rFrom"></div>
         <div class="form-group"><label for="rTo">To Date</label><input type="date" id="rTo"></div>
       </div>
+      <div class="form-group"><label for="rKeyword">Filter by keyword <span style="color:var(--text3);font-weight:400">— party / description (optional)</span></label><input type="text" id="rKeyword" placeholder="e.g. Amazon — leave blank for everything"></div>
       <button class="btn-save gen-btn" onclick="generateReport()"><i class="ti ti-file-analytics"></i> Generate Report</button>
     </div>
     <div id="reportOutput" class="report-output" style="display:none"></div>
@@ -952,6 +953,8 @@ function openReport(){
   const fEl=document.getElementById('rFrom'), tEl=document.getElementById('rTo');
   if(!fEl.value) fEl.value=`${d.getFullYear()}-${pad(d.getMonth()+1)}-01`; // 1st of this month
   if(!tEl.value) tEl.value=today();
+  const curSearch=document.getElementById('filterSearch').value.trim();
+  if(curSearch) document.getElementById('rKeyword').value=curSearch; // carry over whatever you were searching in the table
   document.getElementById('reportModal').classList.add('open');
   document.getElementById('reportOverlay').classList.add('open');
 }
@@ -987,7 +990,11 @@ function generateReport(){
   if(!p){ showToast('Pick a month/year, or both From & To dates','error'); return; }
   if(p.invalid){ showToast('“From” date must be on or before “To” date','error'); return; }
   const _ts=e=>{ const t=Date.parse(e.createdAt); if(!isNaN(t)) return t; const m=String(e.id||'').match(/(\d{10,})/); return m?+m[1]:0; };
-  const inRange=entries.filter(e=>{ const d=String(e.date||'').slice(0,10); return d>=p.from && d<=p.to; })
+  const kw=document.getElementById('rKeyword').value.trim();
+  if(kw) p.label += ` · “${kw}”`;   // reflect the keyword in the report title, print & CSV
+  const kwl=kw.toLowerCase();
+  const inRange=entries.filter(e=>{ const d=String(e.date||'').slice(0,10); if(d<p.from||d>p.to) return false;
+      return !kwl || `${e.description||''} ${e.party||''} ${e.note||''}`.toLowerCase().includes(kwl); })
     .sort((a,b)=>{ const d=(a.date||'').localeCompare(b.date||''); return d!==0?-d:-(_ts(a)-_ts(b)); });
   const incomes=inRange.filter(e=>e.type==='income'), expenses=inRange.filter(e=>e.type==='expense');
   const tInc=incomes.reduce((s,e)=>s+e.amount,0), tExp=expenses.reduce((s,e)=>s+e.amount,0), net=tInc-tExp;
