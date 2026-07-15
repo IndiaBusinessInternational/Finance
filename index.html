@@ -153,10 +153,12 @@ input:focus,select:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(0,19
 /* Date fields: theme-matched native calendar, visible indicator, whole field clickable */
 input[type="date"]{cursor:pointer}
 input[type="date"]::-webkit-calendar-picker-indicator{cursor:pointer;opacity:0.85}
-.type-toggle{display:flex;gap:8px}
+.type-toggle{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
 .type-btn{flex:1;padding:10px;font-size:13px;border:1px solid var(--border2);border-radius:var(--radius);background:transparent;color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;transition:all 0.15s;font-family:var(--font);font-weight:500}
 .type-btn.active-income{background:var(--success-bg);color:var(--success-text);border-color:var(--success-border)}
 .type-btn.active-expense{background:var(--danger-bg);color:var(--danger-text);border-color:var(--danger-border)}
+.type-btn.active-credit{background:var(--warning-bg);color:var(--warning-text);border-color:var(--warning-border)}
+.type-btn.active-settlement{background:var(--info-bg);color:var(--info-text);border-color:var(--info-border)}
 .btn-row{display:flex;gap:10px;margin-top:14px}
 .btn-save{flex:1;padding:12px;font-size:15px;font-weight:700;border:none;border-radius:var(--radius);background:var(--cyan);color:#000;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;transition:opacity 0.15s;font-family:var(--font)}
 .btn-save:hover{opacity:0.85}
@@ -176,6 +178,16 @@ input[type="date"]::-webkit-calendar-picker-indicator{cursor:pointer;opacity:0.8
 .s-btn:hover{border-color:var(--cyan);color:var(--cyan)}
 
 /* ── PENDING ── */
+.bal-section{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius);padding:12px 14px;margin-bottom:14px;display:none}
+.bal-title{font-weight:700;color:var(--cyan);margin-bottom:8px;font-size:13px;display:flex;align-items:center;gap:5px;font-family:var(--font)}
+.bal-item{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:7px 0;border-bottom:1px solid var(--border);font-size:12px}
+.bal-item:last-child{border-bottom:none}
+.bal-party{font-weight:600;color:var(--text)}
+.bal-sub{color:var(--text3);font-size:11px;margin-top:2px}
+.bal-amt{font-weight:700;white-space:nowrap;text-align:right}
+.bal-amt.due{color:var(--warning-text)}
+.bal-amt.settled{color:var(--success-text)}
+.bal-amt.advance{color:var(--info-text)}
 .pending-section{background:var(--warning-bg);border:1px solid var(--warning-border);border-radius:var(--radius);padding:12px 14px;margin-bottom:14px;display:none}
 .pending-title{font-weight:700;color:var(--warning-text);margin-bottom:8px;font-size:13px;display:flex;align-items:center;gap:5px;font-family:var(--font)}
 .pending-item{display:flex;justify-content:space-between;padding:5px 0;color:var(--warning-text);font-size:12px;border-bottom:1px solid var(--warning-border)}
@@ -200,8 +212,12 @@ tr.row-editing td{background:var(--info-bg) !important}
 .pill{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:3px 9px;border-radius:20px;font-weight:600;font-family:var(--font)}
 .pill.income{background:var(--success-bg);color:var(--success-text)}
 .pill.expense{background:var(--danger-bg);color:var(--danger-text)}
+.pill.credit{background:var(--warning-bg);color:var(--warning-text)}
+.pill.settlement{background:var(--info-bg);color:var(--info-text)}
 .amt-income{color:var(--success-text);font-weight:700}
 .amt-expense{color:var(--danger-text);font-weight:700}
+.amt-credit{color:var(--warning-text);font-weight:700}
+.amt-settlement{color:var(--info-text);font-weight:700}
 .action-btn{background:none;border:none;cursor:pointer;padding:6px 9px;border-radius:7px;font-size:17px;line-height:1;color:var(--text3)}
 .action-btn.edit:hover{color:var(--cyan);background:rgba(0,197,255,0.1)}
 .action-btn.del:hover{color:var(--danger-text);background:var(--danger-bg)}
@@ -287,6 +303,7 @@ tr.row-editing td{background:var(--info-bg) !important}
   input,select{font-size:16px;padding:11px 12px}
   .btn-save,.btn-clear{font-size:15px;padding:13px}
   .status-bar{border-radius:0;border-left:none;border-right:none;margin:0 0 10px;padding:8px 12px}
+  .bal-section{border-radius:0;border-left:none;border-right:none}
   .pending-section{border-radius:0;border-left:none;border-right:none;margin:0 0 10px}
   .table-wrap{border-radius:0;border-left:none;border-right:none}
   .filter-row{padding:8px 12px}
@@ -321,7 +338,7 @@ tr.row-editing td{background:var(--info-bg) !important}
     <div class="topbar-left">
       <div class="ibi-logo"><span>IBI</span></div>
       <div>
-        <div class="app-name">IBI Finance Tracker <span class="ver-badge">v2.9</span></div>
+        <div class="app-name">IBI Finance Tracker <span class="ver-badge">v3.0</span></div>
       </div>
     </div>
     <div class="topbar-right">
@@ -413,7 +430,10 @@ tr.row-editing td{background:var(--info-bg) !important}
         <div class="type-toggle">
           <button class="type-btn active-income" id="btnIncome" onclick="setType('income')"><i class="ti ti-arrow-down-circle"></i> Income</button>
           <button class="type-btn" id="btnExpense" onclick="setType('expense')"><i class="ti ti-arrow-up-circle"></i> Expense</button>
+          <button class="type-btn" id="btnCredit" onclick="setType('credit')" title="Taken now, not yet paid for — raises what you owe this party"><i class="ti ti-clock-dollar"></i> Credit (unpaid)</button>
+          <button class="type-btn" id="btnSettlement" onclick="setType('settlement')" title="Paying off what you already owe — clears the balance, not a new expense"><i class="ti ti-checkbox"></i> Settlement</button>
         </div>
+        <div id="typeHint" style="font-size:11px;color:var(--text3);margin-top:6px;line-height:1.4"></div>
       </div>
       <div class="form-group full">
         <label for="fDesc">Description / Particulars</label>
@@ -440,6 +460,12 @@ tr.row-editing td{background:var(--info-bg) !important}
     </div>
   </div>
 
+  <!-- PARTY BALANCES -->
+  <div id="balSection" class="bal-section">
+    <div class="bal-title"><i class="ti ti-scale"></i> Party Balances <span style="font-weight:400;color:var(--text3);font-size:11px">&mdash; credit taken minus settled</span></div>
+    <div id="balList"></div>
+  </div>
+
   <!-- PENDING -->
   <div id="pendingSection" class="pending-section">
     <div class="pending-title"><i class="ti ti-alert-circle"></i> Pending / On Hold</div>
@@ -456,6 +482,8 @@ tr.row-editing td{background:var(--info-bg) !important}
         <option value="all">All types</option>
         <option value="income">Income</option>
         <option value="expense">Expense</option>
+        <option value="credit">Credit (unpaid)</option>
+        <option value="settlement">Settlement</option>
       </select>
       <select id="filterSort" onchange="render()">
         <option value="date-desc">Date ↓ (newest first)</option>
@@ -468,6 +496,7 @@ tr.row-editing td{background:var(--info-bg) !important}
       <span class="fs-label" id="fsLabel"></span>
       <span class="fs-item">Income <b class="amt-income" id="fsIncome">₹0</b></span>
       <span class="fs-item">Expense <b class="amt-expense" id="fsExpense">₹0</b></span>
+      <span class="fs-item" id="fsSettled" style="display:none">Settled <b class="amt-settlement" id="fsSettledVal">₹0</b></span>
       <span class="fs-item">Net <b id="fsNet">₹0</b></span>
       <span class="fs-item">Entries <b id="fsCount">0</b></span>
     </div>
@@ -497,7 +526,7 @@ tr.row-editing td{background:var(--info-bg) !important}
     </div>
   </div>
 
-  <div class="footer">IBI Finance Tracker v2.9 &mdash; India Business International &mdash; indiabusinessinternational@gmail.com</div>
+  <div class="footer">IBI Finance Tracker v3.0 &mdash; India Business International &mdash; indiabusinessinternational@gmail.com</div>
 </div>
 
 <!-- DRAWER MENU -->
@@ -557,6 +586,93 @@ tr.row-editing td{background:var(--info-bg) !important}
 const GAS_URL = "https://script.google.com/macros/s/AKfycbxosA5MhEcSAIx68X2iOjF7psh1Iie3QlgTJHzy1V7Fwi2MJJlhqt0vROs-csoqpgAs/exec";
 let entries   = [];
 let txType    = 'income';
+
+/* ── TRANSACTION TYPES (v3.0) ──────────────────────────────────────────────
+   income     — money in.
+   expense    — money out, paid on the spot.
+   credit     — taken/billed now, NOT paid for yet (supplier bought on
+                account). A real expense on the day it happens, so it counts
+                in the Expense total; it also raises what is owed to that
+                party until settled.
+   settlement — money paid to clear what is already owed. It is NOT a second
+                expense: the expense was booked by the credit entries. Paying
+                a supplier Rs.825 against Rs.825 of credit must not add
+                Rs.825 to spend again — it only takes the balance to zero.
+   The Sheet's Type column stores these verbatim (the GAS writes p.type
+   through as-is, no whitelist), so no backend redeploy was needed. Entries
+   written before v3.0 are all income/expense and behave exactly as before. */
+const isIncomeT = e => e.type === 'income';
+const isCreditT = e => e.type === 'credit';
+const isSettleT = e => e.type === 'settlement';
+// Both cash expenses and credit purchases are real spend — the only
+// difference is whether the money has left yet.
+const isExpenseT = e => e.type === 'expense' || e.type === 'credit';
+const TYPE_META = {
+  income:     { label:'Income',     icon:'ti-arrow-down-circle', sign:'+' },
+  expense:    { label:'Expense',    icon:'ti-arrow-up-circle',   sign:'−' },
+  credit:     { label:'Credit',     icon:'ti-clock-dollar',      sign:'−' },
+  settlement: { label:'Settlement', icon:'ti-checkbox',          sign:'−' }
+};
+const PARTY_LABEL = { income:'Received from', expense:'Paid to', credit:'Owed to', settlement:'Paid to' };
+const TYPE_HINT = {
+  income:     '',
+  expense:    'Paid on the spot.',
+  credit:     'Taken now, not paid yet — counts as spend today and raises what you owe this party.',
+  settlement: 'Clears what you already owe. Not counted as spend again — the credit entries already did that.'
+};
+
+/* The Type column is plain text in the Sheet and is routinely typed by hand
+   there (that is how rows get re-classed in bulk). "Credit", " SETTLEMENT ",
+   "Credits" must therefore all land on the canonical value — otherwise the
+   row silently fails every e.type check and renders as a plain expense, which
+   is exactly the double-count this release exists to kill. Anything we still
+   don't recognise stays as typed and is treated as an expense by isExpenseT,
+   i.e. the pre-v3.0 behaviour. */
+function normType(e){
+  const t = String(e.type||'').trim().toLowerCase().replace(/s$/,'');
+  const canon = { income:'income', expense:'expense', credit:'credit', settlement:'settlement',
+                  unpaid:'credit', due:'credit', settle:'settlement', payment:'settlement' }[t];
+  return canon ? { ...e, type:canon } : e;
+}
+
+/* Outstanding per party = credit taken − settled. Only credit/settlement
+   rows take part: a plain cash expense is square the moment it happens, so it
+   must never look like something owed. */
+function partyBalances(){
+  const m = new Map();
+  entries.forEach(e => {
+    if(!isCreditT(e) && !isSettleT(e)) return;
+    const name = String(e.party||'').trim();
+    if(!name) return;
+    const k = name.toLowerCase();
+    const r = m.get(k) || { party:name, credit:0, paid:0, last:'' };
+    if(isCreditT(e)) r.credit += e.amount; else r.paid += e.amount;
+    if((e.date||'') > r.last) r.last = e.date||'';
+    m.set(k, r);
+  });
+  return [...m.values()]
+    .map(r => ({ ...r, balance: +(r.credit - r.paid).toFixed(2) }))
+    .sort((a,b) => Math.abs(b.balance) - Math.abs(a.balance) || a.party.localeCompare(b.party));
+}
+
+function renderBalances(){
+  const rows = partyBalances(), box = document.getElementById('balSection');
+  if(!rows.length){ box.style.display='none'; return; }
+  box.style.display='block';
+  document.getElementById('balList').innerHTML = rows.map(r => {
+    const cls  = r.balance > 0 ? 'due' : (r.balance < 0 ? 'advance' : 'settled');
+    const txt  = r.balance > 0 ? fmt(r.balance) + ' due'
+               : r.balance < 0 ? fmt(Math.abs(r.balance)) + ' advance'
+               : '₹0 · settled ✓';
+    return `<div class="bal-item">
+      <div style="min-width:0">
+        <div class="bal-party">${esc(r.party)}</div>
+        <div class="bal-sub">Credit ${fmt(r.credit)} − paid ${fmt(r.paid)}${r.last?' · last entry '+fmtDate(r.last):''}</div>
+      </div>
+      <div class="bal-amt ${cls}">${txt}</div>
+    </div>`;
+  }).join('');
+}
 let editingId = null;
 let _saving   = false;   // re-entrancy guard — blocks a second save while one is in flight
 let deferredPrompt = null;
@@ -675,10 +791,14 @@ function showToast(msg, type='success'){
   setTimeout(() => t.className = 'toast ' + type, 3200);
 }
 function setType(t){
+  if(!TYPE_META[t]) t = 'income';
   txType = t;
-  document.getElementById('btnIncome').className  = 'type-btn' + (t==='income'  ? ' active-income'  : '');
-  document.getElementById('btnExpense').className = 'type-btn' + (t==='expense' ? ' active-expense' : '');
-  document.getElementById('partyLabel').textContent = t==='income' ? 'Received from' : 'Paid to';
+  [['btnIncome','income'],['btnExpense','expense'],['btnCredit','credit'],['btnSettlement','settlement']]
+    .forEach(([id,kind]) => {
+      document.getElementById(id).className = 'type-btn' + (t===kind ? ' active-'+kind : '');
+    });
+  document.getElementById('partyLabel').textContent = PARTY_LABEL[t] || 'Paid to';
+  document.getElementById('typeHint').textContent   = TYPE_HINT[t] || '';
 }
 function today(){ return new Date().toISOString().split('T')[0]; }
 document.getElementById('fDate').value = today();
@@ -717,7 +837,7 @@ async function loadAll(){
   document.getElementById('txBody').innerHTML            = '';
   try{
     const data = await gasCall({action:'getAll'});
-    if(data.status==='ok'){ entries=data.transactions||[]; setStatus(true,'Connected — Google Drive'); render(); }
+    if(data.status==='ok'){ entries=(data.transactions||[]).map(normType); setStatus(true,'Connected — Google Drive'); render(); }
     else{ setStatus(false,'Error: '+data.message); showToast('Load failed','error'); }
   }catch(e){ setStatus(false,'Connection failed'); showToast('Cannot reach Google Drive','error'); console.error(e); }
   document.getElementById('loadingState').style.display = 'none';
@@ -863,8 +983,10 @@ function filtered(){
 
 function render(){
   const list=filtered(), body=document.getElementById('txBody'), empty=document.getElementById('emptyState');
-  const income=entries.filter(e=>e.type==='income').reduce((s,e)=>s+e.amount,0);
-  const expense=entries.filter(e=>e.type==='expense').reduce((s,e)=>s+e.amount,0);
+  const income=entries.filter(isIncomeT).reduce((s,e)=>s+e.amount,0);
+  // Expense = cash expenses + credit purchases. Settlements are deliberately
+  // excluded: they pay off credit that was already counted here.
+  const expense=entries.filter(isExpenseT).reduce((s,e)=>s+e.amount,0);
   const net=income-expense;
   document.getElementById('sumIncome').textContent=fmt(income);
   document.getElementById('sumExpense').textContent=fmt(expense);
@@ -876,10 +998,15 @@ function render(){
   const fq=document.getElementById('filterSearch').value.trim(), fType=document.getElementById('filterType').value;
   const fsBox=document.getElementById('filterSummary');
   if(fq||fType!=='all'){
-    const fInc=list.filter(e=>e.type==='income').reduce((s,e)=>s+e.amount,0);
-    const fExp=list.filter(e=>e.type==='expense').reduce((s,e)=>s+e.amount,0);
+    const fInc=list.filter(isIncomeT).reduce((s,e)=>s+e.amount,0);
+    const fExp=list.filter(isExpenseT).reduce((s,e)=>s+e.amount,0);
+    const fSet=list.filter(isSettleT).reduce((s,e)=>s+e.amount,0);
+    // Settled money is shown apart from spend so the two can never read as one total.
+    document.getElementById('fsSettled').style.display = fSet ? '' : 'none';
+    document.getElementById('fsSettledVal').textContent = fmt(fSet);
     const fNet=fInc-fExp;
-    const parts=[]; if(fq) parts.push(`&ldquo;${esc(fq)}&rdquo;`); if(fType!=='all') parts.push(fType==='income'?'Income only':'Expense only');
+    const parts=[]; if(fq) parts.push(`&ldquo;${esc(fq)}&rdquo;`);
+    if(fType!=='all') parts.push({income:'Income only',expense:'Expense only',credit:'Credit only',settlement:'Settlements only'}[fType]||fType);
     document.getElementById('fsLabel').innerHTML='<i class="ti ti-report-money"></i> Summary: '+parts.join(' &middot; ');
     document.getElementById('fsIncome').textContent='+'+fmt(fInc);
     document.getElementById('fsExpense').textContent='−'+fmt(fExp);
@@ -888,6 +1015,7 @@ function render(){
     document.getElementById('fsCount').textContent=list.length;
     fsBox.style.display='flex';
   } else fsBox.style.display='none';
+  renderBalances();
   const pending=entries.filter(e=>e.note&&/pending|hold|balance/i.test(e.note));
   const ps=document.getElementById('pendingSection');
   if(pending.length){
@@ -902,10 +1030,10 @@ function render(){
     <tr class="${editingId===e.id?'row-editing':''}">
       <td style="color:var(--text2)">${i+1}</td>
       <td class="dt-cell" style="color:var(--text2);font-size:12px"><div>${dt.date}</div>${dt.sub?`<div class="dt-sub">${dt.sub}</div>`:''}</td>
-      <td><span class="pill ${e.type}">${e.type==='income'?'<i class="ti ti-arrow-down-circle"></i> Income':'<i class="ti ti-arrow-up-circle"></i> Expense'}</span></td>
+      <td><span class="pill ${e.type}">${(m=>`<i class="ti ${m.icon}"></i> ${m.label}`)(TYPE_META[e.type]||TYPE_META.expense)}</span></td>
       <td title="${e.description}">${e.description}</td>
       <td title="${e.party||''}" style="color:var(--text2)">${e.party||'—'}</td>
-      <td style="text-align:right" class="amt-${e.type}">${e.type==='income'?'+':'−'}${fmt(e.amount)}</td>
+      <td style="text-align:right" class="amt-${e.type}">${(TYPE_META[e.type]||TYPE_META.expense).sign}${fmt(e.amount)}</td>
       <td style="color:var(--text2);font-size:12px;font-style:italic" title="${e.note||''}">${e.note||'—'}</td>
       <td><div class="action-cell">
         <button class="action-btn edit" onclick="startEdit('${e.id}')" title="Edit"><i class="ti ti-pencil"></i></button>
@@ -920,8 +1048,8 @@ function exportCSV(){
   const sorted=[...entries].sort((a,b)=>(a.date||'').localeCompare(b.date||''));
   const rows=[['#','Date & Time','Type','Description','Party','Amount','Note']];
   sorted.forEach((e,i)=>rows.push([i+1,fmtDTLine(e),e.type,e.description,e.party,e.amount,e.note||'']));
-  const income=entries.filter(e=>e.type==='income').reduce((s,e)=>s+e.amount,0);
-  const expense=entries.filter(e=>e.type==='expense').reduce((s,e)=>s+e.amount,0);
+  const income=entries.filter(isIncomeT).reduce((s,e)=>s+e.amount,0);
+  const expense=entries.filter(isExpenseT).reduce((s,e)=>s+e.amount,0);
   rows.push([],[' ',' ',' ',' ','Total Income',income,''],[' ',' ',' ',' ','Total Expense',expense,''],[' ',' ',' ',' ','Net Balance',income-expense,'']);
   const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"` ).join(',')).join('\n');
   const a=document.createElement('a');
@@ -996,9 +1124,13 @@ function generateReport(){
   const inRange=entries.filter(e=>{ const d=String(e.date||'').slice(0,10); if(d<p.from||d>p.to) return false;
       return !kwl || `${e.description||''} ${e.party||''} ${e.note||''}`.toLowerCase().includes(kwl); })
     .sort((a,b)=>{ const d=(a.date||'').localeCompare(b.date||''); return d!==0?-d:-(_ts(a)-_ts(b)); });
-  const incomes=inRange.filter(e=>e.type==='income'), expenses=inRange.filter(e=>e.type==='expense');
+  const incomes=inRange.filter(isIncomeT), expenses=inRange.filter(isExpenseT);
+  // Settlements are money out, but the spend was already booked by the credit
+  // rows they pay off — so they are reported on their own, never added to tExp.
+  const settles=inRange.filter(isSettleT);
+  const tSet=settles.reduce((s,e)=>s+e.amount,0);
   const tInc=incomes.reduce((s,e)=>s+e.amount,0), tExp=expenses.reduce((s,e)=>s+e.amount,0), net=tInc-tExp;
-  lastReport={p,inRange,incomes,expenses,tInc,tExp,net};
+  lastReport={p,inRange,incomes,expenses,settles,tInc,tExp,tSet,net};
 
   const out=document.getElementById('reportOutput');
   if(!inRange.length){
@@ -1023,15 +1155,26 @@ function generateReport(){
     </div>
     <div class="rep-section-title" style="color:var(--success-text)"><i class="ti ti-arrow-down-circle"></i> Income</div>
     ${sec(incomes,'income')}
-    <div class="rep-section-title" style="color:var(--danger-text)"><i class="ti ti-arrow-up-circle"></i> Expense</div>
-    ${sec(expenses,'expense')}`;
+    <div class="rep-section-title" style="color:var(--danger-text)"><i class="ti ti-arrow-up-circle"></i> Expense <span style="font-weight:400;color:var(--text3);font-size:11px">— paid on the spot + taken on credit</span></div>
+    ${sec(expenses,'expense')}
+    ${settles.length ? `<div class="rep-section-title" style="color:var(--info-text)"><i class="ti ti-checkbox"></i> Settlements <span style="font-weight:400;color:var(--text3);font-size:11px">— paying off credit; already counted above, so not added again</span></div>
+    ${sec(settles,'settlement')}` : ''}
+    ${(() => {
+      const bals = partyBalances();
+      if(!bals.length) return '';
+      return `<div class="rep-section-title" style="color:var(--cyan)"><i class="ti ti-scale"></i> Party Balances <span style="font-weight:400;color:var(--text3);font-size:11px">— as on date, all time</span></div>
+        <table class="rep-table"><thead><tr><th>Party</th><th style="width:92px;text-align:right">Credit</th><th style="width:92px;text-align:right">Paid</th><th style="width:110px;text-align:right">Balance</th></tr></thead><tbody>`
+        + bals.map(r => `<tr><td>${esc(r.party)}</td><td style="text-align:right">${fmt(r.credit)}</td><td style="text-align:right">${fmt(r.paid)}</td><td style="text-align:right;font-weight:700;color:${r.balance>0?'var(--warning-text)':(r.balance<0?'var(--info-text)':'var(--success-text)')}">${r.balance===0?'₹0 · settled ✓':fmt(Math.abs(r.balance))+(r.balance>0?' due':' advance')}</td></tr>`).join('')
+        + `</tbody></table>`;
+    })()}`;
   out.style.display='block';
   document.getElementById('reportActions').style.display='flex';
 }
 
 function printReport(){
   if(!lastReport){ showToast('Generate a report first','error'); return; }
-  const {p,incomes,expenses,tInc,tExp,net}=lastReport;
+  const {p,incomes,expenses,settles=[],tInc,tExp,tSet=0,net}=lastReport;
+  const bals=partyBalances();
   const M=n=>'₹'+(Number(n)||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
   const genAt=new Date().toLocaleString('en-US',{timeZone:'Asia/Kolkata',day:'2-digit',month:'short',year:'numeric',weekday:'short',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true});
   const block=(rows,title,color)=>{
@@ -1076,7 +1219,12 @@ function printReport(){
       <div class="card"><div class="l">Net Balance</div><div class="v" style="color:${net>=0?'#0086ad':'#b11'}">${M(net)}</div></div>
     </div>
     ${block(incomes,'Income','#1a7d1a')}
-    ${block(expenses,'Expense','#b11')}
+    ${block(expenses,'Expense (paid on the spot + taken on credit)','#b11')}
+    ${settles.length?block(settles,'Settlements (paying off credit — already counted under Expense, not added again)','#0086ad'):''}
+    ${bals.length?`<h3 style="color:#0086ad;margin:16px 0 6px">Party Balances (as on date)</h3>
+      <table><thead><tr><th>Party</th><th class="r">Credit</th><th class="r">Paid</th><th class="r">Balance</th></tr></thead><tbody>`
+      +bals.map(r=>`<tr><td>${esc(r.party)}</td><td class="r">${M(r.credit)}</td><td class="r">${M(r.paid)}</td><td class="r" style="font-weight:700;color:${r.balance>0?'#b11':'#1a7d1a'}">${r.balance===0?'₹0.00 — settled':M(Math.abs(r.balance))+(r.balance>0?' due':' advance')}</td></tr>`).join('')
+      +`</tbody></table>`:''}
     <div class="net">Net Balance: <span style="color:${net>=0?'#0086ad':'#b11'}">${M(net)}</span></div>
     <div class="foot"><span>Generated ${esc(genAt)} IST</span><span>indiabusinessinternational@gmail.com</span></div>
   </body></html>`;
@@ -1088,7 +1236,7 @@ function printReport(){
 
 function downloadReportCSV(){
   if(!lastReport){ showToast('Generate a report first','error'); return; }
-  const {p,incomes,expenses,tInc,tExp,net}=lastReport;
+  const {p,incomes,expenses,settles=[],tInc,tExp,tSet=0,net}=lastReport;
   const rows=[
     ['IBI Finance Tracker — Income & Expenditure Report'],
     ['Period', p.label],
@@ -1103,6 +1251,20 @@ function downloadReportCSV(){
   rows.push(['EXPENSE'],['#','Date & Time','Description','Party','Amount','Note']);
   expenses.forEach(e=>rows.push([++i,fmtDTLine(e),e.description,e.party,e.amount,e.note||'']));
   rows.push([' ',' ',' ','Total Expense',tExp,''],[]);
+  if(settles.length){
+    i=0;
+    rows.push(['SETTLEMENTS — paying off credit already counted under Expense; not added again'],
+              ['#','Date & Time','Description','Party','Amount','Note']);
+    settles.forEach(e=>rows.push([++i,fmtDTLine(e),e.description,e.party,e.amount,e.note||'']));
+    rows.push([' ',' ',' ','Total Settled',tSet,''],[]);
+  }
+  const bals=partyBalances();
+  if(bals.length){
+    rows.push(['PARTY BALANCES (as on date)'],['Party','Credit','Paid','Balance','Status']);
+    bals.forEach(r=>rows.push([r.party,r.credit,r.paid,Math.abs(r.balance),
+      r.balance===0?'Settled':(r.balance>0?'Due':'Advance')]));
+    rows.push([]);
+  }
   rows.push([' ',' ',' ','Net Balance',net,'']);
   const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
   const a=document.createElement('a');
