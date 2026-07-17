@@ -338,7 +338,7 @@ tr.row-editing td{background:var(--info-bg) !important}
     <div class="topbar-left">
       <div class="ibi-logo"><span>IBI</span></div>
       <div>
-        <div class="app-name">IBI Finance Tracker <span class="ver-badge">v3.0</span></div>
+        <div class="app-name">IBI Finance Tracker <span class="ver-badge">v3.1</span></div>
       </div>
     </div>
     <div class="topbar-right">
@@ -497,7 +497,7 @@ tr.row-editing td{background:var(--info-bg) !important}
       <span class="fs-item">Income <b class="amt-income" id="fsIncome">₹0</b></span>
       <span class="fs-item">Expense <b class="amt-expense" id="fsExpense">₹0</b></span>
       <span class="fs-item" id="fsSettled" style="display:none">Settled <b class="amt-settlement" id="fsSettledVal">₹0</b></span>
-      <span class="fs-item">Net <b id="fsNet">₹0</b></span>
+      <span class="fs-item" id="fsNetItem" title="Net position after payments = Income − Expense + Settled"><span id="fsNetLabel">Net</span> <b id="fsNet">₹0</b></span>
       <span class="fs-item">Entries <b id="fsCount">0</b></span>
     </div>
     <div style="overflow-x:auto">
@@ -526,7 +526,7 @@ tr.row-editing td{background:var(--info-bg) !important}
     </div>
   </div>
 
-  <div class="footer">IBI Finance Tracker v3.0 &mdash; India Business International &mdash; indiabusinessinternational@gmail.com</div>
+  <div class="footer">IBI Finance Tracker v3.1 &mdash; India Business International &mdash; indiabusinessinternational@gmail.com</div>
 </div>
 
 <!-- DRAWER MENU -->
@@ -545,7 +545,7 @@ tr.row-editing td{background:var(--info-bg) !important}
   <button class="drawer-item" onclick="toggleTheme();closeDrawer()"><i class="ti ti-sun"></i> Toggle Dark / Light Mode</button>
   <button class="drawer-item" id="drawerInstallBtn" style="display:none" onclick="triggerInstall();closeDrawer()"><i class="ti ti-device-mobile-down"></i> Install as App (PWA)</button>
   <div class="drawer-section-label">About</div>
-  <div class="drawer-item" style="cursor:default;color:var(--text2);font-size:12px"><i class="ti ti-info-circle"></i> Version 3.0 — July 2026</div>
+  <div class="drawer-item" style="cursor:default;color:var(--text2);font-size:12px"><i class="ti ti-info-circle"></i> Version 3.1 — July 2026</div>
 </div>
 
 <!-- REPORT MODAL -->
@@ -1004,7 +1004,11 @@ function render(){
     // Settled money is shown apart from spend so the two can never read as one total.
     document.getElementById('fsSettled').style.display = fSet ? '' : 'none';
     document.getElementById('fsSettledVal').textContent = fmt(fSet);
-    const fNet=fInc-fExp;
+    // Net here = what's still owed after payments: income − expense + money already settled.
+    // Settlements pay down credit that's already inside fExp, so adding them back gives the
+    // live outstanding position. It only equals fExp when nothing has been settled, so the
+    // figure stops merely echoing Expense.
+    const fNet=fInc-fExp+fSet;
     const parts=[]; if(fq) parts.push(`&ldquo;${esc(fq)}&rdquo;`);
     if(fType!=='all') parts.push({income:'Income only',expense:'Expense only',credit:'Credit only',settlement:'Settlements only'}[fType]||fType);
     document.getElementById('fsLabel').innerHTML='<i class="ti ti-report-money"></i> Summary: '+parts.join(' &middot; ');
@@ -1012,6 +1016,8 @@ function render(){
     document.getElementById('fsExpense').textContent='−'+fmt(fExp);
     const fn=document.getElementById('fsNet');
     fn.textContent=(fNet<0?'−':'')+fmt(Math.abs(fNet)); fn.className=fNet>=0?'positive':'negative';
+    // When money has been settled, the figure is the balance still owed — label it so.
+    document.getElementById('fsNetLabel').textContent = fSet ? 'Net owing' : 'Net';
     document.getElementById('fsCount').textContent=list.length;
     fsBox.style.display='flex';
   } else fsBox.style.display='none';
