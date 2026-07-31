@@ -438,7 +438,7 @@ tr.row-editing td{background:var(--info-bg) !important}
     <div class="topbar-left">
       <div class="ibi-logo"><span>IBI</span></div>
       <div>
-        <div class="app-name">IBI Finance Tracker <span class="ver-badge">v4.2</span></div>
+        <div class="app-name">IBI Finance Tracker <span class="ver-badge">v4.3</span></div>
       </div>
     </div>
     <div class="topbar-right">
@@ -627,7 +627,7 @@ tr.row-editing td{background:var(--info-bg) !important}
     </div>
   </div>
 
-  <div class="footer">IBI Finance Tracker v4.2 &mdash; India Business International &mdash; indiabusinessinternational@gmail.com</div>
+  <div class="footer">IBI Finance Tracker v4.3 &mdash; India Business International &mdash; indiabusinessinternational@gmail.com</div>
 </div>
 
 <!-- DRAWER MENU -->
@@ -647,7 +647,7 @@ tr.row-editing td{background:var(--info-bg) !important}
   <button class="drawer-item" onclick="toggleTheme();closeDrawer()"><i class="ti ti-sun"></i> Toggle Dark / Light Mode</button>
   <button class="drawer-item" id="drawerInstallBtn" style="display:none" onclick="triggerInstall();closeDrawer()"><i class="ti ti-device-mobile-down"></i> Install as App (PWA)</button>
   <div class="drawer-section-label">About</div>
-  <div class="drawer-item" style="cursor:default;color:var(--text2);font-size:12px"><i class="ti ti-info-circle"></i> Version 4.2 — July 2026</div>
+  <div class="drawer-item" style="cursor:default;color:var(--text2);font-size:12px"><i class="ti ti-info-circle"></i> Version 4.3 — July 2026</div>
 </div>
 
 <!-- REPORT MODAL -->
@@ -679,6 +679,12 @@ tr.row-editing td{background:var(--info-bg) !important}
       <div class="rep-fieldset">
         <div class="rf-legend"><i class="ti ti-filter"></i> Filters</div>
         <div>
+          <label style="display:block;margin-bottom:6px">Show me <span style="color:var(--text3);font-weight:400">— one tap</span></label>
+          <div class="chip-row" style="margin-bottom:10px">
+            <button class="chip" onclick="setRepTypes(['income'])"><i class="ti ti-arrow-down-circle"></i> Revenue only</button>
+            <button class="chip" onclick="setRepTypes(['expense','credit'])"><i class="ti ti-arrow-up-circle"></i> Spending only</button>
+            <button class="chip" onclick="setRepTypes(['income','expense','credit','settlement'])"><i class="ti ti-list"></i> Everything</button>
+          </div>
           <label style="display:block;margin-bottom:6px">Transaction type <span style="color:var(--text3);font-weight:400">— tap to include / exclude</span></label>
           <div class="chip-row" id="rTypes">
             <button class="chip on c-income"     data-t="income"     onclick="toggleRepType('income')"><i class="ti ti-arrow-down-circle"></i> Income</button>
@@ -693,7 +699,13 @@ tr.row-editing td{background:var(--info-bg) !important}
           <div class="form-group"><label for="rMin">Amount from (₹)</label><input type="number" id="rMin" placeholder="min" inputmode="decimal"></div>
           <div class="form-group"><label for="rMax">Amount to (₹)</label><input type="number" id="rMax" placeholder="max" inputmode="decimal"></div>
         </div>
-        <div class="form-group"><label for="rKeyword">Keyword <span style="color:var(--text3);font-weight:400">— description / party / note</span></label><input type="text" id="rKeyword" placeholder="e.g. Amazon — leave blank for everything"></div>
+        <div class="form-group"><label for="rKeyword">Keyword <span style="color:var(--text3);font-weight:400">— searches the words in your entries, not the type</span></label>
+          <input type="text" id="rKeyword" placeholder="e.g. Amazon — leave blank for everything">
+          <div id="rKwCarry" style="display:none;font-size:11px;color:var(--warning-text);margin-top:5px;line-height:1.5">
+            <i class="ti ti-info-circle"></i> Carried over from the search box on the main table.
+            <b style="cursor:pointer;text-decoration:underline" onclick="clearRepKeyword()">Clear it</b>
+          </div>
+        </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <button class="chip" onclick="resetReportFilters()"><i class="ti ti-rotate"></i> Reset filters</button>
         </div>
@@ -1443,6 +1455,25 @@ function previousPeriod(p){
 }
 
 /* ── FILTERS ───────────────────────────────────────────────────────────── */
+/* One tap for the question people actually ask: "what did I earn in July?"
+   Answering that used to mean unticking three chips and noticing that a
+   stale keyword was still in the box. */
+/* Is a report on screen? NOT "is lastReport set" — an empty result clears
+   lastReport, which is exactly when the one-tap fixes need to re-run. */
+function repShowing(){
+  const o=document.getElementById('reportOutput');
+  return !!o && o.style.display !== 'none';
+}
+function setRepTypes(list){
+  repTypes = new Set(list);
+  document.querySelectorAll('#rTypes .chip').forEach(c=>c.classList.toggle('on', repTypes.has(c.dataset.t)));
+  if(repShowing()) generateReport();
+}
+function clearRepKeyword(){
+  document.getElementById('rKeyword').value='';
+  const n=document.getElementById('rKwCarry'); if(n) n.style.display='none';
+  if(repShowing()) generateReport();
+}
 function toggleRepType(t){
   if(repTypes.has(t)){ if(repTypes.size===1){ showToast('Keep at least one type selected','error'); return; } repTypes.delete(t); }
   else repTypes.add(t);
@@ -1462,13 +1493,18 @@ function resetReportFilters(){
   ['rParty','rCategory','rMin','rMax','rKeyword'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
   showToast('Filters reset');
 }
-function nonDateFilter(){
-  const kwl   = _v('rKeyword').trim().toLowerCase();
-  const party = _v('rParty').trim().toLowerCase();
-  const cat   = _v('rCategory');
-  const min   = parseFloat(_v('rMin')), max = parseFloat(_v('rMax'));
+/* `skip` lets the empty-state diagnosis re-run the query with one filter
+   switched off, so it can name the filter that is actually hiding everything
+   instead of telling you to go and try things. */
+function nonDateFilter(skip){
+  skip = skip || {};
+  const kwl   = skip.kw    ? '' : _v('rKeyword').trim().toLowerCase();
+  const party = skip.party ? '' : _v('rParty').trim().toLowerCase();
+  const cat   = skip.cat   ? '' : _v('rCategory');
+  const min   = skip.amt ? NaN : parseFloat(_v('rMin')), max = skip.amt ? NaN : parseFloat(_v('rMax'));
+  const types = skip.types ? null : repTypes;
   return e => {
-    if(!repTypes.has(canonT(e))) return false;
+    if(types && !types.has(canonT(e))) return false;
     if(party && String(e.party||'').trim().toLowerCase() !== party) return false;
     if(cat && categoryOf(e) !== cat) return false;
     const amt = Number(e.amount)||0;
@@ -1702,8 +1738,12 @@ function openReport(){
   const fEl=document.getElementById('rFrom'), tEl=document.getElementById('rTo');
   if(!fEl.value) fEl.value=`${d.getFullYear()}-${pad(d.getMonth()+1)}-01`;
   if(!tEl.value) tEl.value=today();
+  // Carrying the table's search term over is convenient, but a stale one
+  // silently empties the report — so say where it came from and offer a clear.
   const curSearch=document.getElementById('filterSearch').value.trim();
-  if(curSearch) document.getElementById('rKeyword').value=curSearch;   // carry over the table search
+  const kwEl=document.getElementById('rKeyword'), carry=document.getElementById('rKwCarry');
+  if(curSearch && !kwEl.value) kwEl.value=curSearch;
+  if(carry) carry.style.display = (kwEl.value && kwEl.value===curSearch) ? 'block' : 'none';
   const curType=document.getElementById('filterType').value;           // ...and the table's type filter
   if(curType && curType!=='all'){ repTypes=new Set([curType]);
     document.querySelectorAll('#rTypes .chip').forEach(c=>c.classList.toggle('on', repTypes.has(c.dataset.t))); }
@@ -1811,6 +1851,45 @@ function buildInsights(cur, prev, expByParty, expByCat, ageing, buckets){
   return out;
 }
 
+/* An empty report is nearly always ONE filter doing the damage — most often a
+   keyword left in the box from an earlier search. Rather than listing things
+   to try, re-run the query with each active filter switched off in turn and
+   name the one that is responsible, with a button that fixes it. */
+function diagnoseEmpty(p){
+  const count = pass => entries.filter(e=>{ const d=String(e.date||'').slice(0,10);
+    return d>=p.from && d<=p.to && pass(e); }).length;
+  const inPeriod = count(()=>true);
+  if(!inPeriod) return `<div class="rep-empty"><i class="ti ti-calendar-off"></i>
+    There are no transactions at all between ${esc(fmtDate(p.from))} and ${esc(fmtDate(p.to))}.
+    <div style="margin-top:8px;font-size:12px">Pick a different period above — or tap <b>All Time</b> to see everything you have.</div></div>`;
+
+  const kw=_v('rKeyword').trim();
+  const probes=[
+    { on:!!kw, skip:{kw:true}, why:`the keyword <b>“${esc(kw)}”</b>`, fix:'Clear the keyword', act:'clearRepKeyword()',
+      extra:'The keyword searches the <i>words inside</i> your entries — it does not filter by type. To see only money coming in, use <b>Revenue only</b>.' },
+    { on:repTypes.size<4, skip:{types:true}, why:`the transaction-type filter (<b>${[...repTypes].map(t=>TYPE_META[t].label).join(' + ')}</b> only)`, fix:'Include every type', act:"setRepTypes(['income','expense','credit','settlement'])" },
+    { on:!!_v('rParty'), skip:{party:true}, why:`the party filter (<b>${esc(_v('rParty'))}</b>)`, fix:'All parties', act:"document.getElementById('rParty').value='';generateReport()" },
+    { on:!!_v('rCategory'), skip:{cat:true}, why:`the category filter (<b>${esc(_v('rCategory'))}</b>)`, fix:'All categories', act:"document.getElementById('rCategory').value='';generateReport()" },
+    { on:!!(_v('rMin')||_v('rMax')), skip:{amt:true}, why:'the amount range', fix:'Clear the amount range', act:"document.getElementById('rMin').value='';document.getElementById('rMax').value='';generateReport()" }
+  ].filter(x=>x.on);
+
+  const guilty = probes.filter(x => count(nonDateFilter(x.skip)) > 0);
+  const list = (guilty.length ? guilty : probes);
+  if(!list.length) return `<div class="rep-empty"><i class="ti ti-inbox"></i>No transactions match this period and filter.</div>`;
+
+  return `<div class="rep-empty" style="text-align:left;padding:18px 16px">
+    <i class="ti ti-filter-off" style="text-align:center"></i>
+    <div style="text-align:center;margin-bottom:12px">There ${inPeriod===1?'is':'are'} <b>${inPeriod}</b> transaction${inPeriod===1?'':'s'} in this period.
+      ${guilty.length ? (guilty.length===1?'This filter is hiding':'These filters are hiding')+' every one of them:'
+                      : 'Your filters only match together — no single one is at fault:'}</div>
+    ${list.map(x=>`<div class="insight warn" style="margin-bottom:8px"><i class="ti ti-alert-circle"></i><div>
+        Hidden by ${x.why}.${x.extra?'<div style="margin-top:5px;color:var(--text3)">'+x.extra+'</div>':''}
+        <div style="margin-top:8px"><button class="chip" onclick="${x.act}"><i class="ti ti-wand"></i> ${x.fix}</button></div>
+      </div></div>`).join('')}
+    <div style="text-align:center;margin-top:10px"><button class="chip" onclick="resetReportFilters();generateReport()"><i class="ti ti-rotate"></i> Reset every filter</button></div>
+  </div>`;
+}
+
 /* ── RENDER ────────────────────────────────────────────────────────────── */
 function generateReport(){
   const p = resolvePeriod();
@@ -1832,9 +1911,7 @@ function generateReport(){
 
   const out = document.getElementById('reportOutput');
   if(!rows.length){
-    out.innerHTML = `<div class="rep-period">${esc(title)}</div>
-      <div class="rep-empty"><i class="ti ti-inbox"></i>No transactions match this period and filter.
-      <div style="margin-top:8px;font-size:12px">Try <b>Reset filters</b>, widen the date range, or switch on more transaction types.</div></div>`;
+    out.innerHTML = `<div class="rep-period">${esc(title)}</div>${diagnoseEmpty(p)}`;
     out.style.display='block';
     document.getElementById('reportActions').style.display='none';
     lastReport=null;
