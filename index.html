@@ -438,7 +438,7 @@ tr.row-editing td{background:var(--info-bg) !important}
     <div class="topbar-left">
       <div class="ibi-logo"><span>IBI</span></div>
       <div>
-        <div class="app-name">IBI Finance Tracker <span class="ver-badge">v4.3</span></div>
+        <div class="app-name">IBI Finance Tracker <span class="ver-badge">v4.4</span></div>
       </div>
     </div>
     <div class="topbar-right">
@@ -627,7 +627,7 @@ tr.row-editing td{background:var(--info-bg) !important}
     </div>
   </div>
 
-  <div class="footer">IBI Finance Tracker v4.3 &mdash; India Business International &mdash; indiabusinessinternational@gmail.com</div>
+  <div class="footer">IBI Finance Tracker v4.4 &mdash; India Business International &mdash; indiabusinessinternational@gmail.com</div>
 </div>
 
 <!-- DRAWER MENU -->
@@ -647,7 +647,7 @@ tr.row-editing td{background:var(--info-bg) !important}
   <button class="drawer-item" onclick="toggleTheme();closeDrawer()"><i class="ti ti-sun"></i> Toggle Dark / Light Mode</button>
   <button class="drawer-item" id="drawerInstallBtn" style="display:none" onclick="triggerInstall();closeDrawer()"><i class="ti ti-device-mobile-down"></i> Install as App (PWA)</button>
   <div class="drawer-section-label">About</div>
-  <div class="drawer-item" style="cursor:default;color:var(--text2);font-size:12px"><i class="ti ti-info-circle"></i> Version 4.3 — July 2026</div>
+  <div class="drawer-item" style="cursor:default;color:var(--text2);font-size:12px"><i class="ti ti-info-circle"></i> Version 4.4 — July 2026</div>
 </div>
 
 <!-- REPORT MODAL -->
@@ -803,6 +803,13 @@ const isSettleT = e => e.type === 'settlement';
 // Both cash expenses and credit purchases are real spend — the only
 // difference is whether the money has left yet.
 const isExpenseT = e => e.type === 'expense' || e.type === 'credit';
+/* Money out, stated as "not income and not a settlement" (v4.4).
+   The Sheet's Type column is plain text and gets hand-edited in bulk, so a typo
+   such as "Expence" survives normType(). isExpenseT does not match it, which
+   meant a typo'd row was LISTED in the table and the ledger but counted in NO
+   total and moved no running balance — money silently disappearing. Everything
+   that totals or buckets spend must use isOutT / isCashOut instead. */
+const isOutT = e => !isIncomeT(e) && !isSettleT(e);   // cash + credit + anything unrecognised
 const TYPE_META = {
   income:     { label:'Income',     icon:'ti-arrow-down-circle', sign:'+' },
   expense:    { label:'Expense',    icon:'ti-arrow-up-circle',   sign:'−' },
@@ -1180,9 +1187,10 @@ function filtered(){
 function render(){
   const list=filtered(), body=document.getElementById('txBody'), empty=document.getElementById('emptyState');
   const income=entries.filter(isIncomeT).reduce((s,e)=>s+e.amount,0);
-  // Expense = cash expenses + credit purchases. Settlements are deliberately
+  // Expense = cash expenses + credit purchases (+ any unrecognised type, which
+  // is money out too). Settlements are deliberately
   // excluded: they pay off credit that was already counted here.
-  const expense=entries.filter(isExpenseT).reduce((s,e)=>s+e.amount,0);
+  const expense=entries.filter(isOutT).reduce((s,e)=>s+e.amount,0);
   const net=income-expense;
   document.getElementById('sumIncome').textContent=fmt(income);
   document.getElementById('sumExpense').textContent=fmt(expense);
@@ -1195,7 +1203,7 @@ function render(){
   const fsBox=document.getElementById('filterSummary');
   if(fq||fType!=='all'){
     const fInc=list.filter(isIncomeT).reduce((s,e)=>s+e.amount,0);
-    const fExp=list.filter(isExpenseT).reduce((s,e)=>s+e.amount,0);
+    const fExp=list.filter(isOutT).reduce((s,e)=>s+e.amount,0);
     const fSet=list.filter(isSettleT).reduce((s,e)=>s+e.amount,0);
     // Settled money is shown apart from spend so the two can never read as one total.
     document.getElementById('fsSettled').style.display = fSet ? '' : 'none';
@@ -1251,7 +1259,7 @@ function exportCSV(){
   const rows=[['#','Date & Time','Type','Description','Party','Amount','Note']];
   sorted.forEach((e,i)=>rows.push([i+1,fmtDTLine(e),e.type,e.description,e.party,e.amount,e.note||'']));
   const income=entries.filter(isIncomeT).reduce((s,e)=>s+e.amount,0);
-  const expense=entries.filter(isExpenseT).reduce((s,e)=>s+e.amount,0);
+  const expense=entries.filter(isOutT).reduce((s,e)=>s+e.amount,0);
   rows.push([],[' ',' ',' ',' ','Total Income',income,''],[' ',' ',' ',' ','Total Expense',expense,''],[' ',' ',' ',' ','Net Balance',income-expense,'']);
   const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"` ).join(',')).join('\n');
   const a=document.createElement('a');
@@ -1291,7 +1299,7 @@ function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g, c=>({'&':'&amp;'
 const _v      = id => (document.getElementById(id)||{}).value || '';
 const _sum    = rows => rows.reduce((s,e)=>s+(Number(e.amount)||0),0);
 const canonT  = e => TYPE_META[e.type] ? e.type : 'expense';   // unknown text in the Sheet = expense (pre-v3 behaviour)
-const isCashOut = e => e.type === 'expense' || isSettleT(e);   // money that actually left the account
+const isCashOut = e => (isOutT(e) && !isCreditT(e)) || isSettleT(e);   // money that actually left the account
 const pcOf    = (a,b) => b ? (a/b*100) : 0;
 function isoOf(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
 function isoAdd(iso,n){ const d=new Date(iso+'T00:00:00'); d.setDate(d.getDate()+n); return isoOf(d); }
@@ -1527,8 +1535,8 @@ function filterLabel(){
 
 /* ── STATS ─────────────────────────────────────────────────────────────── */
 function statsOf(rows, from, to){
-  const inc = rows.filter(isIncomeT), exp = rows.filter(isExpenseT),
-        cash= rows.filter(e=>e.type==='expense'), cr = rows.filter(isCreditT), st = rows.filter(isSettleT);
+  const inc = rows.filter(isIncomeT), exp = rows.filter(isOutT),
+        cash= rows.filter(e=>isOutT(e)&&!isCreditT(e)), cr = rows.filter(isCreditT), st = rows.filter(isSettleT);
   const tInc=_sum(inc), tExp=_sum(exp), tCash=_sum(cash), tCr=_sum(cr), tSet=_sum(st);
   const days = (from&&to) ? Math.max(1, daysBetween(from,to)) : 1;
   const outflow = tCash + tSet;                       // money that actually left
@@ -1593,7 +1601,7 @@ function bucketize(rows, from, to){
   rows.forEach(e=>{
     const d=String(e.date||'').slice(0,10); if(!d) return;
     const k=keyOf(d), r = m.get(k) || { key:k, inc:0, exp:0, count:0 };
-    if(isIncomeT(e)) r.inc += e.amount; else if(isExpenseT(e)) r.exp += e.amount;
+    if(isIncomeT(e)) r.inc += e.amount; else if(isOutT(e)) r.exp += e.amount;
     r.count++; m.set(k,r);
   });
   // fill the gaps so a quiet week still shows as a gap, not a missing column
@@ -1930,7 +1938,7 @@ function generateReport(){
   const dow     = [0,1,2,3,4,5,6].map(i=>({ d:_DOW[i], inc:0, exp:0, count:0 }));
   rows.forEach(e=>{ const m=String(e.date||'').match(/^(\d{4})-(\d{2})-(\d{2})/); if(!m) return;
     const w=new Date(+m[1],+m[2]-1,+m[3]).getDay();
-    if(isIncomeT(e)) dow[w].inc+=e.amount; else if(isExpenseT(e)) dow[w].exp+=e.amount; dow[w].count++; });
+    if(isIncomeT(e)) dow[w].inc+=e.amount; else if(isOutT(e)) dow[w].exp+=e.amount; dow[w].count++; });
   const quality  = qualityChecks(rows);
   const insights = buildInsights(cur, prev, expByParty, expByCat, ageing, buckets);
 
