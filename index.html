@@ -408,7 +408,7 @@ tr.row-editing td{background:var(--info-bg) !important}
     <div class="topbar-left">
       <div class="ibi-logo"><span>IBI</span></div>
       <div>
-        <div class="app-name">IBI Finance Tracker <span class="ver-badge">v4.0</span></div>
+        <div class="app-name">IBI Finance Tracker <span class="ver-badge">v4.1</span></div>
       </div>
     </div>
     <div class="topbar-right">
@@ -596,7 +596,7 @@ tr.row-editing td{background:var(--info-bg) !important}
     </div>
   </div>
 
-  <div class="footer">IBI Finance Tracker v4.0 &mdash; India Business International &mdash; indiabusinessinternational@gmail.com</div>
+  <div class="footer">IBI Finance Tracker v4.1 &mdash; India Business International &mdash; indiabusinessinternational@gmail.com</div>
 </div>
 
 <!-- DRAWER MENU -->
@@ -615,7 +615,7 @@ tr.row-editing td{background:var(--info-bg) !important}
   <button class="drawer-item" onclick="toggleTheme();closeDrawer()"><i class="ti ti-sun"></i> Toggle Dark / Light Mode</button>
   <button class="drawer-item" id="drawerInstallBtn" style="display:none" onclick="triggerInstall();closeDrawer()"><i class="ti ti-device-mobile-down"></i> Install as App (PWA)</button>
   <div class="drawer-section-label">About</div>
-  <div class="drawer-item" style="cursor:default;color:var(--text2);font-size:12px"><i class="ti ti-info-circle"></i> Version 4.0 — July 2026</div>
+  <div class="drawer-item" style="cursor:default;color:var(--text2);font-size:12px"><i class="ti ti-info-circle"></i> Version 4.1 — July 2026</div>
 </div>
 
 <!-- REPORT MODAL -->
@@ -1220,39 +1220,73 @@ function deltaBadge(cur, prev, goodUp){
 /* ── AUTO CATEGORIES ────────────────────────────────────────────────────────
    There is no category column in the Sheet and asking for one on every entry
    would be a second input for a fact the description already carries, so the
-   category is derived from description + party + note. Rules are ordered —
-   first match wins — and tuned for a marketplace seller's books. */
+   category is derived from description + party + note.
+
+   Rules are ordered and FIRST MATCH WINS, so the order below is the logic:
+   specific things (Claude/ChatGPT, tea, ad wallet, house rent) must be tested
+   before the generic words that would otherwise swallow them ("purchased",
+   "staff", "account"). Tuned against the live books, which are not only an
+   eCommerce operation — there is farm produce, house rental and a coir /
+   palmyrah / handicraft product line in there too.
+
+   Every pattern is anchored with \b where a bare substring would misfire:
+   "prEMIum" is not an EMI, "ChungankadAI" is not AI, "OPEN" is not a pen,
+   and "dESI" is not ESI. Tamil place names ending in -ai made that a real
+   problem, not a theoretical one. */
 const CAT_RULES = [
-  // income
-  { c:'Marketplace Payout',   k:'income',  re:/amazon|flipkart|meesho|jiomart|shopclues|snapdeal|glowroad|myntra|ajio|payout|marketplace|settlement received/ },
-  { c:'Direct / Retail Sales',k:'income',  re:/\bsale|walk[- ]?in|retail|counter|direct|whatsapp|instagram|website|cash sale/ },
-  { c:'Wholesale / B2B',      k:'income',  re:/wholesale|b2b|bulk|dealer|distributor/ },
-  { c:'Refund / Reimbursement',k:'income', re:/refund|reimburse|claim|cashback|reversal/ },
-  { c:'Interest & Other Income',k:'income',re:/interest|dividend|scrap|commission received|rent received/ },
-  // expense
-  { c:'Stock / Purchases',    k:'expense', re:/purchase|stock|wholesale|supplier|raw material|goods|inventory|procure/ },
-  { c:'Packaging Material',   k:'expense', re:/packag|packing|tape|bubble|carton|corrugat|poly ?bag|courier bag|box(es)?\b|wrap/ },
-  { c:'Shipping & Courier',   k:'expense', re:/courier|shipping|freight|delivery charge|dtdc|blue ?dart|delhivery|xpressbees|ekart|shadowfax|india post|speed post|transport|lorry|parcel/ },
-  { c:'Marketplace Fees',     k:'expense', re:/commission|referral fee|closing fee|marketplace fee|ad(vertis)?ing fee|shipping fee/ },
-  { c:'Marketing & Ads',      k:'expense', re:/\bads?\b|advertis|marketing|promotion|sponsor|campaign|seo|influencer|boost/ },
-  { c:'Salary & Staff',       k:'expense', re:/salary|wage|staff|labour|labor|bonus|incentive|employee|pf\b|esi\b/ },
-  { c:'Rent & Lease',         k:'expense', re:/\brent\b|lease|godown|warehouse rent|shop rent/ },
-  { c:'Utilities',            k:'expense', re:/electric|eb bill|current bill|water|gas|internet|wi-?fi|broadband|recharge|mobile bill|phone bill|jio|airtel|bsnl/ },
-  { c:'Taxes & Statutory',    k:'expense', re:/\bgst\b|\btds\b|\btcs\b|\btax\b|challan|professional tax|licen[cs]e|registration|trademark|udyam|roc\b/ },
-  { c:'Bank & Finance',       k:'expense', re:/bank charge|interest|emi|loan|payment gateway|razorpay|processing fee|penalty|late fee|nach|cheque/ },
-  { c:'Travel & Fuel',        k:'expense', re:/fuel|petrol|diesel|travel|taxi|auto\b|\bbus\b|train|flight|toll|parking|vehicle/ },
-  { c:'Office & Admin',       k:'expense', re:/stationer|printer|ink|cartridge|paper|xerox|print|office|courier envelope|pen\b|file\b/ },
-  { c:'Equipment & IT',       k:'expense', re:/laptop|computer|camera|printer purchase|software|subscription|domain|hosting|server|licence key|ai\b|chatgpt|claude|adobe/ },
-  { c:'Repairs & Maintenance',k:'expense', re:/repair|maintenance|servicing|spare|amc\b|paint|plumb|electrician/ },
-  { c:'Returns & Damages',    k:'expense', re:/return|rto\b|damage|lost in transit|shortage|breakage|claim/ },
-  { c:'Food & Refreshment',   k:'expense', re:/food|tea\b|coffee|snack|lunch|dinner|refreshment|hotel|canteen/ },
-  { c:'Owner Drawings',       k:'expense', re:/drawing|personal|self\b|owner/ }
+  /* ───────── INCOME ───────── */
+  // Balance snapshots recorded as income rows — NOT receipts. Caught first so
+  // they cannot be mistaken for revenue, and flagged in the quality audit
+  // because they inflate Total Income.
+  { c:'Bank / Cash Balance Record', k:'income', re:/bank balance|account balance|acc(ount)? bal\b|a\/c bal|avbl|available balance|bal(ance)? (is|as|after|before)|bal(ance)? rs|(savings|current) a\/?c(count)?$|^cash in hand$|closing balance/ },
+  { c:'Marketplace Payout',    k:'income',  re:/amazon|flipkart|meesho|jiomart|shopclues|snapdeal|glowroad|myntra|ajio|payout|marketplace|settlement received/ },
+  { c:'Rent Received',         k:'income',  re:/rental|house rent|rent received|rent paid for|\brent\b/ },
+  { c:'Farm & Produce',        k:'income',  re:/coconut|copra|farmland|\bfarm\b|tapioca|tapiocca|cassava|banana|chicken|goat|\bcow\b|milk|neera|palm|cuttings|scrap|harvest/ },
+  { c:'Direct / Retail Sales', k:'income',  re:/\bsales?\b|walk[- ]?in|retail|counter|direct|whatsapp|website|cash sale/ },
+  { c:'Wholesale / B2B',       k:'income',  re:/wholesale|b2b|bulk|dealer|distributor/ },
+  { c:'Refund / Reimbursement',k:'income',  re:/refund|reimburse|claim|cashback|reversal/ },
+  { c:'Interest & Other Income',k:'income', re:/interest|dividend|commission received/ },
+
+  /* ───────── EXPENSE ───────── */
+  // Before "Stock / Purchases" — these are all worded "…Purchased" and would
+  // otherwise be filed as stock.
+  { c:'AI & Software',        k:'expense', re:/claude|anthropic|chatgpt|openai|\bgpt\b|gemini|perplexity|api credit|api key|subscription|youtube premium|google one|canva|adobe|figma|domain|hosting|\bserver\b|software|licen[cs]e key|app store|play store/ },
+  // Above Marketing: a co-founder profit share is drawings whether or not the
+  // row also happens to mention "social media".
+  { c:'Owner / Family Drawings',k:'expense',re:/drawings?\b|personal|\bceo\b|haircut|profit sharing|co-?founder|function|family|self use|gift/ },
+  { c:'Marketing & Ads',      k:'expense', re:/\bads?\b|ad wallet|advertis|marketing|promotion|sponsor|campaign|\bseo\b|influencer|boost|instagram|youtube short|\breel|social media/ },
+  // Before "Salary & Staff" — "Tea for IBI Staff" is refreshment, not payroll.
+  { c:'Food & Refreshment',   k:'expense', re:/\btea\b|coffee|snack|lunch|dinner|breakfast|refreshment|canteen|biscuit|juice|water can|\bfood\b|hotel|meals?\b/ },
+  { c:'Salary & Staff',       k:'expense', re:/salary|\bwages?\b|labour|labor|coolie|bonus|incentive|employee|\bpf\b|\besi\b|staff (salary|payment|advance)/ },
+  // Their actual product vocabulary, so real stock buys stop landing in the
+  // "Uncategorised" bucket just because the word "purchase" is absent.
+  // "broom" not "broomstick" — the books contain "Broomstmick" and worse.
+  { c:'Stock / Purchases',    k:'expense', re:/purchase|\bstock\b|wholesale|supplier|raw material|goods|inventory|procure|coir|palmyra|palmyrah|broom|\bcbs\b|\bbrush|beads?\b|invisible chain|pendant|\bchain\b|diya|bucket|therali|leaves|needle|t[- ]shirt|\bmats?\b|basket|handicraft|thread|\brope\b|shell|fibre|fiber/ },
+  { c:'Packaging Material',   k:'expense', re:/packag|packing|\btape\b|bubble|carton|corrugat|poly ?bag|courier bag|\bboxe?s?\b|wrap|label roll/ },
+  { c:'Shipping & Courier',   k:'expense', re:/courier|shipping|freight|delivery charge|transport|dtdc|blue ?dart|delhivery|xpressbees|ekart|shadowfax|india post|speed post|lorry|parcel|\bfreight/ },
+  { c:'Marketplace Fees',     k:'expense', re:/referral fee|closing fee|marketplace fee|commission|collection fee|fixed fee/ },
+  { c:'Rent & Lease',         k:'expense', re:/\brent\b|lease|godown|warehouse/ },
+  { c:'Utilities',            k:'expense', re:/electric|\beb bill\b|current bill|\bwater\b|\bgas\b|internet|wi-?fi|broadband|recharge|mobile bill|phone bill|\bcable\b|dish tv|jio|airtel|bsnl/ },
+  { c:'Taxes & Statutory',    k:'expense', re:/\bgst\b|\btds\b|\btcs\b|\btax\b|challan|professional tax|licen[cs]e|registration|trademark|udyam|\broc\b|\bfssai\b/ },
+  // "CarLoanEMI" is written as one word in the books, so \bemi\b alone missed
+  // it — but a bare "emi" would swallow "prEMIum", hence the explicit loans.
+  { c:'Bank & Finance',       k:'expense', re:/bank charge|\binterest\b|\bemi\b|loan ?emi|car ?loan|home ?loan|bike ?loan|gold ?loan|\bloan\b|payment gateway|razorpay|processing fee|penalty|late fee|\bnach\b|cheque|credit card payment/ },
+  { c:'Travel & Fuel',        k:'expense', re:/fuel|petrol|diesel|travel|\btaxi\b|\bauto\b|\bbus\b|train|flight|toll|parking|\btyre\b|puncture|vehicle|\bcar\b|bike|scooter/ },
+  { c:'Repairs & Maintenance',k:'expense', re:/repair|maintenance|servic(e|ing)\b|spare|\bamc\b|paint|plumb|electrician|welding/ },
+  { c:'Office & Admin',       k:'expense', re:/stationer|\bink\b|cartridge|\bpaper\b|xerox|\bprint\b|office|\bpens?\b|\bfiles?\b/ },
+  { c:'Equipment & IT',       k:'expense', re:/laptop|computer|\bprinter\b|camera|mobile phone|hard ?disk|pen ?drive|router|machine|\btool\b|weighing/ },
+  { c:'Returns & Damages',    k:'expense', re:/\brto\b|returns?\b|damage|lost in transit|shortage|breakage|claim/ },
+  // LAST RESORT on the expense side. These rows are bank SMS text pasted in
+  // whole, so they quote a balance AND a real payment ("…debited … MIN*
+  // ANTHROPIC. Bal Rs. 74,104.05"). Every rule above gets first refusal, so
+  // only a row that is *nothing but* a balance statement lands here.
+  { c:'Bank / Cash Balance Record', k:'expense', re:/bank balance|account balance|acc(ount)? bal\b|a\/c bal|avbl|available balance|bal(ance)? (is|as|after|before)|bal(ance)? rs|atm txn/ }
 ];
 const _catCache = new Map();
 function categoryOf(e){
   const key = e.id || (e.description+'|'+e.party+'|'+e.amount);
   if(_catCache.has(key)) return _catCache.get(key);
-  const hay  = `${e.description||''} ${e.party||''} ${e.note||''}`.toLowerCase();
+  const hay  = `${e.description||''} ${e.party||''} ${e.note||''}`.toLowerCase().trim();
   const kind = isIncomeT(e) ? 'income' : 'expense';
   let out = 'Uncategorised';
   for(const r of CAT_RULES){ if(r.k!==kind) continue; if(r.re.test(hay)){ out = r.c; break; } }
@@ -1626,6 +1660,17 @@ function qualityChecks(rows){
     msg:`<b>${odd.length} entr${odd.length===1?'y has':'ies have'} an unrecognised Type</b> (${[...new Set(odd.map(e=>esc(String(e.type||'blank'))))].join(', ')}) — counted as Expense. Fix the Type column in the Sheet.` });
   const thin=rows.filter(e=>String(e.description||'').trim().length<3);
   if(thin.length) out.push({ t:'info', i:'ti-text-size', n:thin.length, msg:`<b>${thin.length} entr${thin.length===1?'y':'ies'} with a very short description</b> — they will land in "Uncategorised".` });
+  /* Bank/cash balance snapshots typed in as income rows. They are records of
+     what is IN the account, not money received, so every rupee of them is
+     added to Total Income, margin and net — a real distortion, not a cosmetic
+     one. Flagged rather than silently dropped: the fix belongs in the Sheet
+     (set the amount to 0, or move the balance into the Note). */
+  const balAll=rows.filter(e=>categoryOf(e)==='Bank / Cash Balance Record');
+  const balInc=balAll.filter(isIncomeT), balVal=_sum(balInc);
+  if(balAll.length) out.push({ t: balVal>0?'bad':'info', i:'ti-building-bank', n:balAll.length,
+    msg:`<b>${balAll.length} entr${balAll.length===1?'y is a':'ies are'} bank / cash balance record${balAll.length===1?'':'s'}</b>, not money received or spent` +
+        (balVal>0 ? ` — and ${balInc.length} of them carr${balInc.length===1?'ies':'y'} ${fmt(balVal)} booked as <b>Income</b>, which is <b>${pcOf(balVal,_sum(rows.filter(isIncomeT))).toFixed(0)}% of reported income that never actually came in</b>. Set those amounts to ₹0 in the Sheet (keep the figure in the Note) so income, margin and net stop being overstated.`
+                  : ` — all at ₹0, so the totals are safe; they only pad the entry count.`) });
   const unc=rows.filter(e=>categoryOf(e)==='Uncategorised');
   if(unc.length) out.push({ t:'info', i:'ti-tag', n:unc.length,
     msg:`<b>${unc.length} entr${unc.length===1?'y':'ies'} (${fmt(_sum(unc))}) could not be categorised</b> — ${pcOf(_sum(unc), _sum(rows)).toFixed(0)}% of the value. Adding a keyword like "packing", "courier" or "GST" to the description files them automatically.` });
