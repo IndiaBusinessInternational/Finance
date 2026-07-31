@@ -342,6 +342,36 @@ tr.row-editing td{background:var(--info-bg) !important}
 .tag.b{background:var(--warning-bg);color:var(--warning-text)}
 .tag.c{background:var(--info-bg);color:var(--info-text)}
 .rep-note{font-size:11px;color:var(--text3);line-height:1.5;margin:4px 0 10px}
+
+/* ── BANK STATEMENT IMPORT (v4.2) ── */
+.drop-zone{border:2px dashed var(--border2);border-radius:var(--radius-lg);padding:26px 16px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s}
+.drop-zone:hover,.drop-zone.over{border-color:var(--cyan);background:var(--bg3)}
+.drop-zone i{font-size:34px;color:var(--cyan);display:block;margin-bottom:8px}
+.drop-zone .dz-main{font-size:14px;font-weight:600;color:var(--text)}
+.drop-zone .dz-sub{font-size:11.5px;color:var(--text3);margin-top:5px;line-height:1.5}
+.imp-row{display:grid;grid-template-columns:22px 82px 1fr 96px 108px;gap:8px;align-items:center;padding:8px 10px;border-bottom:1px solid var(--border);font-size:12px}
+.imp-row:last-child{border-bottom:none}
+.imp-row.off{opacity:.5}
+.imp-row input[type=checkbox]{width:auto;margin:0;accent-color:var(--cyan);cursor:pointer}
+.imp-desc{min-width:0}
+.imp-desc b{font-weight:600;color:var(--text);display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.imp-desc small{color:var(--text3);font-size:10.5px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.imp-amt{text-align:right;font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums}
+.imp-act{font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;text-align:center;white-space:nowrap}
+.imp-act.add{background:var(--success-bg);color:var(--success-text)}
+.imp-act.link{background:var(--info-bg);color:var(--info-text)}
+.imp-act.dupe{background:var(--bg4);color:var(--text2)}
+.imp-act.excl{background:var(--warning-bg);color:var(--warning-text)}
+.imp-group{background:var(--black);padding:9px 12px;font-size:11px;font-weight:700;color:var(--cyan);text-transform:uppercase;letter-spacing:.05em;display:flex;justify-content:space-between;align-items:center;gap:8px;position:sticky;top:0;z-index:2}
+.imp-group .g-sub{font-weight:400;color:var(--text3);text-transform:none;letter-spacing:0}
+.imp-list{border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:12px}
+.imp-bar{height:8px;border-radius:8px;background:var(--bg4);overflow:hidden;margin:10px 0 6px}
+.imp-bar div{height:100%;background:var(--cyan);width:0;transition:width .2s}
+@media(max-width:600px){
+  .imp-row{grid-template-columns:20px 1fr 92px;grid-template-areas:"c d a" ". k k";row-gap:4px}
+  .imp-row .imp-chk{grid-area:c}.imp-desc{grid-area:d}.imp-amt{grid-area:a}
+  .imp-row .imp-date{display:none}.imp-row .imp-act{grid-area:k;justify-self:start}
+}
 .rep-scroll{overflow-x:auto}
 .rep-table.auto{table-layout:auto}
 .rep-table.auto th:first-child,.rep-table.auto td:first-child{width:auto}
@@ -408,7 +438,7 @@ tr.row-editing td{background:var(--info-bg) !important}
     <div class="topbar-left">
       <div class="ibi-logo"><span>IBI</span></div>
       <div>
-        <div class="app-name">IBI Finance Tracker <span class="ver-badge">v4.1</span></div>
+        <div class="app-name">IBI Finance Tracker <span class="ver-badge">v4.2</span></div>
       </div>
     </div>
     <div class="topbar-right">
@@ -476,6 +506,7 @@ tr.row-editing td{background:var(--info-bg) !important}
     <div class="status-actions">
       <button class="s-btn" onclick="loadAll()"><i class="ti ti-refresh"></i> Sync</button>
       <button class="s-btn rep-btn" onclick="openReport()"><i class="ti ti-report-money"></i> Report</button>
+      <button class="s-btn" onclick="openImport()"><i class="ti ti-file-spreadsheet"></i> Import Statement</button>
       <a class="s-btn" href="https://docs.google.com/spreadsheets/d/1hbh5E9kzX4632d4kaMHLXC-Aqhi5exgEJWOxMtSrttE/edit?gid=0#gid=0" target="_blank"><i class="ti ti-external-link"></i> Sheet</a>
       <button class="s-btn" onclick="exportCSV()"><i class="ti ti-download"></i> CSV</button>
     </div>
@@ -596,7 +627,7 @@ tr.row-editing td{background:var(--info-bg) !important}
     </div>
   </div>
 
-  <div class="footer">IBI Finance Tracker v4.1 &mdash; India Business International &mdash; indiabusinessinternational@gmail.com</div>
+  <div class="footer">IBI Finance Tracker v4.2 &mdash; India Business International &mdash; indiabusinessinternational@gmail.com</div>
 </div>
 
 <!-- DRAWER MENU -->
@@ -609,13 +640,14 @@ tr.row-editing td{background:var(--info-bg) !important}
   <div class="drawer-section-label">App</div>
   <button class="drawer-item" onclick="loadAll();closeDrawer()"><i class="ti ti-refresh"></i> Sync with Google Drive</button>
   <button class="drawer-item" onclick="closeDrawer();openReport()"><i class="ti ti-report-analytics"></i> Financial Analysis Report</button>
+  <button class="drawer-item" onclick="closeDrawer();openImport()"><i class="ti ti-file-spreadsheet"></i> Import Bank Statement</button>
   <button class="drawer-item" onclick="exportCSV();closeDrawer()"><i class="ti ti-download"></i> Export CSV</button>
   <a class="drawer-item" href="https://docs.google.com/spreadsheets/d/1hbh5E9kzX4632d4kaMHLXC-Aqhi5exgEJWOxMtSrttE/edit?gid=0#gid=0" target="_blank" onclick="closeDrawer()"><i class="ti ti-external-link"></i> Open Google Sheet</a>
   <div class="drawer-section-label">Settings</div>
   <button class="drawer-item" onclick="toggleTheme();closeDrawer()"><i class="ti ti-sun"></i> Toggle Dark / Light Mode</button>
   <button class="drawer-item" id="drawerInstallBtn" style="display:none" onclick="triggerInstall();closeDrawer()"><i class="ti ti-device-mobile-down"></i> Install as App (PWA)</button>
   <div class="drawer-section-label">About</div>
-  <div class="drawer-item" style="cursor:default;color:var(--text2);font-size:12px"><i class="ti ti-info-circle"></i> Version 4.1 — July 2026</div>
+  <div class="drawer-item" style="cursor:default;color:var(--text2);font-size:12px"><i class="ti ti-info-circle"></i> Version 4.2 — July 2026</div>
 </div>
 
 <!-- REPORT MODAL -->
@@ -674,6 +706,61 @@ tr.row-editing td{background:var(--info-bg) !important}
   <div class="report-actions" id="reportActions" style="display:none">
     <button class="s-btn" onclick="printReport()"><i class="ti ti-printer"></i> Print / Save PDF</button>
     <button class="s-btn rep-btn" onclick="downloadReportCSV()"><i class="ti ti-download"></i> Download CSV</button>
+  </div>
+</div>
+
+<!-- BANK STATEMENT IMPORT MODAL -->
+<div class="report-overlay" id="importOverlay" onclick="closeImport()"></div>
+<div class="report-modal" id="importModal" role="dialog" aria-modal="true" aria-label="Import Bank Statement">
+  <div class="report-hdr">
+    <span class="report-hdr-title"><i class="ti ti-file-spreadsheet"></i> Import Bank Statement</span>
+    <button class="drawer-close" onclick="closeImport()" aria-label="Close"><i class="ti ti-x"></i></button>
+  </div>
+  <div class="report-body">
+
+    <div id="impStep1">
+      <div class="drop-zone" id="impDrop" onclick="document.getElementById('impFile').click()">
+        <i class="ti ti-cloud-upload"></i>
+        <div class="dz-main">Drop your bank statement here, or tap to choose a file</div>
+        <div class="dz-sub">Excel (.xls / .xlsx) or CSV, straight from net-banking — no need to rename or clean it up.<br>
+          Nothing is saved until you review the list and press Confirm.</div>
+      </div>
+      <input type="file" id="impFile" accept=".xls,.xlsx,.csv" style="display:none" onchange="handleImportFile(this.files[0])">
+      <div class="rep-note" style="margin-top:12px">
+        <b>What happens:</b> every row is matched against what you already have — by the bank's own transaction id if it was imported before, otherwise by amount within a 7-day window, because posting dates drift. Rows already in your books are marked <b>Already recorded</b> and skipped. Transfers between your own accounts are excluded by default, since they are not income or spend.
+      </div>
+    </div>
+
+    <div id="impStep2" style="display:none">
+      <div class="rep-fieldset" style="margin-bottom:12px">
+        <div class="rf-legend"><i class="ti ti-adjustments"></i> Import settings</div>
+        <div class="rep-mini-grid">
+          <div class="form-group"><label for="impAcct">Account tag <span style="color:var(--text3);font-weight:400">— kept with each row</span></label><input type="text" id="impAcct" placeholder="e.g. ICICI-CA"></div>
+          <div class="form-group"><label for="impFrom">Only from date</label><input type="date" id="impFrom"></div>
+          <div class="form-group"><label for="impTo">Only up to date</label><input type="date" id="impTo"></div>
+        </div>
+        <div style="display:flex;gap:14px;flex-wrap:wrap">
+          <label class="rep-check"><input type="checkbox" id="impOtherCr" onchange="renderImport()"> Also tick non-eCommerce credits (farm, rent, misc)</label>
+          <label class="rep-check"><input type="checkbox" id="impSelf" onchange="renderImport()"> Also tick own-account transfers</label>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="chip" onclick="applyImportFilters()"><i class="ti ti-refresh"></i> Re-check against my books</button>
+          <button class="chip" onclick="impTickAll(true)"><i class="ti ti-checks"></i> Tick all</button>
+          <button class="chip" onclick="impTickAll(false)"><i class="ti ti-square"></i> Untick all</button>
+        </div>
+      </div>
+      <div id="impSummary"></div>
+      <div id="impOutput"></div>
+      <div id="impProgress" style="display:none">
+        <div class="imp-bar"><div id="impBarFill"></div></div>
+        <div id="impProgTxt" style="font-size:12px;color:var(--text2);text-align:center"></div>
+      </div>
+    </div>
+
+  </div>
+  <div class="report-actions" id="impActions" style="display:none">
+    <button class="s-btn" onclick="resetImport()"><i class="ti ti-arrow-back-up"></i> Choose another file</button>
+    <button class="s-btn rep-btn" id="impConfirmBtn" onclick="confirmImport()"><i class="ti ti-check"></i> Confirm &amp; Save</button>
   </div>
 </div>
 
@@ -2166,6 +2253,407 @@ function downloadReportCSV(){
   const slug=p.label.replace(/[^0-9a-zA-Z]+/g,'_').replace(/^_|_$/g,'').toLowerCase();
   a.download=`ibi_analysis_${slug}.csv`; a.click();
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   BANK STATEMENT IMPORT  (v4.2)
+   ──────────────────────────────────────────────────────────────────────────
+   Drop a net-banking export in, review what it proposes, press Confirm.
+   Nothing is written to the Sheet until then.
+
+   Anti-duplicate: every imported row is stamped with the bank's own unique
+   transaction id in the Note — "[BANK:ICICI-CA#S41808782]". Re-importing the
+   same statement finds those stamps and marks every row "Already recorded".
+   That is an exact key, not a guess, so it survives edited dates, amounts or
+   descriptions. No Sheet/Apps Script change was needed for it.
+
+   Rows entered by hand BEFORE this feature existed carry no stamp, so they
+   are matched on amount + direction within a ±7-day window — the posting
+   date and the date you wrote down routinely differ by a few days. Matching
+   one of those offers to LINK: it stamps the existing row instead of adding
+   a second one, so the next import skips it cleanly.
+
+   Excluded by default, because they are not income or spend:
+     • transfers between the owner's own accounts (they would invent revenue)
+     • anything outside the chosen date window
+     • non-eCommerce credits, per the rule that only marketplace revenue and
+       business expenses get imported — still listed, with a tick to include.
+   ══════════════════════════════════════════════════════════════════════════ */
+const _sheetJSCDNs = [
+  'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',
+  'https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js'
+];
+let _sheetJSLoading = null, impRows = [], impFileName = '', _importing = false;
+
+function loadSheetJS(){
+  if(typeof XLSX !== 'undefined') return Promise.resolve();
+  if(_sheetJSLoading) return _sheetJSLoading;
+  _sheetJSLoading = (async () => {
+    for(const url of _sheetJSCDNs){
+      try{
+        await new Promise((res,rej)=>{
+          const s=document.createElement('script');
+          s.src=url;
+          s.onload=()=> typeof XLSX!=='undefined' ? res() : rej(new Error('no XLSX global'));
+          s.onerror=()=>rej(new Error('blocked'));
+          document.head.appendChild(s);
+        });
+        return;
+      }catch(e){ console.warn('SheetJS failed from '+url, e.message); }
+    }
+    _sheetJSLoading=null;
+    throw new Error('Could not load the Excel reader. Check your connection and try again.');
+  })();
+  return _sheetJSLoading;
+}
+
+/* ── date parsing ───────────────────────────────────────────────────────────
+   Indian bank exports write 07-06-2026 meaning 7 June. Read day-first ALWAYS
+   for the numeric forms — guessing by "which number is > 12" silently swaps
+   the day and month on the first twelve days of every month. */
+function impDate(v){
+  if(v instanceof Date && !isNaN(v)) return isoOf(v);
+  if(typeof v === 'number' && v > 20000 && v < 80000){       // Excel serial
+    const d = new Date(Date.UTC(1899,11,30) + v*86400000);
+    return isoOf(new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+  }
+  const s = String(v||'').trim();
+  let m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);               // already ISO
+  if(m) return `${m[1]}-${m[2]}-${m[3]}`;
+  m = s.match(/^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{2,4})/);   // dd-mm-yyyy, day FIRST
+  if(m){ let y=+m[3]; if(y<100) y+=2000;
+    return `${y}-${String(+m[2]).padStart(2,'0')}-${String(+m[1]).padStart(2,'0')}`; }
+  m = s.match(/^(\d{1,2})[-\/ ]([A-Za-z]{3,})[-\/ ](\d{2,4})/);   // 07-Jun-2026
+  if(m){ const mi=_MON.findIndex(x=>x.toLowerCase()===m[2].slice(0,3).toLowerCase());
+    let y=+m[3]; if(y<100) y+=2000;
+    if(mi>=0) return `${y}-${String(mi+1).padStart(2,'0')}-${String(+m[1]).padStart(2,'0')}`; }
+  const d=new Date(s);
+  return isNaN(d) ? '' : isoOf(d);
+}
+function impNum(v){
+  if(typeof v === 'number') return v;
+  const n = parseFloat(String(v||'').replace(/[^0-9.\-]/g,''));
+  return isNaN(n) ? 0 : n;
+}
+
+/* ── platform classifier ────────────────────────────────────────────────────
+   Lifted verbatim from the ERP's classifyBankRemark(), including two rules
+   that were expensive to work out and must not be re-guessed here:
+     • Meesho settles through the Cashfree escrow account.
+     • ICICI truncates the narration at ~50 chars, so some Amazon payouts
+       arrive as an unnamed "NEFT-DEUTH…-INTERNAL AC FOR INTERMEDIERY".
+       Deutsche Bank is the rail for BOTH Amazon and Flipkart, but Flipkart
+       payouts always spell the name out, so the unnamed ones are Amazon. */
+function bankPlatform(remark){
+  const r = String(remark||'').toUpperCase();
+  if(r.includes('AMAZON')) return 'Amazon';
+  if(r.includes('INTERNAL AC FOR IN') && r.includes('DEUT')) return 'Amazon';
+  if(r.includes('FLIPKART')) return 'Flipkart';
+  if(r.includes('CASHFREE') || r.includes('MEESHO') || r.includes('FASHNEAR')) return 'Meesho';
+  if(r.includes('SHOPCLUES') || r.includes('CLUES NETWORK')) return 'ShopClues';
+  if(r.includes('RAZORPAY') || r.includes('ZOHO') || r.includes('PAYU')) return 'IBI Website';
+  if(r.includes('SNAPDEAL')) return 'Snapdeal';
+  if(r.includes('JIOMART') || r.includes('RELIANCE RETAIL')) return 'JioMart';
+  if(r.includes('GLOWROAD')) return 'GlowRoad';
+  return '';
+}
+/* Money moving between the owner's own accounts. Importing these would invent
+   revenue out of nothing (₹90,000 of it in the Apr–Jul ICICI statement), so
+   they are excluded by default. A loan EMI paid to an account in the owner's
+   own name is a genuine expense, not a transfer — hence the carve-out. */
+const SELF_TOKENS = /sasimuruga|tsasimurug|sasipraba|indiabusinessi|\btmbac?\b|tsmsal|own a\/?c|self transfer|to self/i;
+function looksSelfTransfer(remark){
+  const r = String(remark||'');
+  if(/\bemi\b|loan|carloan/i.test(r)) return false;
+  return SELF_TOKENS.test(r);
+}
+/* Pull a usable party + description out of the bank's compressed narration. */
+function parseRemark(rem){
+  const R = String(rem||'').trim();
+  let party='', desc='', m;
+  if((m = R.match(/^UPI\/([^\/]*)\/([^\/]*)\/([^\/]*)/i)))            { party=m[1]; desc=m[3]; }
+  else if((m = R.match(/^(?:MMT\/)?IMPS\/\d+\/([^\/]*)\/([^\/]*)/i))) { desc=m[1]; party=m[2]; }
+  else if((m = R.match(/^NEFT-[^-]*-(.+)$/i)))                        { party=m[1]; }
+  else if((m = R.match(/^(?:MIN|MSI|MIR)\/([^\/]*)\//i)))             { party=m[1]; }
+  else if((m = R.match(/^Dt:[\d\/]+\s+(.+)$/i)))                      { party=m[1]; }
+  party = party.replace(/[-\/\s]+$/,'').trim();
+  desc  = desc.replace(/[-\/\s]+$/,'').trim();
+  // ALL-CAPS bank names read badly in a ledger — "ANTHROPIC" → "Anthropic".
+  if(party && party === party.toUpperCase() && /[A-Z]{3}/.test(party))
+    party = party.toLowerCase().replace(/\b[a-z]/g, c=>c.toUpperCase());
+  // Bank narrations glue words together ("AswinSalaryApri", "AlBuckets4").
+  if(desc && !/\s/.test(desc) && /[a-z][A-Z]/.test(desc)) desc = desc.replace(/([a-z])([A-Z])/g,'$1 $2');
+  // Some banks put the remitter's own handle in that slot ("murugha6789"),
+  // which is noise in a ledger — drop it and let the caller name the party.
+  if(desc && !/\s/.test(desc) && /\d/.test(desc) && desc.length >= 6) desc = '';
+  return { party, desc };
+}
+
+/* ── read the file ─────────────────────────────────────────────────────── */
+async function handleImportFile(file){
+  if(!file) return;
+  impFileName = file.name;
+  try{
+    showToast('Reading '+file.name+'…');
+    await loadSheetJS();
+    const buf  = await file.arrayBuffer();
+    const wb   = XLSX.read(buf, { type:'array', cellDates:true });
+    const ws   = wb.Sheets[wb.SheetNames[0]];
+    const grid = XLSX.utils.sheet_to_json(ws, { header:1, raw:true, defval:'' });
+    const parsed = parseStatementGrid(grid);
+    if(!parsed.rows.length){
+      showToast('No transactions found in that file','error');
+      return;
+    }
+    impRows = parsed.rows;
+    // Account tag: whatever the file says, else something from the filename.
+    const guess = parsed.bank || (impFileName.match(/icici|hdfc|tmb|tamilnad|baroda|canara|axis|sbi|indian bank|union/i)||[''])[0];
+    document.getElementById('impAcct').value = (guess ? guess.toUpperCase().replace(/\s+/g,'-') : 'BANK').slice(0,14);
+    // Default window: this financial year only — earlier rows belong to a
+    // closed FY and would distort this year's totals and the GST view.
+    const fy = fyStartYear(new Date());
+    document.getElementById('impFrom').value = `${fy}-04-01`;
+    document.getElementById('impTo').value   = today();
+    document.getElementById('impStep1').style.display='none';
+    document.getElementById('impStep2').style.display='block';
+    document.getElementById('impActions').style.display='flex';
+    applyImportFilters();
+  }catch(e){
+    console.error(e);
+    showToast(e.message || 'Could not read that file','error');
+  }
+}
+/* Column positions differ per bank, so find the header row by its words
+   rather than assuming ICICI's row 15. */
+function parseStatementGrid(grid){
+  const find = (cells, ...keys) => cells.findIndex(c => {
+    const s=String(c||'').toLowerCase();
+    return keys.some(k=>s.includes(k));
+  });
+  let hdr=-1, cols=null, bank='';
+  for(let i=0;i<Math.min(grid.length,60);i++){
+    const row = grid[i].map(c=>String(c||''));
+    if(!bank){ const b=row.join(' ').match(/icici|hdfc|tamilnad|tmb|baroda|canara|axis|state bank|indian bank|union bank|kotak|yes bank/i); if(b) bank=b[0]; }
+    const dt = find(row,'transaction date','value date','txn date','date');
+    const rm = find(row,'remark','narration','particular','description');
+    const wd = find(row,'withdrawal','debit');
+    const dp = find(row,'deposit','credit');
+    if(dt>=0 && rm>=0 && (wd>=0 || dp>=0)){
+      hdr=i;
+      cols={ date:dt, rem:rm, wd:wd, dp:dp,
+             ref: find(row,'tran. id','tran id','transaction id','ref. no','reference','cheque'),
+             bal: find(row,'balance') };
+      break;
+    }
+  }
+  if(hdr<0) return { rows:[], bank };
+  const rows=[];
+  for(let i=hdr+1;i<grid.length;i++){
+    const r = grid[i];
+    if(!r || !r.length) continue;
+    const date = impDate(r[cols.date]);
+    if(!date) continue;
+    const wd = cols.wd>=0 ? impNum(r[cols.wd]) : 0;
+    const dp = cols.dp>=0 ? impNum(r[cols.dp]) : 0;
+    if(!wd && !dp) continue;
+    const rem = String(r[cols.rem]||'').trim();
+    let ref = cols.ref>=0 ? String(r[cols.ref]||'').trim() : '';
+    if(!ref) ref = date+'-'+(wd||dp)+'-'+hashStr(rem);   // synthetic but stable
+    rows.push({ date, rem, wd, dp, ref, bal: cols.bal>=0 ? impNum(r[cols.bal]) : 0 });
+  }
+  return { rows, bank };
+}
+function hashStr(s){ let h=0; for(let i=0;i<s.length;i++){ h=((h<<5)-h+s.charCodeAt(i))|0; } return Math.abs(h).toString(36); }
+
+/* ── reconcile against what is already in the books ────────────────────── */
+const TAG_RE = /\[BANK:([^#\]]+)#([^\]]+)\]/g;
+function importedKeys(){
+  const s = new Set();
+  entries.forEach(e=>{
+    const n = String(e.note||''); TAG_RE.lastIndex = 0;
+    let m; while((m = TAG_RE.exec(n))) s.add(m[1]+'#'+m[2]);
+  });
+  return s;
+}
+function applyImportFilters(){
+  const acct  = (_v('impAcct')||'BANK').trim();
+  const from  = _v('impFrom'), to = _v('impTo');
+  const seen  = importedKeys();
+  const wantOther = document.getElementById('impOtherCr').checked;
+  const wantSelf  = document.getElementById('impSelf').checked;
+  const usedIds = new Set();
+
+  impRows.forEach(r=>{
+    const amt  = r.dp || r.wd;
+    const kind = r.dp > 0 ? 'income' : 'expense';
+    const plat = bankPlatform(r.rem);
+    const self = looksSelfTransfer(r.rem);
+    const { party, desc } = parseRemark(r.rem);
+    r.key   = acct+'#'+r.ref;
+    r.amount= amt;
+    r.kind  = kind;
+    r.plat  = plat;
+    r.self  = self;
+    r.party = plat || party || '';
+    r.desc  = plat ? plat+' payout'
+            : desc  ? desc
+            : party ? (kind==='income' ? 'Received from ' : 'Payment to ')+party
+            : (r.rem.slice(0,60) || 'Bank transaction');
+    r.match = null; r.reason = '';
+
+    if(seen.has(r.key)){ r.action='dupe'; r.reason='already imported from this statement'; r.on=false; return; }
+    if(from && r.date < from){ r.action='excl'; r.reason='before '+fmtDate(from); r.on=false; return; }
+    if(to   && r.date > to  ){ r.action='excl'; r.reason='after '+fmtDate(to);   r.on=false; return; }
+
+    // amount + direction + date within a week — the posting date drifts
+    let best=null;
+    entries.forEach(e=>{
+      if(usedIds.has(e.id)) return;
+      const et = isIncomeT(e) ? 'income' : (isCashOut(e) ? 'expense' : null);
+      if(et !== kind) return;
+      if(Math.abs((Number(e.amount)||0) - amt) > 0.01) return;
+      const gap = Math.abs(daysBetween(e.date < r.date ? e.date : r.date, e.date < r.date ? r.date : e.date) - 1);
+      if(gap > 7) return;
+      if(!best || gap < best.gap) best = { e, gap };
+    });
+    if(best){
+      usedIds.add(best.e.id);
+      r.action='link'; r.match=best.e; r.gap=best.gap;
+      r.reason = best.gap===0 ? 'same date & amount already in your books'
+                              : `same amount, ${best.gap} day${best.gap===1?'':'s'} apart`;
+      r.on = true;   // stamping it prevents a future double-import
+      return;
+    }
+    if(self && !wantSelf){ r.action='excl'; r.reason='looks like a transfer between your own accounts'; r.on=false; return; }
+    if(kind==='income' && !plat && !wantOther){ r.action='excl'; r.reason='not an eCommerce credit'; r.on=false; return; }
+    r.action='add'; r.on=true;
+    r.reason = plat ? plat+' revenue' : (kind==='income' ? 'other credit' : 'business expense');
+  });
+  renderImport();
+}
+function impTickAll(on){
+  impRows.forEach(r=>{ if(r.action==='add'||r.action==='link') r.on=on; });
+  renderImport();
+}
+function impToggle(i){ impRows[i].on = !impRows[i].on; renderImport(); }
+
+function renderImport(){
+  const g = k => impRows.map((r,i)=>({r,i})).filter(x=>x.r.action===k);
+  const adds=g('add'), links=g('link'), dupes=g('dupe'), excl=g('excl');
+  const tot = a => _sum(a.map(x=>({amount:x.r.amount})));
+  const tickedAdds = adds.filter(x=>x.r.on), tickedLinks = links.filter(x=>x.r.on);
+
+  document.getElementById('impSummary').innerHTML = `
+    <div class="kpi-grid" style="margin-bottom:12px">
+      <div class="kpi"><div class="k-lbl"><i class="ti ti-plus"></i> New to add</div><div class="k-val" style="color:var(--success-text)">${tickedAdds.length}</div><div class="k-sub">${fmt(tot(tickedAdds))} · of ${adds.length} found</div></div>
+      <div class="kpi"><div class="k-lbl"><i class="ti ti-link"></i> Link to existing</div><div class="k-val" style="color:var(--info-text)">${tickedLinks.length}</div><div class="k-sub">stamped, not duplicated</div></div>
+      <div class="kpi"><div class="k-lbl"><i class="ti ti-check"></i> Already recorded</div><div class="k-val" style="color:var(--text2)">${dupes.length}</div><div class="k-sub">imported before — skipped</div></div>
+      <div class="kpi"><div class="k-lbl"><i class="ti ti-ban"></i> Excluded</div><div class="k-val" style="color:var(--warning-text)">${excl.length}</div><div class="k-sub">${fmt(tot(excl))} · listed below</div></div>
+    </div>
+    <div class="rep-note"><b>${esc(impFileName)}</b> — ${impRows.length} rows read. Only ticked rows are written when you press Confirm.</div>`;
+
+  const row = ({r,i}) => `
+    <div class="imp-row ${r.on?'':'off'}">
+      <span class="imp-chk">${(r.action==='add'||r.action==='link')
+        ? `<input type="checkbox" ${r.on?'checked':''} onchange="impToggle(${i})" aria-label="include">` : ''}</span>
+      <span class="imp-date" style="color:var(--text2);white-space:nowrap">${fmtDate(r.date)}</span>
+      <span class="imp-desc"><b>${esc(r.desc)}</b><small>${esc(r.party||'—')} · ${esc(r.reason)}${r.match?' → '+esc(String(r.match.description||'').slice(0,40)):''}</small></span>
+      <span class="imp-amt" style="color:${r.kind==='income'?'var(--success-text)':'var(--danger-text)'}">${r.kind==='income'?'+':'−'}${fmt(r.amount)}</span>
+      <span class="imp-act ${r.action}">${({add:'Add',link:'Link',dupe:'Already recorded',excl:'Excluded'})[r.action]}</span>
+    </div>`;
+  const block = (title,sub,list) => !list.length ? '' :
+    `<div class="imp-list"><div class="imp-group">${title}<span class="g-sub">${sub}</span></div>${list.map(row).join('')}</div>`;
+
+  document.getElementById('impOutput').innerHTML =
+      block('New — will be added','money not in your books yet',adds)
+    + block('Match found — will be stamped','already recorded; stamping stops a future double-import',links)
+    + block('Excluded','tick a row above to include it, or use the two switches',excl)
+    + block('Already recorded','stamped by an earlier import of this statement',dupes)
+    + (impRows.length ? '' : '<div class="rep-empty"><i class="ti ti-inbox"></i>Nothing to show.</div>');
+
+  const btn=document.getElementById('impConfirmBtn');
+  const n=tickedAdds.length+tickedLinks.length;
+  btn.innerHTML = `<i class="ti ti-check"></i> Confirm &amp; Save${n?' ('+n+')':''}`;
+  btn.disabled = !n || _importing;
+}
+
+/* ── write to the Sheet ────────────────────────────────────────────────── */
+async function confirmImport(){
+  if(_importing) return;
+  const acct = (_v('impAcct')||'BANK').trim();
+  const todo = impRows.filter(r=>r.on && (r.action==='add'||r.action==='link'));
+  if(!todo.length){ showToast('Nothing ticked','error'); return; }
+  // Apps Script takes roughly a second per write and they must go one at a
+  // time (parallel calls to the same Sheet race each other), so a big first
+  // import is a genuine wait — say so up front rather than looking hung.
+  const mins = Math.max(1, Math.round(todo.length*1.5/60));
+  if(!confirm(`Save ${todo.length} row(s) to Google Drive?\n\n`+
+              `• ${todo.filter(r=>r.action==='add').length} new entries added\n`+
+              `• ${todo.filter(r=>r.action==='link').length} existing entries stamped (not duplicated)\n\n`+
+              `This writes one row at a time and will take about ${mins} minute${mins===1?'':'s'}. `+
+              `Keep this tab open — you can watch the progress bar.\n\n`+
+              `In a hurry? Cancel, untick the "Match found" rows and save just the new ones — `+
+              `but then those matches will be offered again next month.`)) return;
+
+  _importing = true;
+  document.getElementById('impProgress').style.display='block';
+  const bar=document.getElementById('impBarFill'), txt=document.getElementById('impProgTxt');
+  let done=0, ok=0, fail=0;
+  for(const r of todo){
+    const tag = `[BANK:${acct}#${r.ref}]`;
+    try{
+      if(r.action==='add'){
+        // ONE attempt, long timeout — a retry here could insert the row twice.
+        const res = await gasCall({ action:'add', date:r.date, type:r.kind,
+          description:r.desc, party:r.party, amount:r.amount,
+          note:`${tag} ${r.rem}`.trim().slice(0,480) }, 1, 25000);
+        if(res && res.status==='ok') ok++; else fail++;
+      } else {
+        const e = r.match;
+        const note = (String(e.note||'').includes(tag) ? String(e.note||'') : `${String(e.note||'')} ${tag}`).trim();
+        const res = await gasCall({ action:'update', id:e.id, date:e.date, type:e.type,
+          description:e.description, party:e.party, amount:e.amount, note:note.slice(0,480) }, 1, 25000);
+        if(res && res.status==='ok') ok++; else fail++;
+      }
+    }catch(err){ console.warn('import row failed', r.ref, err); fail++; }
+    done++;
+    bar.style.width = (done/todo.length*100).toFixed(1)+'%';
+    txt.textContent = `Saving ${done} of ${todo.length}…  ${ok} done${fail?', '+fail+' failed':''}`;
+  }
+  _importing = false;
+  txt.textContent = `Finished — ${ok} saved${fail?', '+fail+' failed':''}.`;
+  showToast(fail ? `${ok} saved, ${fail} failed — tap Sync and re-import to retry` : `${ok} row(s) saved to Google Drive`,
+            fail ? 'error' : 'success');
+  await loadAll();
+  applyImportFilters();      // re-check: everything just written now reads as "Already recorded"
+}
+
+function openImport(){
+  document.getElementById('importModal').classList.add('open');
+  document.getElementById('importOverlay').classList.add('open');
+}
+function closeImport(){
+  if(_importing){ showToast('Import still running — please wait','error'); return; }
+  document.getElementById('importModal').classList.remove('open');
+  document.getElementById('importOverlay').classList.remove('open');
+}
+function resetImport(){
+  impRows=[]; impFileName='';
+  document.getElementById('impFile').value='';
+  document.getElementById('impStep1').style.display='block';
+  document.getElementById('impStep2').style.display='none';
+  document.getElementById('impActions').style.display='none';
+  document.getElementById('impProgress').style.display='none';
+  document.getElementById('impBarFill').style.width='0';
+}
+// drag & drop
+(function(){
+  const dz=document.getElementById('impDrop');
+  if(!dz) return;
+  ['dragenter','dragover'].forEach(ev=>dz.addEventListener(ev,e=>{ e.preventDefault(); dz.classList.add('over'); }));
+  ['dragleave','drop'].forEach(ev=>dz.addEventListener(ev,e=>{ e.preventDefault(); dz.classList.remove('over'); }));
+  dz.addEventListener('drop',e=>{ const f=e.dataTransfer.files && e.dataTransfer.files[0]; if(f) handleImportFile(f); });
+})();
 
 // ── SERVICE WORKER ──
 if('serviceWorker' in navigator){
