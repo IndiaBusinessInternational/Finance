@@ -260,7 +260,7 @@ tr.row-editing td{background:var(--info-bg) !important}
 .s-btn.rep-btn:hover{background:var(--cyan);color:#000}
 .report-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:400;opacity:0;pointer-events:none;transition:opacity 0.25s}
 .report-overlay.open{opacity:1;pointer-events:all}
-.report-modal{position:fixed;top:50%;left:50%;transform:translate(-50%,-48%) scale(0.98);width:min(700px,94vw);max-height:90vh;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);z-index:401;display:flex;flex-direction:column;opacity:0;pointer-events:none;transition:opacity 0.25s,transform 0.25s;overflow:hidden}
+.report-modal{position:fixed;top:50%;left:50%;transform:translate(-50%,-48%) scale(0.98);width:min(1000px,96vw);max-height:92vh;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);z-index:401;display:flex;flex-direction:column;opacity:0;pointer-events:none;transition:opacity 0.25s,transform 0.25s;overflow:hidden}
 .report-modal.open{opacity:1;pointer-events:all;transform:translate(-50%,-50%) scale(1)}
 .report-hdr{background:var(--black);border-bottom:2px solid var(--cyan);padding:14px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
 .report-hdr-title{color:var(--cyan);font-weight:700;font-size:14px;font-family:var(--font);text-transform:uppercase;letter-spacing:0.06em;display:flex;align-items:center;gap:7px}
@@ -282,6 +282,71 @@ tr.row-editing td{background:var(--info-bg) !important}
 .rep-table th:nth-child(4),.rep-table td:nth-child(4){width:92px}
 .rep-empty{text-align:center;color:var(--text3);padding:20px;font-size:13px}
 .rep-empty i{display:block;font-size:30px;margin-bottom:8px}
+
+/* ── REPORT ANALYTICS (v4.0) ── */
+.rep-fieldset{border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px 12px;display:flex;flex-direction:column;gap:10px}
+.rep-fieldset > .rf-legend{font-size:10px;text-transform:uppercase;letter-spacing:0.07em;color:var(--text3);font-weight:700;display:flex;align-items:center;gap:5px}
+.chip-row{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:12px;padding:6px 11px;border:1px solid var(--border2);border-radius:20px;background:transparent;color:var(--text2);cursor:pointer;font-family:var(--font);font-weight:500;display:flex;align-items:center;gap:4px;white-space:nowrap}
+.chip:hover{border-color:var(--cyan);color:var(--cyan)}
+.chip.on{background:var(--cyan);border-color:var(--cyan);color:#000;font-weight:700}
+.chip.on.c-income{background:var(--success-text);border-color:var(--success-text)}
+.chip.on.c-expense{background:var(--danger-text);border-color:var(--danger-text)}
+.chip.on.c-credit{background:var(--warning-text);border-color:var(--warning-text)}
+.chip.on.c-settlement{background:var(--info-text);border-color:var(--info-text)}
+.rep-mini-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.rep-check{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text2);cursor:pointer;user-select:none}
+.rep-check input{width:auto;margin:0;accent-color:var(--cyan);cursor:pointer}
+
+/* tabs */
+.rep-tabs{display:flex;gap:2px;overflow-x:auto;border-bottom:1px solid var(--border);margin:14px 0 12px;scrollbar-width:thin}
+.rep-tab{background:none;border:none;border-bottom:2px solid transparent;color:var(--text2);font-size:12px;font-weight:600;padding:9px 12px;cursor:pointer;font-family:var(--font);white-space:nowrap;text-transform:uppercase;letter-spacing:0.04em;display:flex;align-items:center;gap:5px}
+.rep-tab:hover{color:var(--cyan)}
+.rep-tab.on{color:var(--cyan);border-bottom-color:var(--cyan)}
+.rep-pane{display:none}
+.rep-pane.on{display:block}
+
+/* KPI cards */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:10px;margin-bottom:6px}
+.kpi{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:11px 12px}
+.kpi .k-lbl{font-size:10px;text-transform:uppercase;letter-spacing:0.05em;color:var(--text2);margin-bottom:5px;display:flex;align-items:center;gap:4px}
+.kpi .k-val{font-size:17px;font-weight:700;font-family:var(--font);line-height:1.2}
+.kpi .k-sub{font-size:11px;color:var(--text3);margin-top:4px;display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.delta{font-weight:700;font-size:11px;padding:1px 6px;border-radius:20px;white-space:nowrap}
+.delta.up{background:var(--success-bg);color:var(--success-text)}
+.delta.down{background:var(--danger-bg);color:var(--danger-text)}
+.delta.flat{background:var(--bg4);color:var(--text2)}
+
+/* bars inside tables */
+.bar-cell{position:relative;min-width:70px}
+.bar-track{height:6px;border-radius:6px;background:var(--bg4);overflow:hidden}
+.bar-fill{height:100%;border-radius:6px;background:var(--cyan)}
+.bar-fill.inc{background:var(--success-text)}
+.bar-fill.exp{background:var(--danger-text)}
+
+/* trend chart */
+.chart-wrap{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:12px 10px 6px;margin-bottom:6px;overflow-x:auto}
+.chart-legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--text2);padding:6px 4px 2px}
+.chart-legend span{display:flex;align-items:center;gap:5px}
+.lg-dot{width:9px;height:9px;border-radius:2px;display:inline-block}
+
+/* insight list */
+.insight{display:flex;gap:9px;align-items:flex-start;padding:9px 11px;border:1px solid var(--border);border-left-width:3px;border-radius:var(--radius);background:var(--bg3);margin-bottom:7px;font-size:12.5px;line-height:1.5}
+.insight i{font-size:15px;flex-shrink:0;margin-top:1px}
+.insight.good{border-left-color:var(--success-text)}.insight.good i{color:var(--success-text)}
+.insight.bad{border-left-color:var(--danger-text)}.insight.bad i{color:var(--danger-text)}
+.insight.warn{border-left-color:var(--warning-text)}.insight.warn i{color:var(--warning-text)}
+.insight.info{border-left-color:var(--info-text)}.insight.info i{color:var(--info-text)}
+.tag{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:var(--bg4);color:var(--text2);letter-spacing:0.03em}
+.tag.a{background:var(--danger-bg);color:var(--danger-text)}
+.tag.b{background:var(--warning-bg);color:var(--warning-text)}
+.tag.c{background:var(--info-bg);color:var(--info-text)}
+.rep-note{font-size:11px;color:var(--text3);line-height:1.5;margin:4px 0 10px}
+.rep-scroll{overflow-x:auto}
+.rep-table.auto{table-layout:auto}
+.rep-table.auto th:first-child,.rep-table.auto td:first-child{width:auto}
+.rep-table.auto th:nth-child(4),.rep-table.auto td:nth-child(4){width:auto}
+.num{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
 
 /* ── MOBILE ── */
 @media(max-width:600px){
@@ -317,6 +382,11 @@ tr.row-editing td{background:var(--info-bg) !important}
   .rep-table th,.rep-table td{white-space:normal;overflow:visible;text-overflow:clip;padding:7px 6px}
   .rep-table th:first-child,.rep-table td:first-child,
   .rep-table th:nth-child(4),.rep-table td:nth-child(4){width:1%;white-space:nowrap}
+  /* ...but a money column must never wrap mid-amount — it reads as two numbers. */
+  .rep-table th.num,.rep-table td.num{white-space:nowrap;width:1%}
+  .rep-tabs{gap:0}
+  .rep-tab{padding:9px 9px;font-size:11px}
+  .kpi .k-val{font-size:15px}
 }
 @media(max-width:360px){
   /* Very small phones: shrink the summary cards and tighten the table so the
@@ -338,7 +408,7 @@ tr.row-editing td{background:var(--info-bg) !important}
     <div class="topbar-left">
       <div class="ibi-logo"><span>IBI</span></div>
       <div>
-        <div class="app-name">IBI Finance Tracker <span class="ver-badge">v3.1</span></div>
+        <div class="app-name">IBI Finance Tracker <span class="ver-badge">v4.0</span></div>
       </div>
     </div>
     <div class="topbar-right">
@@ -526,7 +596,7 @@ tr.row-editing td{background:var(--info-bg) !important}
     </div>
   </div>
 
-  <div class="footer">IBI Finance Tracker v3.1 &mdash; India Business International &mdash; indiabusinessinternational@gmail.com</div>
+  <div class="footer">IBI Finance Tracker v4.0 &mdash; India Business International &mdash; indiabusinessinternational@gmail.com</div>
 </div>
 
 <!-- DRAWER MENU -->
@@ -538,38 +608,65 @@ tr.row-editing td{background:var(--info-bg) !important}
   </div>
   <div class="drawer-section-label">App</div>
   <button class="drawer-item" onclick="loadAll();closeDrawer()"><i class="ti ti-refresh"></i> Sync with Google Drive</button>
-  <button class="drawer-item" onclick="closeDrawer();openReport()"><i class="ti ti-report-money"></i> Monthly Report</button>
+  <button class="drawer-item" onclick="closeDrawer();openReport()"><i class="ti ti-report-analytics"></i> Financial Analysis Report</button>
   <button class="drawer-item" onclick="exportCSV();closeDrawer()"><i class="ti ti-download"></i> Export CSV</button>
   <a class="drawer-item" href="https://docs.google.com/spreadsheets/d/1hbh5E9kzX4632d4kaMHLXC-Aqhi5exgEJWOxMtSrttE/edit?gid=0#gid=0" target="_blank" onclick="closeDrawer()"><i class="ti ti-external-link"></i> Open Google Sheet</a>
   <div class="drawer-section-label">Settings</div>
   <button class="drawer-item" onclick="toggleTheme();closeDrawer()"><i class="ti ti-sun"></i> Toggle Dark / Light Mode</button>
   <button class="drawer-item" id="drawerInstallBtn" style="display:none" onclick="triggerInstall();closeDrawer()"><i class="ti ti-device-mobile-down"></i> Install as App (PWA)</button>
   <div class="drawer-section-label">About</div>
-  <div class="drawer-item" style="cursor:default;color:var(--text2);font-size:12px"><i class="ti ti-info-circle"></i> Version 3.1 — July 2026</div>
+  <div class="drawer-item" style="cursor:default;color:var(--text2);font-size:12px"><i class="ti ti-info-circle"></i> Version 4.0 — July 2026</div>
 </div>
 
 <!-- REPORT MODAL -->
 <div class="report-overlay" id="reportOverlay" onclick="closeReport()"></div>
 <div class="report-modal" id="reportModal" role="dialog" aria-modal="true" aria-label="Income and Expenditure Report">
   <div class="report-hdr">
-    <span class="report-hdr-title"><i class="ti ti-report-money"></i> Income &amp; Expenditure Report</span>
+    <span class="report-hdr-title"><i class="ti ti-report-analytics"></i> Financial Analysis Report</span>
     <button class="drawer-close" onclick="closeReport()" aria-label="Close"><i class="ti ti-x"></i></button>
   </div>
   <div class="report-body">
     <div class="report-controls">
-      <div class="type-toggle">
-        <button class="type-btn active-income" id="rbMonth" onclick="setReportMode('month')"><i class="ti ti-calendar-month"></i> By Month</button>
-        <button class="type-btn" id="rbRange" onclick="setReportMode('range')"><i class="ti ti-calendar-stats"></i> Date Range</button>
+
+      <!-- PERIOD -->
+      <div class="rep-fieldset">
+        <div class="rf-legend"><i class="ti ti-calendar"></i> Period</div>
+        <div class="chip-row" id="rPresets"></div>
+        <div id="reportMonthWrap" class="form-grid" style="display:none">
+          <div class="form-group"><label for="rMonth">Month</label><select id="rMonth"></select></div>
+          <div class="form-group"><label for="rYear">Year</label><select id="rYear"></select></div>
+        </div>
+        <div id="reportRangeWrap" class="form-grid" style="display:none">
+          <div class="form-group"><label for="rFrom">From Date</label><input type="date" id="rFrom"></div>
+          <div class="form-group"><label for="rTo">To Date</label><input type="date" id="rTo"></div>
+        </div>
+        <label class="rep-check"><input type="checkbox" id="rCompare" checked> Compare with the previous period of the same length</label>
       </div>
-      <div id="reportMonthWrap" class="form-grid">
-        <div class="form-group"><label for="rMonth">Month</label><select id="rMonth"></select></div>
-        <div class="form-group"><label for="rYear">Year</label><select id="rYear"></select></div>
+
+      <!-- FILTERS -->
+      <div class="rep-fieldset">
+        <div class="rf-legend"><i class="ti ti-filter"></i> Filters</div>
+        <div>
+          <label style="display:block;margin-bottom:6px">Transaction type <span style="color:var(--text3);font-weight:400">— tap to include / exclude</span></label>
+          <div class="chip-row" id="rTypes">
+            <button class="chip on c-income"     data-t="income"     onclick="toggleRepType('income')"><i class="ti ti-arrow-down-circle"></i> Income</button>
+            <button class="chip on c-expense"    data-t="expense"    onclick="toggleRepType('expense')"><i class="ti ti-arrow-up-circle"></i> Expense</button>
+            <button class="chip on c-credit"     data-t="credit"     onclick="toggleRepType('credit')"><i class="ti ti-clock-dollar"></i> Credit</button>
+            <button class="chip on c-settlement" data-t="settlement" onclick="toggleRepType('settlement')"><i class="ti ti-checkbox"></i> Settlement</button>
+          </div>
+        </div>
+        <div class="rep-mini-grid">
+          <div class="form-group"><label for="rParty">Party</label><select id="rParty"><option value="">All parties</option></select></div>
+          <div class="form-group"><label for="rCategory">Category</label><select id="rCategory"><option value="">All categories</option></select></div>
+          <div class="form-group"><label for="rMin">Amount from (₹)</label><input type="number" id="rMin" placeholder="min" inputmode="decimal"></div>
+          <div class="form-group"><label for="rMax">Amount to (₹)</label><input type="number" id="rMax" placeholder="max" inputmode="decimal"></div>
+        </div>
+        <div class="form-group"><label for="rKeyword">Keyword <span style="color:var(--text3);font-weight:400">— description / party / note</span></label><input type="text" id="rKeyword" placeholder="e.g. Amazon — leave blank for everything"></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="chip" onclick="resetReportFilters()"><i class="ti ti-rotate"></i> Reset filters</button>
+        </div>
       </div>
-      <div id="reportRangeWrap" class="form-grid" style="display:none">
-        <div class="form-group"><label for="rFrom">From Date</label><input type="date" id="rFrom"></div>
-        <div class="form-group"><label for="rTo">To Date</label><input type="date" id="rTo"></div>
-      </div>
-      <div class="form-group"><label for="rKeyword">Filter by keyword <span style="color:var(--text3);font-weight:400">— party / description (optional)</span></label><input type="text" id="rKeyword" placeholder="e.g. Amazon — leave blank for everything"></div>
+
       <button class="btn-save gen-btn" onclick="generateReport()"><i class="ti ti-file-analytics"></i> Generate Report</button>
     </div>
     <div id="reportOutput" class="report-output" style="display:none"></div>
@@ -1063,16 +1160,390 @@ function exportCSV(){
   a.download='ibi_finance_transactions.csv'; a.click();
 }
 
-// ── MONTHLY / DATE-RANGE REPORT (modal) ──
+/* ══════════════════════════════════════════════════════════════════════════
+   FINANCIAL ANALYSIS REPORT  (v4.0)
+   ──────────────────────────────────────────────────────────────────────────
+   v3.x had one keyword box that searched description/party/note only, so
+   typing "income" returned nothing — there was no way to report on a single
+   transaction TYPE. This release turns the report into a proper analysis
+   pack built the way accounting/BI tools do it:
+
+     • Period presets (This/Last month, 90 days, FY Apr–Mar, quarter, all
+       time) + pick-a-month + custom range, with previous-period comparison.
+     • Real filters: type chips (the missing Income filter), party, auto
+       category, amount band, keyword — all combinable.
+     • Overview KPIs with period-on-period deltas, accrual AND cash views.
+     • Cash-book statement with running balance + opening/closing.
+     • Trend buckets (day/week/month, auto) with an inline SVG chart.
+     • Category breakdown (rule-based, tuned for an eCommerce seller).
+     • Party analysis with % share + ABC (Pareto) classification.
+     • Payables ageing (FIFO credit vs settlement, 0-30/31-60/61-90/90+).
+     • Auto insights + a data-quality audit.
+   Everything flows through to Print/PDF and the CSV export.
+   ══════════════════════════════════════════════════════════════════════════ */
 const _MONFULL = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 let reportMode = 'month', lastReport = null;
+let repPreset  = 'thisMonth';
+let repTypes   = new Set(['income','expense','credit','settlement']);
+let repTab     = 'overview';
 function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 
+/* ── small helpers ──────────────────────────────────────────────────────── */
+const _v      = id => (document.getElementById(id)||{}).value || '';
+const _sum    = rows => rows.reduce((s,e)=>s+(Number(e.amount)||0),0);
+const canonT  = e => TYPE_META[e.type] ? e.type : 'expense';   // unknown text in the Sheet = expense (pre-v3 behaviour)
+const isCashOut = e => e.type === 'expense' || isSettleT(e);   // money that actually left the account
+const pcOf    = (a,b) => b ? (a/b*100) : 0;
+function isoOf(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+function isoAdd(iso,n){ const d=new Date(iso+'T00:00:00'); d.setDate(d.getDate()+n); return isoOf(d); }
+function daysBetween(a,b){ return Math.round((new Date(b+'T00:00:00') - new Date(a+'T00:00:00'))/86400000) + 1; }
+function fmtC(n){                                   // compact Indian money for chart axes / tight cells
+  const x=Number(n)||0, v=Math.abs(x), s=x<0?'−':'';
+  if(v>=1e7) return s+'₹'+(v/1e7).toFixed(2)+'Cr';
+  if(v>=1e5) return s+'₹'+(v/1e5).toFixed(2)+'L';
+  if(v>=1e3) return s+'₹'+(v/1e3).toFixed(1)+'K';
+  return s+'₹'+v.toFixed(0);
+}
+function fmtSigned(n){ return (n<0?'−':'')+fmt(Math.abs(n)); }
+const _ts = e => { const t=Date.parse(e.createdAt); if(!isNaN(t)) return t; const m=String(e.id||'').match(/(\d{10,})/); return m?+m[1]:0; };
+function bar(pct, cls){ return `<div class="bar-track"><div class="bar-fill ${cls||''}" style="width:${Math.max(2,Math.min(100,pct)).toFixed(1)}%"></div></div>`; }
+function deltaBadge(cur, prev, goodUp){
+  if(goodUp===undefined) goodUp=true;
+  if(!prev && !cur)  return '<span class="delta flat">no change</span>';
+  if(!prev)          return '<span class="delta flat">new</span>';
+  const d = (cur-prev)/Math.abs(prev)*100;
+  if(Math.abs(d) < 0.05) return '<span class="delta flat">0.0%</span>';
+  const cls = (d>0)===goodUp ? 'up' : 'down';
+  return `<span class="delta ${cls}">${d>0?'▲':'▼'} ${Math.abs(d).toFixed(1)}%</span>`;
+}
+
+/* ── AUTO CATEGORIES ────────────────────────────────────────────────────────
+   There is no category column in the Sheet and asking for one on every entry
+   would be a second input for a fact the description already carries, so the
+   category is derived from description + party + note. Rules are ordered —
+   first match wins — and tuned for a marketplace seller's books. */
+const CAT_RULES = [
+  // income
+  { c:'Marketplace Payout',   k:'income',  re:/amazon|flipkart|meesho|jiomart|shopclues|snapdeal|glowroad|myntra|ajio|payout|marketplace|settlement received/ },
+  { c:'Direct / Retail Sales',k:'income',  re:/\bsale|walk[- ]?in|retail|counter|direct|whatsapp|instagram|website|cash sale/ },
+  { c:'Wholesale / B2B',      k:'income',  re:/wholesale|b2b|bulk|dealer|distributor/ },
+  { c:'Refund / Reimbursement',k:'income', re:/refund|reimburse|claim|cashback|reversal/ },
+  { c:'Interest & Other Income',k:'income',re:/interest|dividend|scrap|commission received|rent received/ },
+  // expense
+  { c:'Stock / Purchases',    k:'expense', re:/purchase|stock|wholesale|supplier|raw material|goods|inventory|procure/ },
+  { c:'Packaging Material',   k:'expense', re:/packag|packing|tape|bubble|carton|corrugat|poly ?bag|courier bag|box(es)?\b|wrap/ },
+  { c:'Shipping & Courier',   k:'expense', re:/courier|shipping|freight|delivery charge|dtdc|blue ?dart|delhivery|xpressbees|ekart|shadowfax|india post|speed post|transport|lorry|parcel/ },
+  { c:'Marketplace Fees',     k:'expense', re:/commission|referral fee|closing fee|marketplace fee|ad(vertis)?ing fee|shipping fee/ },
+  { c:'Marketing & Ads',      k:'expense', re:/\bads?\b|advertis|marketing|promotion|sponsor|campaign|seo|influencer|boost/ },
+  { c:'Salary & Staff',       k:'expense', re:/salary|wage|staff|labour|labor|bonus|incentive|employee|pf\b|esi\b/ },
+  { c:'Rent & Lease',         k:'expense', re:/\brent\b|lease|godown|warehouse rent|shop rent/ },
+  { c:'Utilities',            k:'expense', re:/electric|eb bill|current bill|water|gas|internet|wi-?fi|broadband|recharge|mobile bill|phone bill|jio|airtel|bsnl/ },
+  { c:'Taxes & Statutory',    k:'expense', re:/\bgst\b|\btds\b|\btcs\b|\btax\b|challan|professional tax|licen[cs]e|registration|trademark|udyam|roc\b/ },
+  { c:'Bank & Finance',       k:'expense', re:/bank charge|interest|emi|loan|payment gateway|razorpay|processing fee|penalty|late fee|nach|cheque/ },
+  { c:'Travel & Fuel',        k:'expense', re:/fuel|petrol|diesel|travel|taxi|auto\b|\bbus\b|train|flight|toll|parking|vehicle/ },
+  { c:'Office & Admin',       k:'expense', re:/stationer|printer|ink|cartridge|paper|xerox|print|office|courier envelope|pen\b|file\b/ },
+  { c:'Equipment & IT',       k:'expense', re:/laptop|computer|camera|printer purchase|software|subscription|domain|hosting|server|licence key|ai\b|chatgpt|claude|adobe/ },
+  { c:'Repairs & Maintenance',k:'expense', re:/repair|maintenance|servicing|spare|amc\b|paint|plumb|electrician/ },
+  { c:'Returns & Damages',    k:'expense', re:/return|rto\b|damage|lost in transit|shortage|breakage|claim/ },
+  { c:'Food & Refreshment',   k:'expense', re:/food|tea\b|coffee|snack|lunch|dinner|refreshment|hotel|canteen/ },
+  { c:'Owner Drawings',       k:'expense', re:/drawing|personal|self\b|owner/ }
+];
+const _catCache = new Map();
+function categoryOf(e){
+  const key = e.id || (e.description+'|'+e.party+'|'+e.amount);
+  if(_catCache.has(key)) return _catCache.get(key);
+  const hay  = `${e.description||''} ${e.party||''} ${e.note||''}`.toLowerCase();
+  const kind = isIncomeT(e) ? 'income' : 'expense';
+  let out = 'Uncategorised';
+  for(const r of CAT_RULES){ if(r.k!==kind) continue; if(r.re.test(hay)){ out = r.c; break; } }
+  _catCache.set(key, out);
+  return out;
+}
+
+/* ── PERIOD RESOLUTION ──────────────────────────────────────────────────────
+   Financial year is the Indian one: 1 April → 31 March. Quarters follow it
+   (Q1 = Apr-Jun), which is what every GST/ITR filing is keyed to. */
+const REPORT_PRESETS = [
+  { id:'thisMonth', label:'This Month',    icon:'ti-calendar-event' },
+  { id:'lastMonth', label:'Last Month',    icon:'ti-calendar-minus' },
+  { id:'last30',    label:'Last 30 Days',  icon:'ti-calendar-time' },
+  { id:'last90',    label:'Last 90 Days',  icon:'ti-calendar-time' },
+  { id:'thisQtr',   label:'This Quarter',  icon:'ti-chart-pie' },
+  { id:'thisFY',    label:'This FY',       icon:'ti-building-bank' },
+  { id:'lastFY',    label:'Last FY',       icon:'ti-building-bank' },
+  { id:'all',       label:'All Time',      icon:'ti-infinity' },
+  { id:'month',     label:'Pick Month',    icon:'ti-calendar-month' },
+  { id:'range',     label:'Custom Range',  icon:'ti-calendar-stats' }
+];
+function fyStartYear(d){ return d.getMonth() >= 3 ? d.getFullYear() : d.getFullYear()-1; }
+function fyLabel(y){ return `FY ${y}-${String((y+1)%100).padStart(2,'0')}`; }
+function firstEntryDate(){
+  let min = '';
+  entries.forEach(e=>{ const d=String(e.date||'').slice(0,10); if(d && (!min || d<min)) min=d; });
+  return min || today();
+}
+function resolvePeriod(){
+  const now = new Date(), Y = now.getFullYear(), M = now.getMonth();
+  const monthBounds = (y,m) => ({ from:`${y}-${String(m+1).padStart(2,'0')}-01`,
+                                  to:`${y}-${String(m+1).padStart(2,'0')}-${String(new Date(y,m+1,0).getDate()).padStart(2,'0')}` });
+  switch(repPreset){
+    case 'thisMonth': { const b=monthBounds(Y,M); return {...b, label:`${_MONFULL[M]} ${Y}`}; }
+    case 'lastMonth': { const d=new Date(Y,M-1,1), b=monthBounds(d.getFullYear(),d.getMonth());
+                        return {...b, label:`${_MONFULL[d.getMonth()]} ${d.getFullYear()}`}; }
+    case 'last30':    return { from:isoAdd(today(),-29), to:today(), label:'Last 30 Days' };
+    case 'last90':    return { from:isoAdd(today(),-89), to:today(), label:'Last 90 Days' };
+    case 'thisQtr': {
+      const fy = fyStartYear(now), qi = Math.floor(((M-3)+12)%12/3);       // 0 = Apr-Jun
+      const sm = 3 + qi*3, sy = fy + (sm>11?1:0), sm2 = sm%12;
+      const s = new Date(sy, sm2, 1), e = new Date(sy, sm2+3, 0);
+      return { from:isoOf(s), to:isoOf(e), label:`Q${qi+1} ${fyLabel(fy)} (${_MONFULL[s.getMonth()].slice(0,3)}–${_MONFULL[e.getMonth()].slice(0,3)})` };
+    }
+    case 'thisFY': { const fy=fyStartYear(now); return { from:`${fy}-04-01`, to:`${fy+1}-03-31`, label:`${fyLabel(fy)} (1 Apr – 31 Mar)` }; }
+    case 'lastFY': { const fy=fyStartYear(now)-1; return { from:`${fy}-04-01`, to:`${fy+1}-03-31`, label:`${fyLabel(fy)} (1 Apr – 31 Mar)` }; }
+    case 'all':    return { from:firstEntryDate(), to:today(), label:'All Time' };
+    case 'month': {
+      const m=+_v('rMonth'), y=+_v('rYear'); if(!m||!y) return null;
+      const b=monthBounds(y,m-1); return {...b, label:`${_MONFULL[m-1]} ${y}`};
+    }
+    default: {
+      const from=_v('rFrom'), to=_v('rTo');
+      if(!from||!to) return null;
+      if(from>to) return { invalid:true };
+      return { from, to, label:`${fmtDate(from)} → ${fmtDate(to)}` };
+    }
+  }
+}
+/* Previous period = the same number of days ending the day before this one.
+   Comparing Jul (31d) with a 30-day June is the standard like-for-like view. */
+function previousPeriod(p){
+  const n = daysBetween(p.from, p.to);
+  const to = isoAdd(p.from,-1);
+  return { from: isoAdd(to, -(n-1)), to, label:`${fmtDate(isoAdd(to,-(n-1)))} → ${fmtDate(to)}` };
+}
+
+/* ── FILTERS ───────────────────────────────────────────────────────────── */
+function toggleRepType(t){
+  if(repTypes.has(t)){ if(repTypes.size===1){ showToast('Keep at least one type selected','error'); return; } repTypes.delete(t); }
+  else repTypes.add(t);
+  document.querySelectorAll('#rTypes .chip').forEach(c=>{
+    c.classList.toggle('on', repTypes.has(c.dataset.t));
+  });
+}
+function setPreset(id){
+  repPreset = id; reportMode = id;
+  document.querySelectorAll('#rPresets .chip').forEach(c=>c.classList.toggle('on', c.dataset.p===id));
+  document.getElementById('reportMonthWrap').style.display = id==='month' ? 'grid' : 'none';
+  document.getElementById('reportRangeWrap').style.display = id==='range' ? 'grid' : 'none';
+}
+function resetReportFilters(){
+  repTypes = new Set(['income','expense','credit','settlement']);
+  document.querySelectorAll('#rTypes .chip').forEach(c=>c.classList.add('on'));
+  ['rParty','rCategory','rMin','rMax','rKeyword'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  showToast('Filters reset');
+}
+function nonDateFilter(){
+  const kwl   = _v('rKeyword').trim().toLowerCase();
+  const party = _v('rParty').trim().toLowerCase();
+  const cat   = _v('rCategory');
+  const min   = parseFloat(_v('rMin')), max = parseFloat(_v('rMax'));
+  return e => {
+    if(!repTypes.has(canonT(e))) return false;
+    if(party && String(e.party||'').trim().toLowerCase() !== party) return false;
+    if(cat && categoryOf(e) !== cat) return false;
+    const amt = Number(e.amount)||0;
+    if(!isNaN(min) && amt < min) return false;
+    if(!isNaN(max) && amt > max) return false;
+    if(kwl && !`${e.description||''} ${e.party||''} ${e.note||''}`.toLowerCase().includes(kwl)) return false;
+    return true;
+  };
+}
+function filterLabel(){
+  const bits = [];
+  if(repTypes.size < 4) bits.push([...repTypes].map(t=>TYPE_META[t].label).join(' + ') + ' only');
+  const p=_v('rParty'); if(p) bits.push('Party: '+p);
+  const c=_v('rCategory'); if(c) bits.push('Category: '+c);
+  const mn=_v('rMin'), mx=_v('rMax');
+  if(mn||mx) bits.push('Amount ' + (mn?fmt(mn):'₹0') + ' – ' + (mx?fmt(mx):'∞'));
+  const k=_v('rKeyword').trim(); if(k) bits.push(`“${k}”`);
+  return bits;
+}
+
+/* ── STATS ─────────────────────────────────────────────────────────────── */
+function statsOf(rows, from, to){
+  const inc = rows.filter(isIncomeT), exp = rows.filter(isExpenseT),
+        cash= rows.filter(e=>e.type==='expense'), cr = rows.filter(isCreditT), st = rows.filter(isSettleT);
+  const tInc=_sum(inc), tExp=_sum(exp), tCash=_sum(cash), tCr=_sum(cr), tSet=_sum(st);
+  const days = (from&&to) ? Math.max(1, daysBetween(from,to)) : 1;
+  const outflow = tCash + tSet;                       // money that actually left
+  return {
+    rows, inc, exp, cr, st, days,
+    tInc, tExp, tCash, tCr, tSet, outflow,
+    net: tInc - tExp,                                 // accrual surplus / deficit
+    cashNet: tInc - outflow,                          // real bank movement
+    margin: pcOf(tInc - tExp, tInc),
+    expRatio: pcOf(tExp, tInc),
+    count: rows.length,
+    avgInc: inc.length ? tInc/inc.length : 0,
+    avgExp: exp.length ? tExp/exp.length : 0,
+    dailyInc: tInc/days, dailyExp: tExp/days, burn: outflow/days,
+    maxInc: inc.reduce((a,e)=>e.amount>(a?a.amount:0)?e:a, null),
+    maxExp: exp.reduce((a,e)=>e.amount>(a?a.amount:0)?e:a, null),
+    parties: new Set(rows.map(e=>String(e.party||'').trim().toLowerCase()).filter(Boolean)).size
+  };
+}
+/* Opening balance = every earlier transaction that passes the same non-date
+   filters, on a cash basis. Without it a period statement has no anchor. */
+function openingCash(from, pass){
+  let bal = 0;
+  entries.forEach(e=>{
+    const d = String(e.date||'').slice(0,10);
+    if(!d || d >= from || !pass(e)) return;
+    if(isIncomeT(e)) bal += e.amount; else if(isCashOut(e)) bal -= e.amount;
+  });
+  return bal;
+}
+
+/* ── GROUPING ──────────────────────────────────────────────────────────── */
+function groupBy(rows, keyFn){
+  const m = new Map();
+  rows.forEach(e=>{
+    const k = keyFn(e) || '—';
+    const r = m.get(k) || { key:k, total:0, count:0, first:'', last:'' };
+    r.total += Number(e.amount)||0; r.count++;
+    const d = String(e.date||'').slice(0,10);
+    if(d && (!r.first || d<r.first)) r.first=d;
+    if(d && d>r.last) r.last=d;
+    m.set(k,r);
+  });
+  return [...m.values()].sort((a,b)=>b.total-a.total);
+}
+/* ABC / Pareto: A = the parties making up the first 80% of the value, B to
+   95%, C the long tail. Standard spend-analysis classification. */
+function abcTag(rows){
+  const total = rows.reduce((s,r)=>s+r.total,0); let cum=0;
+  return rows.map(r=>{ cum += r.total; const p = pcOf(cum,total);
+    return { ...r, cum:p, abc: p<=80 ? 'A' : (p<=95 ? 'B' : 'C') }; });
+}
+function bucketize(rows, from, to){
+  const span = daysBetween(from,to);
+  const gran = span<=31 ? 'day' : (span<=120 ? 'week' : 'month');
+  const keyOf = d => {
+    if(gran==='day')   return d;
+    if(gran==='month') return d.slice(0,7);
+    const dt=new Date(d+'T00:00:00'); dt.setDate(dt.getDate() - ((dt.getDay()+6)%7)); return isoOf(dt);
+  };
+  const m = new Map();
+  rows.forEach(e=>{
+    const d=String(e.date||'').slice(0,10); if(!d) return;
+    const k=keyOf(d), r = m.get(k) || { key:k, inc:0, exp:0, count:0 };
+    if(isIncomeT(e)) r.inc += e.amount; else if(isExpenseT(e)) r.exp += e.amount;
+    r.count++; m.set(k,r);
+  });
+  // fill the gaps so a quiet week still shows as a gap, not a missing column
+  const out=[]; let cur=keyOf(from); const end=keyOf(to); let guard=0;
+  const step = { day:k=>isoAdd(k,1), week:k=>isoAdd(k,7),
+                 month:k=>{ const [y,mo]=k.split('-').map(Number); return mo===12?`${y+1}-01`:`${y}-${String(mo+1).padStart(2,'0')}`; } }[gran];
+  while(guard++ < 800){
+    out.push(m.get(cur) || { key:cur, inc:0, exp:0, count:0 });
+    if(cur >= end) break;
+    cur = step(cur);
+  }
+  let run = 0;
+  return { gran, buckets: out.map(b=>{ const net=b.inc-b.exp; run+=net;
+    return { ...b, net, cum:run, label: bucketLabel(b.key, gran) }; }) };
+}
+function bucketLabel(k, gran){
+  if(gran==='month'){ const [y,m]=k.split('-').map(Number); return `${_MON[m-1]} ${String(y).slice(2)}`; }
+  const [y,m,d] = k.split('-').map(Number);
+  return `${String(d).padStart(2,'0')} ${_MON[m-1]}`;
+}
+
+/* ── PAYABLES AGEING (FIFO) ─────────────────────────────────────────────────
+   Settlements are applied to the oldest open credit first, so what is left
+   carries the age of the invoice it belongs to — the same way an AP ageing
+   report works. Without FIFO an old bill would look fresh the moment any
+   payment was made to that party. */
+function ageingBuckets(){
+  const buckets = { '0-30':0, '31-60':0, '61-90':0, '90+':0 };
+  const perParty = new Map();
+  const byParty = new Map();
+  entries.forEach(e=>{
+    if(!isCreditT(e) && !isSettleT(e)) return;
+    const name=String(e.party||'').trim(); if(!name) return;
+    const k=name.toLowerCase(), r = byParty.get(k) || { party:name, credits:[], paid:0 };
+    if(isCreditT(e)) r.credits.push({ date:String(e.date||'').slice(0,10), amt:Number(e.amount)||0, desc:e.description||'' });
+    else r.paid += Number(e.amount)||0;
+    byParty.set(k,r);
+  });
+  const now = today(); const rows=[];
+  byParty.forEach(r=>{
+    r.credits.sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+    let left = r.paid;
+    const open = [];
+    r.credits.forEach(c=>{
+      let amt=c.amt;
+      if(left>0){ const use=Math.min(left,amt); amt-=use; left-=use; }
+      if(amt > 0.005) open.push({ ...c, amt });
+    });
+    if(!open.length) return;
+    const b = { '0-30':0, '31-60':0, '61-90':0, '90+':0 };
+    open.forEach(c=>{
+      const age = c.date ? daysBetween(c.date, now)-1 : 0;
+      const k = age<=30 ? '0-30' : age<=60 ? '31-60' : age<=90 ? '61-90' : '90+';
+      b[k] += c.amt; buckets[k] += c.amt;
+    });
+    const oldest = open[0].date;
+    rows.push({ party:r.party, total:open.reduce((s,c)=>s+c.amt,0), oldest,
+                oldestAge: oldest ? daysBetween(oldest, now)-1 : 0, ...b });
+    perParty.set(r.party, b);
+  });
+  rows.sort((a,b)=>b.total-a.total);
+  return { buckets, rows, total:rows.reduce((s,r)=>s+r.total,0) };
+}
+
+/* ── SVG TREND CHART (no libraries — the app is an offline PWA) ─────────── */
+function trendChart(buckets, opt){
+  opt = opt || {};
+  const inkInc = opt.inc || 'var(--success-text)', inkExp = opt.exp || 'var(--danger-text)',
+        inkNet = opt.net || 'var(--cyan)', inkAxis = opt.axis || 'var(--border2)', inkTxt = opt.txt || 'var(--text3)';
+  const n = buckets.length; if(!n) return '';
+  const bw   = Math.max(26, Math.min(70, Math.floor(640/n)));
+  const padL = 56, padR = 12, padT = 12, padB = 30;
+  const W = padL + padR + n*bw, H = 200, plotH = H - padT - padB;
+  const max = Math.max(1, ...buckets.map(b=>Math.max(b.inc, b.exp)));
+  const y   = v => padT + plotH - (v/max)*plotH;
+  const gridN = 4;
+  let g = '';
+  for(let i=0;i<=gridN;i++){
+    const val = max*i/gridN, yy = y(val);
+    g += `<line x1="${padL}" y1="${yy.toFixed(1)}" x2="${W-padR}" y2="${yy.toFixed(1)}" stroke="${inkAxis}" stroke-width="1" stroke-dasharray="${i?'3 4':'0'}"/>`
+      +  `<text x="${padL-6}" y="${(yy+3.5).toFixed(1)}" font-size="9" fill="${inkTxt}" text-anchor="end">${fmtC(val)}</text>`;
+  }
+  let bars='', labels='';
+  const gap = Math.max(2, bw*0.14), w = (bw-gap*3)/2;
+  buckets.forEach((b,i)=>{
+    const x = padL + i*bw + gap;
+    const hi = Math.max(0, plotH - (y(b.inc)-padT)), he = Math.max(0, plotH - (y(b.exp)-padT));
+    bars += `<rect x="${x.toFixed(1)}" y="${y(b.inc).toFixed(1)}" width="${w.toFixed(1)}" height="${hi.toFixed(1)}" fill="${inkInc}" rx="2"><title>${esc(b.label)} · Income ${fmt(b.inc)}</title></rect>`
+         +  `<rect x="${(x+w+gap).toFixed(1)}" y="${y(b.exp).toFixed(1)}" width="${w.toFixed(1)}" height="${he.toFixed(1)}" fill="${inkExp}" rx="2"><title>${esc(b.label)} · Expense ${fmt(b.exp)}</title></rect>`;
+    if(n<=24 || i%Math.ceil(n/24)===0)
+      labels += `<text x="${(padL+i*bw+bw/2).toFixed(1)}" y="${H-10}" font-size="9" fill="${inkTxt}" text-anchor="middle">${esc(b.label)}</text>`;
+  });
+  const pts = buckets.map((b,i)=>`${(padL+i*bw+bw/2).toFixed(1)},${y(Math.max(0,b.net)).toFixed(1)}`).join(' ');
+  const line = n>1 ? `<polyline points="${pts}" fill="none" stroke="${inkNet}" stroke-width="1.6" stroke-dasharray="4 3" opacity="0.85"/>` : '';
+  return `<div class="chart-wrap"><svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="Income versus expense trend">${g}${bars}${line}${labels}</svg>
+    <div class="chart-legend">
+      <span><i class="lg-dot" style="background:${inkInc}"></i> Income</span>
+      <span><i class="lg-dot" style="background:${inkExp}"></i> Expense</span>
+      <span><i class="lg-dot" style="background:${inkNet}"></i> Net (dashed)</span>
+    </div></div>`;
+}
+
+/* ── MODAL PLUMBING ────────────────────────────────────────────────────── */
 function buildReportSelects(){
   const now=new Date(), curY=now.getFullYear();
   const mSel=document.getElementById('rMonth'), ySel=document.getElementById('rYear');
   if(!mSel.options.length) mSel.innerHTML=_MONFULL.map((m,i)=>`<option value="${i+1}">${m}</option>`).join('');
-  // year list spans the data range (or last 3 years) up to the current year, newest first
   let minY=curY-2;
   entries.forEach(e=>{ const y=parseInt((e.date||'').slice(0,4),10); if(y && y<minY) minY=y; });
   const prev=ySel.value, years=[];
@@ -1080,15 +1551,41 @@ function buildReportSelects(){
   ySel.innerHTML=years.map(y=>`<option value="${y}">${y}</option>`).join('');
   ySel.value=(prev && years.includes(+prev))?prev:String(curY);
   if(!mSel.value) mSel.value=String(now.getMonth()+1);
+
+  // preset chips
+  const pBox=document.getElementById('rPresets');
+  if(pBox && !pBox.children.length){
+    pBox.innerHTML = REPORT_PRESETS.map(p=>`<button class="chip${p.id===repPreset?' on':''}" data-p="${p.id}" onclick="setPreset('${p.id}')"><i class="ti ${p.icon}"></i> ${p.label}</button>`).join('');
+  }
+  // party list — every party that appears in the books, with its entry count
+  const pSel=document.getElementById('rParty');
+  if(pSel){
+    const keep=pSel.value;
+    const g=groupBy(entries.filter(e=>String(e.party||'').trim()), e=>String(e.party).trim());
+    pSel.innerHTML='<option value="">All parties</option>' +
+      g.sort((a,b)=>a.key.localeCompare(b.key)).map(r=>`<option value="${esc(r.key.toLowerCase())}">${esc(r.key)} (${r.count})</option>`).join('');
+    pSel.value=keep;
+  }
+  const cSel=document.getElementById('rCategory');
+  if(cSel){
+    const keep=cSel.value;
+    const cats=[...new Set(entries.map(categoryOf))].sort();
+    cSel.innerHTML='<option value="">All categories</option>'+cats.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');
+    cSel.value=keep;
+  }
 }
 function openReport(){
   buildReportSelects();
+  setPreset(repPreset);
   const pad=n=>String(n).padStart(2,'0'), d=new Date();
   const fEl=document.getElementById('rFrom'), tEl=document.getElementById('rTo');
-  if(!fEl.value) fEl.value=`${d.getFullYear()}-${pad(d.getMonth()+1)}-01`; // 1st of this month
+  if(!fEl.value) fEl.value=`${d.getFullYear()}-${pad(d.getMonth()+1)}-01`;
   if(!tEl.value) tEl.value=today();
   const curSearch=document.getElementById('filterSearch').value.trim();
-  if(curSearch) document.getElementById('rKeyword').value=curSearch; // carry over whatever you were searching in the table
+  if(curSearch) document.getElementById('rKeyword').value=curSearch;   // carry over the table search
+  const curType=document.getElementById('filterType').value;           // ...and the table's type filter
+  if(curType && curType!=='all'){ repTypes=new Set([curType]);
+    document.querySelectorAll('#rTypes .chip').forEach(c=>c.classList.toggle('on', repTypes.has(c.dataset.t))); }
   document.getElementById('reportModal').classList.add('open');
   document.getElementById('reportOverlay').classList.add('open');
 }
@@ -1096,187 +1593,533 @@ function closeReport(){
   document.getElementById('reportModal').classList.remove('open');
   document.getElementById('reportOverlay').classList.remove('open');
 }
-function setReportMode(m){
-  reportMode=m;
-  document.getElementById('rbMonth').className='type-btn'+(m==='month'?' active-income':'');
-  document.getElementById('rbRange').className='type-btn'+(m==='range'?' active-income':'');
-  document.getElementById('reportMonthWrap').style.display=m==='month'?'grid':'none';
-  document.getElementById('reportRangeWrap').style.display=m==='range'?'grid':'none';
-}
+function setReportMode(m){ setPreset(m); }   // kept for older callers
 document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeReport(); });
-
-// Resolve the selected period to inclusive ISO bounds (yyyy-mm-dd) + a human label.
-function reportPeriod(){
-  if(reportMode==='month'){
-    const m=+document.getElementById('rMonth').value, y=+document.getElementById('rYear').value;
-    if(!m||!y) return null;
-    const mm=String(m).padStart(2,'0'), last=new Date(y,m,0).getDate();
-    return { from:`${y}-${mm}-01`, to:`${y}-${mm}-${String(last).padStart(2,'0')}`, label:`${_MONFULL[m-1]} ${y}` };
-  }
-  const from=document.getElementById('rFrom').value, to=document.getElementById('rTo').value;
-  if(!from||!to) return null;
-  if(from>to) return { invalid:true };
-  return { from, to, label:`${fmtDate(from)} → ${fmtDate(to)}` };
+function repTabTo(id){
+  repTab=id;
+  document.querySelectorAll('#reportOutput .rep-tab').forEach(t=>t.classList.toggle('on', t.dataset.k===id));
+  document.querySelectorAll('#reportOutput .rep-pane').forEach(p=>p.classList.toggle('on', p.dataset.k===id));
+  const body=document.querySelector('.report-body'); if(body) body.scrollTop = body.scrollHeight;
 }
 
+/* ── DATA QUALITY AUDIT ────────────────────────────────────────────────── */
+function qualityChecks(rows){
+  const out=[];
+  const seen=new Map();
+  rows.forEach(e=>{
+    const k=`${String(e.date||'').slice(0,10)}|${canonT(e)}|${String(e.party||'').trim().toLowerCase()}|${Math.round((Number(e.amount)||0)*100)}`;
+    seen.set(k,(seen.get(k)||[]).concat([e]));
+  });
+  const dups=[...seen.values()].filter(a=>a.length>1);
+  if(dups.length) out.push({ t:'warn', i:'ti-copy', n:dups.reduce((s,a)=>s+a.length,0),
+    msg:`<b>${dups.length} possible duplicate group(s)</b> — same date, type, party and amount. Check before they double-count: ` +
+        dups.slice(0,4).map(a=>`${esc(a[0].description||'—')} ${fmt(a[0].amount)} ×${a.length}`).join('; ') + (dups.length>4?' …':'') });
+  const noParty=rows.filter(e=>!String(e.party||'').trim());
+  if(noParty.length) out.push({ t:'warn', i:'ti-user-question', n:noParty.length,
+    msg:`<b>${noParty.length} entr${noParty.length===1?'y':'ies'} with no party</b> — they cannot appear in party or payables analysis (${fmt(_sum(noParty))}).` });
+  const bad=rows.filter(e=>!(Number(e.amount)>0));
+  if(bad.length) out.push({ t:'bad', i:'ti-alert-triangle', n:bad.length, msg:`<b>${bad.length} entr${bad.length===1?'y':'ies'} with a zero or invalid amount.</b>` });
+  const fut=rows.filter(e=>String(e.date||'').slice(0,10) > today());
+  if(fut.length) out.push({ t:'warn', i:'ti-calendar-exclamation', n:fut.length, msg:`<b>${fut.length} future-dated entr${fut.length===1?'y':'ies'}</b> (${fmt(_sum(fut))}) — fine for a booked bill, a typo otherwise.` });
+  const odd=rows.filter(e=>!TYPE_META[e.type]);
+  if(odd.length) out.push({ t:'bad', i:'ti-question-mark', n:odd.length,
+    msg:`<b>${odd.length} entr${odd.length===1?'y has':'ies have'} an unrecognised Type</b> (${[...new Set(odd.map(e=>esc(String(e.type||'blank'))))].join(', ')}) — counted as Expense. Fix the Type column in the Sheet.` });
+  const thin=rows.filter(e=>String(e.description||'').trim().length<3);
+  if(thin.length) out.push({ t:'info', i:'ti-text-size', n:thin.length, msg:`<b>${thin.length} entr${thin.length===1?'y':'ies'} with a very short description</b> — they will land in "Uncategorised".` });
+  const unc=rows.filter(e=>categoryOf(e)==='Uncategorised');
+  if(unc.length) out.push({ t:'info', i:'ti-tag', n:unc.length,
+    msg:`<b>${unc.length} entr${unc.length===1?'y':'ies'} (${fmt(_sum(unc))}) could not be categorised</b> — ${pcOf(_sum(unc), _sum(rows)).toFixed(0)}% of the value. Adding a keyword like "packing", "courier" or "GST" to the description files them automatically.` });
+  return out;
+}
+
+/* ── AUTO INSIGHTS ─────────────────────────────────────────────────────── */
+function buildInsights(cur, prev, expByParty, expByCat, ageing, buckets){
+  const out=[];
+  if(cur.tInc || cur.tExp){
+    out.push(cur.net>=0
+      ? { t:'good', i:'ti-trending-up', msg:`<b>Surplus of ${fmt(cur.net)}</b> for the period — a margin of ${cur.margin.toFixed(1)}% on ${fmt(cur.tInc)} of income.` }
+      : { t:'bad',  i:'ti-trending-down', msg:`<b>Deficit of ${fmt(Math.abs(cur.net))}</b> — spend was ${cur.expRatio.toFixed(0)}% of income. Every ₹100 earned cost ₹${cur.expRatio.toFixed(0)}.` });
+  }
+  if(prev && (prev.tInc||prev.tExp)){
+    const di=cur.tInc-prev.tInc, de=cur.tExp-prev.tExp;
+    out.push({ t: di>=0?'good':'warn', i:'ti-arrows-diff',
+      msg:`Against the previous period: income <b>${di>=0?'up':'down'} ${fmt(Math.abs(di))}</b> (${prev.tInc?((di/prev.tInc)*100).toFixed(1):'—'}%), expense <b>${de>=0?'up':'down'} ${fmt(Math.abs(de))}</b> (${prev.tExp?((de/prev.tExp)*100).toFixed(1):'—'}%).` });
+    if(de>0 && di<=0) out.push({ t:'bad', i:'ti-alert-circle', msg:`<b>Costs rose while income did not.</b> That is the combination worth acting on first.` });
+  }
+  if(cur.tCr) out.push({ t:'warn', i:'ti-clock-dollar',
+    msg:`<b>${fmt(cur.tCr)} of this period's spend was taken on credit</b> (${pcOf(cur.tCr,cur.tExp).toFixed(0)}% of expense) — booked as cost now, but the cash has not left yet.` });
+  if(cur.tSet) out.push({ t:'info', i:'ti-checkbox', msg:`<b>${fmt(cur.tSet)} paid out against earlier credit.</b> Not added to expense again — the credit entries already booked it.` });
+  if(cur.cashNet !== cur.net) out.push({ t:'info', i:'ti-cash',
+    msg:`Cash movement was <b>${fmtSigned(cur.cashNet)}</b> against an accrual result of <b>${fmtSigned(cur.net)}</b> — the gap is unpaid credit and settlements of old bills.` });
+  if(expByParty.length){
+    const top=expByParty[0], share=pcOf(top.total, cur.tExp);
+    out.push({ t: share>40?'warn':'info', i:'ti-building-store',
+      msg:`<b>${esc(top.key)}</b> is the largest payee at ${fmt(top.total)} — ${share.toFixed(0)}% of all spend across ${top.count} entr${top.count===1?'y':'ies'}.${share>40?' That is heavy concentration on one supplier.':''}` });
+    const a=expByParty.filter(r=>r.abc==='A').length;
+    if(expByParty.length>4) out.push({ t:'info', i:'ti-chart-pie',
+      msg:`<b>${a} of ${expByParty.length} payees account for 80% of spend</b> (class A). Negotiating with those few moves the needle; the rest is noise.` });
+  }
+  if(expByCat.length){
+    const c=expByCat[0];
+    out.push({ t:'info', i:'ti-tags', msg:`Biggest cost head is <b>${esc(c.key)}</b> at ${fmt(c.total)} (${pcOf(c.total,cur.tExp).toFixed(0)}% of spend).` });
+  }
+  if(cur.maxExp) out.push({ t:'info', i:'ti-receipt-2',
+    msg:`Largest single expense: <b>${fmt(cur.maxExp.amount)}</b> — ${esc(cur.maxExp.description||'—')}${cur.maxExp.party?' to '+esc(cur.maxExp.party):''} on ${fmtDate(cur.maxExp.date)}.` });
+  if(ageing.total){
+    const old=ageing.buckets['61-90']+ageing.buckets['90+'];
+    out.push({ t: old>0?'bad':'warn', i:'ti-hourglass',
+      msg:`<b>${fmt(ageing.total)} still owed to ${ageing.rows.length} part${ageing.rows.length===1?'y':'ies'}</b>${old>0?` — of which <b>${fmt(old)} is over 60 days old</b>`:''}. Oldest open bill: ${ageing.rows[0].oldestAge} days.` });
+  }
+  if(cur.burn>0) out.push({ t:'info', i:'ti-flame',
+    msg:`Average cash burn <b>${fmt(cur.burn)}/day</b> over ${cur.days} day(s); average income ${fmt(cur.dailyInc)}/day.` });
+  if(buckets && buckets.length>2){
+    const best=buckets.reduce((a,b)=>b.net>a.net?b:a), worst=buckets.reduce((a,b)=>b.net<a.net?b:a);
+    out.push({ t:'info', i:'ti-calendar-stats', msg:`Best stretch <b>${esc(best.label)}</b> (${fmtSigned(best.net)}), weakest <b>${esc(worst.label)}</b> (${fmtSigned(worst.net)}).` });
+  }
+  return out;
+}
+
+/* ── RENDER ────────────────────────────────────────────────────────────── */
 function generateReport(){
-  const p=reportPeriod();
+  const p = resolvePeriod();
   if(!p){ showToast('Pick a month/year, or both From & To dates','error'); return; }
   if(p.invalid){ showToast('“From” date must be on or before “To” date','error'); return; }
-  const _ts=e=>{ const t=Date.parse(e.createdAt); if(!isNaN(t)) return t; const m=String(e.id||'').match(/(\d{10,})/); return m?+m[1]:0; };
-  const kw=document.getElementById('rKeyword').value.trim();
-  if(kw) p.label += ` · “${kw}”`;   // reflect the keyword in the report title, print & CSV
-  const kwl=kw.toLowerCase();
-  const inRange=entries.filter(e=>{ const d=String(e.date||'').slice(0,10); if(d<p.from||d>p.to) return false;
-      return !kwl || `${e.description||''} ${e.party||''} ${e.note||''}`.toLowerCase().includes(kwl); })
-    .sort((a,b)=>{ const d=(a.date||'').localeCompare(b.date||''); return d!==0?-d:-(_ts(a)-_ts(b)); });
-  const incomes=inRange.filter(isIncomeT), expenses=inRange.filter(isExpenseT);
-  // Settlements are money out, but the spend was already booked by the credit
-  // rows they pay off — so they are reported on their own, never added to tExp.
-  const settles=inRange.filter(isSettleT);
-  const tSet=settles.reduce((s,e)=>s+e.amount,0);
-  const tInc=incomes.reduce((s,e)=>s+e.amount,0), tExp=expenses.reduce((s,e)=>s+e.amount,0), net=tInc-tExp;
-  lastReport={p,inRange,incomes,expenses,settles,tInc,tExp,tSet,net};
 
-  const out=document.getElementById('reportOutput');
-  if(!inRange.length){
-    out.innerHTML=`<div class="rep-period">${esc(p.label)}</div><div class="rep-empty"><i class="ti ti-inbox"></i>No transactions in this period.</div>`;
+  const pass = nonDateFilter();
+  const inPeriod = (a,b) => entries.filter(e=>{ const d=String(e.date||'').slice(0,10); return d>=a && d<=b && pass(e); });
+  const sortDesc = list => [...list].sort((x,y)=>{ const d=(x.date||'').localeCompare(y.date||''); return d!==0?-d:-(_ts(x)-_ts(y)); });
+
+  const rows = sortDesc(inPeriod(p.from, p.to));
+  const cur  = statsOf(rows, p.from, p.to);
+  const wantCmp = document.getElementById('rCompare').checked;
+  const pp   = previousPeriod(p);
+  const prev = wantCmp ? statsOf(inPeriod(pp.from, pp.to), pp.from, pp.to) : null;
+
+  const fbits = filterLabel();
+  const title = p.label + (fbits.length ? ' · ' + fbits.join(' · ') : '');
+
+  const out = document.getElementById('reportOutput');
+  if(!rows.length){
+    out.innerHTML = `<div class="rep-period">${esc(title)}</div>
+      <div class="rep-empty"><i class="ti ti-inbox"></i>No transactions match this period and filter.
+      <div style="margin-top:8px;font-size:12px">Try <b>Reset filters</b>, widen the date range, or switch on more transaction types.</div></div>`;
     out.style.display='block';
     document.getElementById('reportActions').style.display='none';
+    lastReport=null;
     return;
   }
-  const sec=(rows,kind)=>{
-    if(!rows.length) return `<div class="rep-empty" style="padding:10px 0">No ${kind} entries in this period.</div>`;
-    const sub=rows.reduce((s,e)=>s+e.amount,0);
-    return `<table class="rep-table"><thead><tr><th>Date</th><th>Description</th><th>Party</th><th style="text-align:right">Amount</th></tr></thead><tbody>`
-      +rows.map(e=>`<tr><td>${fmtDate(e.date)}</td><td>${esc(e.description)}</td><td style="color:var(--text2)">${esc(e.party)||'—'}</td><td style="text-align:right" class="amt-${e.type}">${fmt(e.amount)}</td></tr>`).join('')
-      +`</tbody><tfoot><tr><td colspan="3">Subtotal — ${rows.length} entr${rows.length===1?'y':'ies'}</td><td style="text-align:right">${fmt(sub)}</td></tr></tfoot></table>`;
-  };
-  out.innerHTML=`
-    <div class="rep-period">${esc(p.label)}</div>
-    <div class="rep-summary">
-      <div class="rep-card"><div class="lbl">Total Income</div><div class="val" style="color:var(--success-text)">${fmt(tInc)}</div></div>
-      <div class="rep-card"><div class="lbl">Total Expense</div><div class="val" style="color:var(--danger-text)">${fmt(tExp)}</div></div>
-      <div class="rep-card"><div class="lbl">Net Balance</div><div class="val" style="color:${net>=0?'var(--cyan)':'var(--danger-text)'}">${fmt(net)}</div></div>
+
+  // ── derived analysis sets ──
+  const incByParty = abcTag(groupBy(cur.inc, e=>String(e.party||'').trim()||'—'));
+  const expByParty = abcTag(groupBy(cur.exp, e=>String(e.party||'').trim()||'—'));
+  const incByCat   = groupBy(cur.inc, categoryOf);
+  const expByCat   = groupBy(cur.exp, categoryOf);
+  const { gran, buckets } = bucketize(rows, p.from, p.to);
+  const ageing  = ageingBuckets();
+  const bals    = partyBalances();
+  const opening = openingCash(p.from, pass);
+  const dow     = [0,1,2,3,4,5,6].map(i=>({ d:_DOW[i], inc:0, exp:0, count:0 }));
+  rows.forEach(e=>{ const m=String(e.date||'').match(/^(\d{4})-(\d{2})-(\d{2})/); if(!m) return;
+    const w=new Date(+m[1],+m[2]-1,+m[3]).getDay();
+    if(isIncomeT(e)) dow[w].inc+=e.amount; else if(isExpenseT(e)) dow[w].exp+=e.amount; dow[w].count++; });
+  const quality  = qualityChecks(rows);
+  const insights = buildInsights(cur, prev, expByParty, expByCat, ageing, buckets);
+
+  // cash-book statement, oldest first, with a running balance
+  const asc = [...rows].sort((x,y)=>{ const d=(x.date||'').localeCompare(y.date||''); return d!==0?d:(_ts(x)-_ts(y)); });
+  let run = opening;
+  const ledger = asc.map(e=>{
+    const inAmt  = isIncomeT(e) ? e.amount : 0;
+    const outAmt = isCashOut(e) ? e.amount : 0;
+    const unpaid = isCreditT(e) ? e.amount : 0;
+    run += inAmt - outAmt;
+    return { e, inAmt, outAmt, unpaid, bal:run };
+  });
+  const closing = run;
+
+  lastReport = { p, pp:wantCmp?pp:null, title, filters:fbits, rows, cur, prev, incByParty, expByParty,
+                 incByCat, expByCat, gran, buckets, ageing, bals, opening, closing, ledger, dow, quality, insights };
+
+  /* ── panes ── */
+  const kpi = (lbl,val,sub,color) => `<div class="kpi"><div class="k-lbl">${lbl}</div><div class="k-val" style="${color?`color:${color}`:''}">${val}</div>${sub?`<div class="k-sub">${sub}</div>`:''}</div>`;
+  const paneOverview = `
+    <div class="kpi-grid">
+      ${kpi('<i class="ti ti-arrow-down-circle"></i> Total Income', fmt(cur.tInc), (prev?deltaBadge(cur.tInc,prev.tInc,true)+` vs ${fmtC(prev.tInc)}`:`${cur.inc.length} entries`), 'var(--success-text)')}
+      ${kpi('<i class="ti ti-arrow-up-circle"></i> Total Expense', fmt(cur.tExp), (prev?deltaBadge(cur.tExp,prev.tExp,false)+` vs ${fmtC(prev.tExp)}`:`${cur.exp.length} entries`), 'var(--danger-text)')}
+      ${kpi('<i class="ti ti-scale"></i> Net Surplus', fmtSigned(cur.net), (prev?deltaBadge(cur.net,prev.net,true)+` vs ${fmtC(prev.net)}`:'income − expense'), cur.net>=0?'var(--cyan)':'var(--danger-text)')}
+      ${kpi('<i class="ti ti-percentage"></i> Profit Margin', (cur.tInc?cur.margin.toFixed(1)+'%':'—'), (prev&&prev.tInc?deltaBadge(cur.margin,prev.margin,true)+` vs ${prev.margin.toFixed(1)}%`:'net ÷ income'), cur.margin>=0?'var(--cyan)':'var(--danger-text)')}
+      ${kpi('<i class="ti ti-cash"></i> Net Cash Flow', fmtSigned(cur.cashNet), 'income − cash paid out', cur.cashNet>=0?'var(--success-text)':'var(--danger-text)')}
+      ${kpi('<i class="ti ti-clock-dollar"></i> Bought on Credit', fmt(cur.tCr), `${pcOf(cur.tCr,cur.tExp).toFixed(0)}% of spend · unpaid at booking`, 'var(--warning-text)')}
+      ${kpi('<i class="ti ti-checkbox"></i> Settlements Paid', fmt(cur.tSet), 'clears old credit — not re-counted', 'var(--info-text)')}
+      ${kpi('<i class="ti ti-flame"></i> Avg Daily Burn', fmt(cur.burn), `over ${cur.days} day(s) · income ${fmtC(cur.dailyInc)}/day`)}
+      ${kpi('<i class="ti ti-receipt"></i> Avg Ticket', `${fmtC(cur.avgInc)} / ${fmtC(cur.avgExp)}`, 'income / expense per entry')}
+      ${kpi('<i class="ti ti-list-numbers"></i> Entries', String(cur.count), `${cur.parties} distinct part${cur.parties===1?'y':'ies'}`)}
+      ${kpi('<i class="ti ti-wallet"></i> Opening Cash', fmtSigned(opening), 'all history before this period')}
+      ${kpi('<i class="ti ti-wallet"></i> Closing Cash', fmtSigned(closing), `moved ${fmtSigned(closing-opening)}`, closing>=0?'var(--cyan)':'var(--danger-text)')}
     </div>
+    <div class="rep-note"><b>Accrual vs cash.</b> Expense counts cash spend <i>and</i> credit purchases on the day they happen (accrual — the correct P&amp;L view). Net Cash Flow counts only money that actually moved: cash expenses plus settlements of old credit.</div>
+    ${prev ? `<div class="rep-section-title" style="color:var(--cyan)"><i class="ti ti-arrows-diff"></i> Period Comparison</div>
+      <div class="rep-note">This period ${esc(fmtDate(p.from))} → ${esc(fmtDate(p.to))} &nbsp;vs&nbsp; previous ${esc(pp.label)} (${cur.days} days each).</div>
+      <div class="rep-scroll"><table class="rep-table auto"><thead><tr><th>Measure</th><th class="num">This period</th><th class="num">Previous</th><th class="num">Change</th><th class="num">%</th></tr></thead><tbody>
+      ${[['Income',cur.tInc,prev.tInc,true],['Expense',cur.tExp,prev.tExp,false],['— of which credit',cur.tCr,prev.tCr,false],
+         ['Settlements',cur.tSet,prev.tSet,true],['Net surplus',cur.net,prev.net,true],['Net cash flow',cur.cashNet,prev.cashNet,true],
+         ['Entries',cur.count,prev.count,true]].map(([l,a,b,g])=>{
+        const isN = l==='Entries';
+        return `<tr><td>${l}</td><td class="num">${isN?a:fmtSigned(a)}</td><td class="num" style="color:var(--text2)">${isN?b:fmtSigned(b)}</td><td class="num">${isN?(a-b>=0?'+':'−')+Math.abs(a-b):fmtSigned(a-b)}</td><td class="num">${deltaBadge(a,b,g)}</td></tr>`;
+      }).join('')}
+      </tbody></table></div>` : ''}
+    <div class="rep-section-title" style="color:var(--cyan)"><i class="ti ti-chart-bar"></i> Income vs Expense — ${gran==='day'?'daily':gran==='week'?'weekly':'monthly'}</div>
+    ${trendChart(buckets)}`;
+
+  const secTable = (rows2, kind) => {
+    if(!rows2.length) return `<div class="rep-empty" style="padding:10px 0">No ${kind} entries in this period.</div>`;
+    const sub=_sum(rows2);
+    return `<div class="rep-scroll"><table class="rep-table"><thead><tr><th>Date</th><th>Description</th><th>Party</th><th class="num">Amount</th></tr></thead><tbody>`
+      + rows2.map(e=>`<tr><td>${fmtDate(e.date)}</td><td>${esc(e.description)}<div style="color:var(--text3);font-size:10.5px">${esc(categoryOf(e))}</div></td><td style="color:var(--text2)">${esc(e.party)||'—'}</td><td class="num amt-${canonT(e)}">${fmt(e.amount)}</td></tr>`).join('')
+      + `</tbody><tfoot><tr><td colspan="3">Subtotal — ${rows2.length} entr${rows2.length===1?'y':'ies'}</td><td class="num">${fmt(sub)}</td></tr></tfoot></table></div>`;
+  };
+  const paneStatement = `
+    <div class="rep-note"><b>Cash book.</b> Running balance moves only when money moves. A credit purchase is shown in its own column — it is real spend, but no cash has left yet, so the balance is untouched until it is settled.</div>
+    <div class="rep-scroll"><table class="rep-table auto"><thead><tr><th>Date</th><th>Type</th><th>Description</th><th>Party</th><th class="num">In</th><th class="num">Out</th><th class="num">Credit</th><th class="num">Balance</th></tr></thead>
+      <tbody>
+      <tr style="background:var(--bg3)"><td colspan="7"><b>Opening balance</b> as on ${fmtDate(p.from)}</td><td class="num"><b>${fmtSigned(opening)}</b></td></tr>
+      ${ledger.map(r=>`<tr><td style="white-space:nowrap">${fmtDate(r.e.date)}</td><td><span class="pill ${canonT(r.e)}">${TYPE_META[canonT(r.e)].label}</span></td>
+        <td>${esc(r.e.description)}<div style="color:var(--text3);font-size:10.5px">${esc(categoryOf(r.e))}${r.e.note?' · '+esc(r.e.note):''}</div></td>
+        <td style="color:var(--text2)">${esc(r.e.party)||'—'}</td>
+        <td class="num" style="color:var(--success-text)">${r.inAmt?fmt(r.inAmt):''}</td>
+        <td class="num" style="color:var(--danger-text)">${r.outAmt?fmt(r.outAmt):''}</td>
+        <td class="num" style="color:var(--warning-text)">${r.unpaid?fmt(r.unpaid):''}</td>
+        <td class="num" style="font-weight:600">${fmtSigned(r.bal)}</td></tr>`).join('')}
+      </tbody>
+      <tfoot><tr><td colspan="4">Closing balance as on ${fmtDate(p.to)}</td>
+        <td class="num">${fmt(cur.tInc)}</td><td class="num">${fmt(cur.outflow)}</td><td class="num">${fmt(cur.tCr)}</td><td class="num">${fmtSigned(closing)}</td></tr></tfoot>
+    </table></div>
     <div class="rep-section-title" style="color:var(--success-text)"><i class="ti ti-arrow-down-circle"></i> Income</div>
-    ${sec(incomes,'income')}
+    ${secTable(cur.inc,'income')}
     <div class="rep-section-title" style="color:var(--danger-text)"><i class="ti ti-arrow-up-circle"></i> Expense <span style="font-weight:400;color:var(--text3);font-size:11px">— paid on the spot + taken on credit</span></div>
-    ${sec(expenses,'expense')}
-    ${settles.length ? `<div class="rep-section-title" style="color:var(--info-text)"><i class="ti ti-checkbox"></i> Settlements <span style="font-weight:400;color:var(--text3);font-size:11px">— paying off credit; already counted above, so not added again</span></div>
-    ${sec(settles,'settlement')}` : ''}
-    ${(() => {
-      const bals = partyBalances();
-      if(!bals.length) return '';
-      return `<div class="rep-section-title" style="color:var(--cyan)"><i class="ti ti-scale"></i> Party Balances <span style="font-weight:400;color:var(--text3);font-size:11px">— as on date, all time</span></div>
-        <table class="rep-table"><thead><tr><th>Party</th><th style="width:92px;text-align:right">Credit</th><th style="width:92px;text-align:right">Paid</th><th style="width:110px;text-align:right">Balance</th></tr></thead><tbody>`
-        + bals.map(r => `<tr><td>${esc(r.party)}</td><td style="text-align:right">${fmt(r.credit)}</td><td style="text-align:right">${fmt(r.paid)}</td><td style="text-align:right;font-weight:700;color:${r.balance>0?'var(--warning-text)':(r.balance<0?'var(--info-text)':'var(--success-text)')}">${r.balance===0?'₹0 · settled ✓':fmt(Math.abs(r.balance))+(r.balance>0?' due':' advance')}</td></tr>`).join('')
-        + `</tbody></table>`;
-    })()}`;
+    ${secTable(cur.exp,'expense')}
+    ${cur.st.length?`<div class="rep-section-title" style="color:var(--info-text)"><i class="ti ti-checkbox"></i> Settlements <span style="font-weight:400;color:var(--text3);font-size:11px">— paying off credit already counted above</span></div>${secTable(cur.st,'settlement')}`:''}`;
+
+  const maxB = Math.max(1, ...buckets.map(b=>Math.max(b.inc,b.exp)));
+  const paneTrends = `
+    ${trendChart(buckets)}
+    <div class="rep-section-title" style="color:var(--cyan)"><i class="ti ti-table"></i> ${gran==='day'?'Day':gran==='week'?'Week':'Month'} by ${gran==='day'?'day':gran==='week'?'week':'month'}</div>
+    <div class="rep-scroll"><table class="rep-table auto"><thead><tr><th>${gran==='month'?'Month':gran==='week'?'Week of':'Date'}</th><th class="num">Income</th><th class="num">Expense</th><th class="num">Net</th><th class="num">Cumulative</th><th style="width:110px">Share</th><th class="num">Entries</th></tr></thead><tbody>
+    ${buckets.map(b=>`<tr><td>${esc(b.label)}</td><td class="num" style="color:var(--success-text)">${b.inc?fmt(b.inc):'—'}</td>
+      <td class="num" style="color:var(--danger-text)">${b.exp?fmt(b.exp):'—'}</td>
+      <td class="num" style="font-weight:600;color:${b.net>=0?'var(--cyan)':'var(--danger-text)'}">${fmtSigned(b.net)}</td>
+      <td class="num" style="color:var(--text2)">${fmtSigned(b.cum)}</td>
+      <td class="bar-cell">${bar(pcOf(b.inc,maxB),'inc')}<div style="height:3px"></div>${bar(pcOf(b.exp,maxB),'exp')}</td>
+      <td class="num" style="color:var(--text2)">${b.count||'—'}</td></tr>`).join('')}
+    </tbody><tfoot><tr><td>Total</td><td class="num">${fmt(cur.tInc)}</td><td class="num">${fmt(cur.tExp)}</td><td class="num">${fmtSigned(cur.net)}</td><td class="num"></td><td></td><td class="num">${cur.count}</td></tr></tfoot></table></div>
+    <div class="rep-section-title" style="color:var(--cyan)"><i class="ti ti-calendar-week"></i> Weekday Pattern</div>
+    <div class="rep-note">Which days of the week the money actually moves — useful for scheduling pickups, payouts and stock buying.</div>
+    <div class="rep-scroll"><table class="rep-table auto"><thead><tr><th>Day</th><th class="num">Income</th><th class="num">Expense</th><th class="num">Net</th><th style="width:120px">Expense share</th><th class="num">Entries</th></tr></thead><tbody>
+    ${(()=>{ const mx=Math.max(1,...dow.map(d=>d.exp)); return dow.map(d=>`<tr><td>${d.d}</td><td class="num" style="color:var(--success-text)">${d.inc?fmt(d.inc):'—'}</td>
+      <td class="num" style="color:var(--danger-text)">${d.exp?fmt(d.exp):'—'}</td><td class="num">${fmtSigned(d.inc-d.exp)}</td>
+      <td class="bar-cell">${bar(pcOf(d.exp,mx),'exp')}</td><td class="num" style="color:var(--text2)">${d.count||'—'}</td></tr>`).join(''); })()}
+    </tbody></table></div>`;
+
+  const catTable = (list, total, cls) => list.length ? `<div class="rep-scroll"><table class="rep-table auto"><thead><tr><th>Category</th><th class="num">Amount</th><th class="num">Share</th><th style="width:130px"></th><th class="num">Entries</th><th class="num">Avg</th></tr></thead><tbody>`
+      + list.map(r=>`<tr><td>${esc(r.key)}</td><td class="num">${fmt(r.total)}</td><td class="num">${pcOf(r.total,total).toFixed(1)}%</td>
+        <td class="bar-cell">${bar(pcOf(r.total,list[0].total),cls)}</td><td class="num" style="color:var(--text2)">${r.count}</td><td class="num" style="color:var(--text2)">${fmtC(r.total/r.count)}</td></tr>`).join('')
+      + `</tbody><tfoot><tr><td>Total</td><td class="num">${fmt(total)}</td><td class="num">100%</td><td></td><td class="num">${list.reduce((s,r)=>s+r.count,0)}</td><td></td></tr></tfoot></table></div>`
+      : '<div class="rep-empty" style="padding:10px 0">Nothing to show.</div>';
+  const paneCats = `
+    <div class="rep-note"><b>Categories are derived automatically</b> from the description, party and note — there is no category column to fill in. Anything unmatched lands in “Uncategorised”; adding a word like <i>packing</i>, <i>courier</i>, <i>GST</i> or <i>salary</i> to the description files it correctly next time.</div>
+    <div class="rep-section-title" style="color:var(--danger-text)"><i class="ti ti-arrow-up-circle"></i> Expense by Category</div>
+    ${catTable(expByCat, cur.tExp, 'exp')}
+    <div class="rep-section-title" style="color:var(--success-text)"><i class="ti ti-arrow-down-circle"></i> Income by Category</div>
+    ${catTable(incByCat, cur.tInc, 'inc')}`;
+
+  const partyTable = (list, total, cls) => list.length ? `<div class="rep-scroll"><table class="rep-table auto"><thead><tr><th>Party</th><th class="num">Amount</th><th class="num">Share</th><th style="width:120px"></th><th class="num">Entries</th><th class="num">Avg</th><th>Last seen</th><th class="num">ABC</th></tr></thead><tbody>`
+      + list.map(r=>`<tr><td>${esc(r.key)}</td><td class="num">${fmt(r.total)}</td><td class="num">${pcOf(r.total,total).toFixed(1)}%</td>
+        <td class="bar-cell">${bar(pcOf(r.total,list[0].total),cls)}</td><td class="num" style="color:var(--text2)">${r.count}</td>
+        <td class="num" style="color:var(--text2)">${fmtC(r.total/r.count)}</td><td style="color:var(--text2);white-space:nowrap">${fmtDate(r.last)}</td>
+        <td class="num"><span class="tag ${r.abc==='A'?'a':r.abc==='B'?'b':'c'}">${r.abc}</span></td></tr>`).join('')
+      + `</tbody><tfoot><tr><td>Total</td><td class="num">${fmt(total)}</td><td class="num">100%</td><td></td><td class="num">${list.reduce((s,r)=>s+r.count,0)}</td><td colspan="3"></td></tr></tfoot></table></div>`
+      : '<div class="rep-empty" style="padding:10px 0">Nothing to show.</div>';
+  const top5 = pcOf(expByParty.slice(0,5).reduce((s,r)=>s+r.total,0), cur.tExp);
+  const paneParties = `
+    <div class="rep-note"><b>ABC (Pareto) classification.</b> <span class="tag a">A</span> parties make up the first 80% of the value, <span class="tag b">B</span> the next 15%, <span class="tag c">C</span> the tail. Concentration: the top 5 payees carry <b>${top5.toFixed(0)}%</b> of all spend.</div>
+    <div class="rep-section-title" style="color:var(--danger-text)"><i class="ti ti-building-store"></i> Payees / Vendors <span style="font-weight:400;color:var(--text3);font-size:11px">— where the money goes</span></div>
+    ${partyTable(expByParty, cur.tExp, 'exp')}
+    <div class="rep-section-title" style="color:var(--success-text)"><i class="ti ti-users"></i> Income Sources <span style="font-weight:400;color:var(--text3);font-size:11px">— where the money comes from</span></div>
+    ${partyTable(incByParty, cur.tInc, 'inc')}
+    <div class="rep-section-title" style="color:var(--cyan)"><i class="ti ti-trophy"></i> Largest Transactions</div>
+    <div class="rep-scroll"><table class="rep-table auto"><thead><tr><th>Date</th><th>Type</th><th>Description</th><th>Party</th><th class="num">Amount</th></tr></thead><tbody>
+    ${[...rows].sort((a,b)=>b.amount-a.amount).slice(0,10).map(e=>`<tr><td style="white-space:nowrap">${fmtDate(e.date)}</td><td><span class="pill ${canonT(e)}">${TYPE_META[canonT(e)].label}</span></td><td>${esc(e.description)}</td><td style="color:var(--text2)">${esc(e.party)||'—'}</td><td class="num amt-${canonT(e)}">${fmt(e.amount)}</td></tr>`).join('')}
+    </tbody></table></div>`;
+
+  const agRows = ageing.rows;
+  const paneDues = `
+    <div class="rep-note"><b>Payables ageing.</b> Settlements are applied to the oldest open credit first (FIFO), so what is left carries the age of the bill it belongs to. This covers <b>all time</b>, not just the selected period — a debt does not disappear because you changed the date filter.</div>
+    <div class="kpi-grid">
+      ${kpi('<i class="ti ti-hourglass-low"></i> 0–30 days',  fmt(ageing.buckets['0-30']),  'current', 'var(--success-text)')}
+      ${kpi('<i class="ti ti-hourglass"></i> 31–60 days',     fmt(ageing.buckets['31-60']), 'watch',   'var(--warning-text)')}
+      ${kpi('<i class="ti ti-hourglass-high"></i> 61–90 days',fmt(ageing.buckets['61-90']), 'overdue', 'var(--danger-text)')}
+      ${kpi('<i class="ti ti-alert-triangle"></i> 90+ days',  fmt(ageing.buckets['90+']),   'seriously overdue', 'var(--danger-text)')}
+      ${kpi('<i class="ti ti-sum"></i> Total Payable',        fmt(ageing.total), `${agRows.length} part${agRows.length===1?'y':'ies'}`, 'var(--cyan)')}
+    </div>
+    ${agRows.length ? `<div class="rep-section-title" style="color:var(--warning-text)"><i class="ti ti-clock-dollar"></i> Open Balances by Party</div>
+    <div class="rep-scroll"><table class="rep-table auto"><thead><tr><th>Party</th><th class="num">0–30</th><th class="num">31–60</th><th class="num">61–90</th><th class="num">90+</th><th class="num">Total due</th><th class="num">Oldest</th></tr></thead><tbody>
+    ${agRows.map(r=>`<tr><td>${esc(r.party)}</td><td class="num">${r['0-30']?fmt(r['0-30']):'—'}</td><td class="num" style="color:var(--warning-text)">${r['31-60']?fmt(r['31-60']):'—'}</td>
+      <td class="num" style="color:var(--danger-text)">${r['61-90']?fmt(r['61-90']):'—'}</td><td class="num" style="color:var(--danger-text);font-weight:700">${r['90+']?fmt(r['90+']):'—'}</td>
+      <td class="num" style="font-weight:700">${fmt(r.total)}</td><td class="num" style="color:var(--text2)">${r.oldestAge}d</td></tr>`).join('')}
+    </tbody><tfoot><tr><td>Total</td><td class="num">${fmt(ageing.buckets['0-30'])}</td><td class="num">${fmt(ageing.buckets['31-60'])}</td><td class="num">${fmt(ageing.buckets['61-90'])}</td><td class="num">${fmt(ageing.buckets['90+'])}</td><td class="num">${fmt(ageing.total)}</td><td></td></tr></tfoot></table></div>`
+      : '<div class="rep-empty"><i class="ti ti-check"></i>Nothing outstanding — every credit entry has been settled.</div>'}
+    ${bals.length ? `<div class="rep-section-title" style="color:var(--cyan)"><i class="ti ti-scale"></i> Party Ledger Summary <span style="font-weight:400;color:var(--text3);font-size:11px">— all time</span></div>
+    <div class="rep-scroll"><table class="rep-table auto"><thead><tr><th>Party</th><th class="num">Credit taken</th><th class="num">Paid</th><th class="num">Balance</th></tr></thead><tbody>`
+      + bals.map(r=>`<tr><td>${esc(r.party)}</td><td class="num">${fmt(r.credit)}</td><td class="num">${fmt(r.paid)}</td>
+        <td class="num" style="font-weight:700;color:${r.balance>0?'var(--warning-text)':(r.balance<0?'var(--info-text)':'var(--success-text)')}">${r.balance===0?'₹0 · settled ✓':fmt(Math.abs(r.balance))+(r.balance>0?' due':' advance')}</td></tr>`).join('')
+      + `</tbody></table></div>` : ''}`;
+
+  const paneInsights = `
+    <div class="rep-section-title" style="color:var(--cyan)"><i class="ti ti-bulb"></i> What the numbers say</div>
+    ${insights.map(i=>`<div class="insight ${i.t}"><i class="ti ${i.i}"></i><div>${i.msg}</div></div>`).join('') || '<div class="rep-empty">Not enough data for insights.</div>'}
+    <div class="rep-section-title" style="color:var(--warning-text)"><i class="ti ti-shield-check"></i> Data Quality Audit <span style="font-weight:400;color:var(--text3);font-size:11px">— within this period &amp; filter</span></div>
+    ${quality.length ? quality.map(q=>`<div class="insight ${q.t}"><i class="ti ${q.i}"></i><div>${q.msg}</div></div>`).join('')
+      : '<div class="insight good"><i class="ti ti-circle-check"></i><div><b>No issues found.</b> No duplicates, missing parties, bad amounts or future dates in this selection.</div></div>'}`;
+
+  const TABS = [
+    ['overview','Overview','ti-layout-dashboard', paneOverview],
+    ['statement','Statement','ti-list-details',   paneStatement],
+    ['trends','Trends','ti-chart-line',           paneTrends],
+    ['categories','Categories','ti-tags',         paneCats],
+    ['parties','Parties','ti-users-group',        paneParties],
+    ['payables','Payables','ti-clock-dollar',     paneDues],
+    ['insights','Insights','ti-bulb',             paneInsights]
+  ];
+  if(!TABS.some(t=>t[0]===repTab)) repTab='overview';
+  out.innerHTML = `
+    <div class="rep-period">${esc(p.label)}</div>
+    <div style="text-align:center;font-size:11.5px;color:var(--text3);margin:-8px 0 8px">
+      ${esc(fmtDate(p.from))} → ${esc(fmtDate(p.to))} · ${cur.days} day(s) · ${cur.count} entr${cur.count===1?'y':'ies'}${fbits.length?' · '+esc(fbits.join(' · ')):''}
+    </div>
+    <div class="rep-tabs">${TABS.map(t=>`<button class="rep-tab${t[0]===repTab?' on':''}" data-k="${t[0]}" onclick="repTabTo('${t[0]}')"><i class="ti ${t[2]}"></i> ${t[1]}</button>`).join('')}</div>
+    ${TABS.map(t=>`<div class="rep-pane${t[0]===repTab?' on':''}" data-k="${t[0]}">${t[3]}</div>`).join('')}`;
   out.style.display='block';
   document.getElementById('reportActions').style.display='flex';
 }
 
+/* ── PRINT / PDF ───────────────────────────────────────────────────────── */
 function printReport(){
   if(!lastReport){ showToast('Generate a report first','error'); return; }
-  const {p,incomes,expenses,settles=[],tInc,tExp,tSet=0,net}=lastReport;
-  const bals=partyBalances();
+  const R=lastReport, {p,cur,prev,pp,gran,buckets,ageing,bals,opening,closing,ledger,dow,quality,insights,
+        incByParty,expByParty,incByCat,expByCat} = R;
   const M=n=>'₹'+(Number(n)||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const S=n=>(n<0?'−':'')+M(Math.abs(n));
   const genAt=new Date().toLocaleString('en-US',{timeZone:'Asia/Kolkata',day:'2-digit',month:'short',year:'numeric',weekday:'short',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true});
+  const P=(a,b)=>b?((a/b)*100).toFixed(1)+'%':'—';
   const block=(rows,title,color)=>{
-    if(!rows.length) return `<h3 style="color:${color};margin:16px 0 4px">${title}</h3><p style="color:#777;margin:0 0 12px">No entries in this period.</p>`;
-    const sub=rows.reduce((s,e)=>s+e.amount,0);
-    return `<h3 style="color:${color};margin:16px 0 6px">${title}</h3>`
-      +`<table><thead><tr><th>Date &amp; Time</th><th>Description</th><th>Party</th><th class="r">Amount</th></tr></thead><tbody>`
-      +rows.map(e=>`<tr><td>${esc(fmtDTLine(e))}</td><td>${esc(e.description)}</td><td>${esc(e.party)||'—'}</td><td class="r">${M(e.amount)}</td></tr>`).join('')
-      +`</tbody><tfoot><tr><td colspan="3">Subtotal (${rows.length})</td><td class="r">${M(sub)}</td></tr></tfoot></table>`;
+    if(!rows.length) return `<h3 style="color:${color}">${title}</h3><p class="muted">No entries in this period.</p>`;
+    const sub=_sum(rows);
+    return `<h3 style="color:${color}">${title}</h3>`
+      +`<table><thead><tr><th>Date &amp; Time</th><th>Description</th><th>Category</th><th>Party</th><th class="r">Amount</th></tr></thead><tbody>`
+      +rows.map(e=>`<tr><td>${esc(fmtDTLine(e))}</td><td>${esc(e.description)}</td><td>${esc(categoryOf(e))}</td><td>${esc(e.party)||'—'}</td><td class="r">${M(e.amount)}</td></tr>`).join('')
+      +`</tbody><tfoot><tr><td colspan="4">Subtotal (${rows.length})</td><td class="r">${M(sub)}</td></tr></tfoot></table>`;
   };
+  const grpTable=(list,total,hdr,extra)=>list.length?`<table><thead><tr><th>${hdr}</th><th class="r">Amount</th><th class="r">Share</th><th class="r">Entries</th><th class="r">Avg</th>${extra?'<th class="r">ABC</th>':''}</tr></thead><tbody>`
+      +list.map(r=>`<tr><td>${esc(r.key)}</td><td class="r">${M(r.total)}</td><td class="r">${P(r.total,total)}</td><td class="r">${r.count}</td><td class="r">${M(r.total/r.count)}</td>${extra?`<td class="r">${r.abc}</td>`:''}</tr>`).join('')
+      +`</tbody><tfoot><tr><td>Total</td><td class="r">${M(total)}</td><td class="r">100%</td><td class="r">${list.reduce((s,r)=>s+r.count,0)}</td><td colspan="${extra?2:1}"></td></tr></tfoot></table>`:'<p class="muted">Nothing to show.</p>';
+
   const html=`<!doctype html><html><head><meta charset="utf-8"><title>IBI Finance — ${esc(p.label)}</title>
   <style>
     *{box-sizing:border-box}
-    body{font-family:'Roboto','Segoe UI',Arial,sans-serif;color:#111;margin:26px;font-size:13px}
+    body{font-family:'Roboto','Segoe UI',Arial,sans-serif;color:#111;margin:22px;font-size:12px}
     h1{font-size:19px;margin:0;color:#0086ad}
     h2{font-size:14px;margin:2px 0;font-weight:600}
-    h3{font-size:14px}
-    .muted{color:#666;font-size:12px}
+    h3{font-size:13.5px;margin:16px 0 6px;page-break-after:avoid}
+    .muted{color:#666;font-size:11px}
     .head{border-bottom:2px solid #00c5ff;padding-bottom:10px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:8px}
     .brand{display:flex;align-items:center;gap:12px}
     .logo{width:48px;height:48px;border-radius:50%;border:3px solid #00c5ff;display:flex;align-items:center;justify-content:center;font-weight:700;color:#0086ad;font-size:15px;letter-spacing:1px;flex-shrink:0}
-    .cards{display:flex;gap:10px;margin:14px 0}
-    .card{flex:1;border:1px solid #ddd;border-radius:8px;padding:10px;text-align:center}
-    .card .l{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:#666}
-    .card .v{font-size:17px;font-weight:700;margin-top:4px}
-    table{width:100%;border-collapse:collapse;margin-bottom:4px}
-    th,td{border:1px solid #ddd;padding:6px 8px;text-align:left;font-size:12px;vertical-align:top}
+    .cards{display:flex;gap:8px;margin:12px 0;flex-wrap:wrap}
+    .card{flex:1 1 120px;border:1px solid #ddd;border-radius:8px;padding:8px 10px;text-align:center}
+    .card .l{font-size:9.5px;text-transform:uppercase;letter-spacing:.04em;color:#666}
+    .card .v{font-size:15px;font-weight:700;margin-top:3px}
+    .card .s{font-size:9.5px;color:#888;margin-top:2px}
+    table{width:100%;border-collapse:collapse;margin-bottom:6px;page-break-inside:auto}
+    tr{page-break-inside:avoid}
+    th,td{border:1px solid #ddd;padding:5px 7px;text-align:left;font-size:11px;vertical-align:top}
     th{background:#f2f6f8}
     td.r,th.r{text-align:right;white-space:nowrap}
     tfoot td{font-weight:700;background:#fafafa}
+    .ins{border:1px solid #ddd;border-left:3px solid #0086ad;border-radius:6px;padding:6px 9px;margin-bottom:5px;font-size:11.5px}
+    .ins.bad{border-left-color:#b11}.ins.warn{border-left-color:#a76b00}.ins.good{border-left-color:#1a7d1a}
     .net{margin-top:12px;font-size:15px;font-weight:700;text-align:right}
-    .foot{margin-top:24px;border-top:1px solid #ddd;padding-top:8px;color:#666;font-size:11px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px}
-    @media print{ body{margin:12mm} }
+    .foot{margin-top:22px;border-top:1px solid #ddd;padding-top:8px;color:#666;font-size:10.5px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px}
+    .pb{page-break-before:always}
+    @media print{ body{margin:11mm} }
   </style></head><body>
     <div class="head">
-      <div class="brand"><div class="logo">IBI</div><div><h1>India Business International</h1><h2>Finance &amp; Accounts — Income &amp; Expenditure Report</h2><div class="muted">Finance &amp; Accounts Ledger — Kanyakumari</div></div></div>
-      <div style="text-align:right"><div style="font-size:16px;font-weight:700">${esc(p.label)}</div><div class="muted">${incomes.length+expenses.length} transaction(s)</div></div>
+      <div class="brand"><div class="logo">IBI</div><div><h1>India Business International</h1><h2>Financial Analysis Report</h2><div class="muted">Finance &amp; Accounts Ledger — Kanyakumari</div></div></div>
+      <div style="text-align:right"><div style="font-size:16px;font-weight:700">${esc(p.label)}</div>
+        <div class="muted">${esc(fmtDate(p.from))} → ${esc(fmtDate(p.to))} · ${cur.days} day(s) · ${cur.count} transaction(s)</div>
+        ${R.filters.length?`<div class="muted">Filters: ${esc(R.filters.join(' · '))}</div>`:''}</div>
     </div>
+
+    <h3 style="color:#0086ad;margin-top:8px">Key Figures</h3>
     <div class="cards">
-      <div class="card"><div class="l">Total Income</div><div class="v" style="color:#1a7d1a">${M(tInc)}</div></div>
-      <div class="card"><div class="l">Total Expense</div><div class="v" style="color:#b11">${M(tExp)}</div></div>
-      <div class="card"><div class="l">Net Balance</div><div class="v" style="color:${net>=0?'#0086ad':'#b11'}">${M(net)}</div></div>
+      <div class="card"><div class="l">Total Income</div><div class="v" style="color:#1a7d1a">${M(cur.tInc)}</div><div class="s">${cur.inc.length} entries</div></div>
+      <div class="card"><div class="l">Total Expense</div><div class="v" style="color:#b11">${M(cur.tExp)}</div><div class="s">incl. ${M(cur.tCr)} on credit</div></div>
+      <div class="card"><div class="l">Net Surplus</div><div class="v" style="color:${cur.net>=0?'#0086ad':'#b11'}">${S(cur.net)}</div><div class="s">margin ${cur.tInc?cur.margin.toFixed(1)+'%':'—'}</div></div>
+      <div class="card"><div class="l">Net Cash Flow</div><div class="v" style="color:${cur.cashNet>=0?'#1a7d1a':'#b11'}">${S(cur.cashNet)}</div><div class="s">money actually moved</div></div>
+      <div class="card"><div class="l">Avg Daily Burn</div><div class="v">${M(cur.burn)}</div><div class="s">income ${M(cur.dailyInc)}/day</div></div>
+      <div class="card"><div class="l">Closing Cash</div><div class="v" style="color:${closing>=0?'#0086ad':'#b11'}">${S(closing)}</div><div class="s">opened at ${S(opening)}</div></div>
     </div>
-    ${block(incomes,'Income','#1a7d1a')}
-    ${block(expenses,'Expense (paid on the spot + taken on credit)','#b11')}
-    ${settles.length?block(settles,'Settlements (paying off credit — already counted under Expense, not added again)','#0086ad'):''}
-    ${bals.length?`<h3 style="color:#0086ad;margin:16px 0 6px">Party Balances (as on date)</h3>
+    <p class="muted">Expense is on an accrual basis: cash spend <b>plus</b> credit purchases on the day they happen. Net Cash Flow counts only money that actually left — cash expenses plus settlements of earlier credit. Settlements are never added to expense a second time.</p>
+
+    ${prev?`<h3 style="color:#0086ad">Comparison with the Previous Period (${esc(pp.label)})</h3>
+    <table><thead><tr><th>Measure</th><th class="r">This period</th><th class="r">Previous</th><th class="r">Change</th><th class="r">%</th></tr></thead><tbody>
+    ${[['Income',cur.tInc,prev.tInc],['Expense',cur.tExp,prev.tExp],['— of which credit',cur.tCr,prev.tCr],['Settlements',cur.tSet,prev.tSet],
+       ['Net surplus',cur.net,prev.net],['Net cash flow',cur.cashNet,prev.cashNet]].map(([l,a,b])=>
+      `<tr><td>${l}</td><td class="r">${S(a)}</td><td class="r">${S(b)}</td><td class="r">${S(a-b)}</td><td class="r">${b?(((a-b)/Math.abs(b))*100).toFixed(1)+'%':'—'}</td></tr>`).join('')}
+    <tr><td>Entries</td><td class="r">${cur.count}</td><td class="r">${prev.count}</td><td class="r">${cur.count-prev.count>=0?'+':'−'}${Math.abs(cur.count-prev.count)}</td><td class="r">${prev.count?(((cur.count-prev.count)/prev.count)*100).toFixed(1)+'%':'—'}</td></tr>
+    </tbody></table>`:''}
+
+    <h3 style="color:#0086ad">Income vs Expense — ${gran==='day'?'daily':gran==='week'?'weekly':'monthly'}</h3>
+    ${trendChart(buckets,{inc:'#1a7d1a',exp:'#b11',net:'#0086ad',axis:'#ddd',txt:'#666'}).replace(/class="chart-wrap"/,'style="border:1px solid #ddd;border-radius:8px;padding:8px;overflow:hidden"').replace(/class="chart-legend"/,'class="muted" style="display:flex;gap:14px;padding:4px"').replace(/class="lg-dot"/g,'style="width:9px;height:9px;border-radius:2px;display:inline-block"')}
+    <table><thead><tr><th>${gran==='month'?'Month':gran==='week'?'Week of':'Date'}</th><th class="r">Income</th><th class="r">Expense</th><th class="r">Net</th><th class="r">Cumulative</th><th class="r">Entries</th></tr></thead><tbody>
+    ${buckets.map(b=>`<tr><td>${esc(b.label)}</td><td class="r">${b.inc?M(b.inc):'—'}</td><td class="r">${b.exp?M(b.exp):'—'}</td><td class="r">${S(b.net)}</td><td class="r">${S(b.cum)}</td><td class="r">${b.count||'—'}</td></tr>`).join('')}
+    </tbody><tfoot><tr><td>Total</td><td class="r">${M(cur.tInc)}</td><td class="r">${M(cur.tExp)}</td><td class="r">${S(cur.net)}</td><td class="r"></td><td class="r">${cur.count}</td></tr></tfoot></table>
+
+    <div class="pb"></div>
+    <h3 style="color:#b11">Expense by Category</h3>
+    ${grpTable(expByCat,cur.tExp,'Category',false)}
+    <h3 style="color:#1a7d1a">Income by Category</h3>
+    ${grpTable(incByCat,cur.tInc,'Category',false)}
+    <h3 style="color:#b11">Payees / Vendors (ABC)</h3>
+    ${grpTable(expByParty,cur.tExp,'Party',true)}
+    <h3 style="color:#1a7d1a">Income Sources (ABC)</h3>
+    ${grpTable(incByParty,cur.tInc,'Party',true)}
+    <p class="muted">ABC: class A parties make up the first 80% of value, B the next 15%, C the remainder.</p>
+
+    <div class="pb"></div>
+    <h3 style="color:#a76b00">Payables Ageing (all time, FIFO)</h3>
+    ${ageing.rows.length?`<table><thead><tr><th>Party</th><th class="r">0–30</th><th class="r">31–60</th><th class="r">61–90</th><th class="r">90+</th><th class="r">Total due</th><th class="r">Oldest</th></tr></thead><tbody>
+    ${ageing.rows.map(r=>`<tr><td>${esc(r.party)}</td><td class="r">${r['0-30']?M(r['0-30']):'—'}</td><td class="r">${r['31-60']?M(r['31-60']):'—'}</td><td class="r">${r['61-90']?M(r['61-90']):'—'}</td><td class="r">${r['90+']?M(r['90+']):'—'}</td><td class="r">${M(r.total)}</td><td class="r">${r.oldestAge}d</td></tr>`).join('')}
+    </tbody><tfoot><tr><td>Total</td><td class="r">${M(ageing.buckets['0-30'])}</td><td class="r">${M(ageing.buckets['31-60'])}</td><td class="r">${M(ageing.buckets['61-90'])}</td><td class="r">${M(ageing.buckets['90+'])}</td><td class="r">${M(ageing.total)}</td><td></td></tr></tfoot></table>`
+      :'<p class="muted">Nothing outstanding — every credit entry has been settled.</p>'}
+    ${bals.length?`<h3 style="color:#0086ad">Party Balances (as on date)</h3>
       <table><thead><tr><th>Party</th><th class="r">Credit</th><th class="r">Paid</th><th class="r">Balance</th></tr></thead><tbody>`
       +bals.map(r=>`<tr><td>${esc(r.party)}</td><td class="r">${M(r.credit)}</td><td class="r">${M(r.paid)}</td><td class="r" style="font-weight:700;color:${r.balance>0?'#b11':'#1a7d1a'}">${r.balance===0?'₹0.00 — settled':M(Math.abs(r.balance))+(r.balance>0?' due':' advance')}</td></tr>`).join('')
       +`</tbody></table>`:''}
-    <div class="net">Net Balance: <span style="color:${net>=0?'#0086ad':'#b11'}">${M(net)}</span></div>
-    <div class="foot"><span>Generated ${esc(genAt)} IST</span><span>indiabusinessinternational@gmail.com</span></div>
+
+    <div class="pb"></div>
+    <h3 style="color:#0086ad">Cash Book — Running Balance</h3>
+    <table><thead><tr><th>Date</th><th>Type</th><th>Description</th><th>Party</th><th class="r">In</th><th class="r">Out</th><th class="r">Credit</th><th class="r">Balance</th></tr></thead><tbody>
+    <tr><td colspan="7"><b>Opening balance</b> as on ${esc(fmtDate(p.from))}</td><td class="r"><b>${S(opening)}</b></td></tr>
+    ${ledger.map(r=>`<tr><td>${esc(fmtDate(r.e.date))}</td><td>${TYPE_META[canonT(r.e)].label}</td><td>${esc(r.e.description)}</td><td>${esc(r.e.party)||'—'}</td>
+      <td class="r">${r.inAmt?M(r.inAmt):''}</td><td class="r">${r.outAmt?M(r.outAmt):''}</td><td class="r">${r.unpaid?M(r.unpaid):''}</td><td class="r">${S(r.bal)}</td></tr>`).join('')}
+    </tbody><tfoot><tr><td colspan="4">Closing balance as on ${esc(fmtDate(p.to))}</td><td class="r">${M(cur.tInc)}</td><td class="r">${M(cur.outflow)}</td><td class="r">${M(cur.tCr)}</td><td class="r">${S(closing)}</td></tr></tfoot></table>
+
+    <div class="pb"></div>
+    ${block(cur.inc,'Income','#1a7d1a')}
+    ${block(cur.exp,'Expense (paid on the spot + taken on credit)','#b11')}
+    ${cur.st.length?block(cur.st,'Settlements (paying off credit — already counted under Expense, not added again)','#0086ad'):''}
+
+    <h3 style="color:#0086ad">What the numbers say</h3>
+    ${insights.map(i=>`<div class="ins ${i.t}">${i.msg}</div>`).join('')}
+    ${quality.length?`<h3 style="color:#a76b00">Data Quality Audit</h3>${quality.map(q=>`<div class="ins ${q.t}">${q.msg}</div>`).join('')}`:''}
+
+    <div class="net">Net Surplus: <span style="color:${cur.net>=0?'#0086ad':'#b11'}">${S(cur.net)}</span></div>
+    <div class="foot"><span>Generated ${esc(genAt)} IST · IBI Finance Tracker v4.0</span><span>indiabusinessinternational@gmail.com</span></div>
   </body></html>`;
   const win=window.open('','_blank');
   if(!win){ showToast('Allow pop-ups to print, or use Download CSV','error'); return; }
   win.document.open(); win.document.write(html); win.document.close(); win.focus();
-  setTimeout(()=>{ try{ win.print(); }catch(e){} }, 400);
+  setTimeout(()=>{ try{ win.print(); }catch(e){} }, 500);
 }
 
+/* ── CSV ───────────────────────────────────────────────────────────────── */
 function downloadReportCSV(){
   if(!lastReport){ showToast('Generate a report first','error'); return; }
-  const {p,incomes,expenses,settles=[],tInc,tExp,tSet=0,net}=lastReport;
+  const R=lastReport, {p,cur,prev,pp,gran,buckets,ageing,bals,opening,closing,ledger,dow,quality,insights,
+        incByParty,expByParty,incByCat,expByCat}=R;
   const rows=[
-    ['IBI Finance Tracker — Income & Expenditure Report'],
+    ['IBI Finance Tracker — Financial Analysis Report'],
     ['Period', p.label],
+    ['From', p.from, 'To', p.to, 'Days', cur.days],
+    ['Filters', R.filters.length ? R.filters.join(' | ') : 'none'],
     ['Generated', new Date().toLocaleString('en-US',{timeZone:'Asia/Kolkata'})+' IST'],
     []
   ];
-  let i=0;
-  rows.push(['INCOME'],['#','Date & Time','Description','Party','Amount','Note']);
-  incomes.forEach(e=>rows.push([++i,fmtDTLine(e),e.description,e.party,e.amount,e.note||'']));
-  rows.push([' ',' ',' ','Total Income',tInc,''],[]);
-  i=0;
-  rows.push(['EXPENSE'],['#','Date & Time','Description','Party','Amount','Note']);
-  expenses.forEach(e=>rows.push([++i,fmtDTLine(e),e.description,e.party,e.amount,e.note||'']));
-  rows.push([' ',' ',' ','Total Expense',tExp,''],[]);
-  if(settles.length){
-    i=0;
-    rows.push(['SETTLEMENTS — paying off credit already counted under Expense; not added again'],
-              ['#','Date & Time','Description','Party','Amount','Note']);
-    settles.forEach(e=>rows.push([++i,fmtDTLine(e),e.description,e.party,e.amount,e.note||'']));
-    rows.push([' ',' ',' ','Total Settled',tSet,''],[]);
-  }
-  const bals=partyBalances();
-  if(bals.length){
-    rows.push(['PARTY BALANCES (as on date)'],['Party','Credit','Paid','Balance','Status']);
-    bals.forEach(r=>rows.push([r.party,r.credit,r.paid,Math.abs(r.balance),
-      r.balance===0?'Settled':(r.balance>0?'Due':'Advance')]));
+  rows.push(['KEY FIGURES'],['Measure','Value']);
+  [['Total Income',cur.tInc],['Total Expense (accrual: cash + credit)',cur.tExp],['— of which bought on credit',cur.tCr],
+   ['Cash expenses',cur.tCash],['Settlements paid',cur.tSet],['Total cash outflow',cur.outflow],
+   ['Net Surplus (income − expense)',cur.net],['Net Cash Flow (income − outflow)',cur.cashNet],
+   ['Profit margin %',cur.tInc?cur.margin.toFixed(2):''],['Expense ratio %',cur.tInc?cur.expRatio.toFixed(2):''],
+   ['Average daily burn',cur.burn.toFixed(2)],['Average daily income',cur.dailyInc.toFixed(2)],
+   ['Average income per entry',cur.avgInc.toFixed(2)],['Average expense per entry',cur.avgExp.toFixed(2)],
+   ['Entries',cur.count],['Distinct parties',cur.parties],
+   ['Opening cash balance',opening.toFixed(2)],['Closing cash balance',closing.toFixed(2)]
+  ].forEach(r=>rows.push(r));
+  rows.push([]);
+
+  if(prev){
+    rows.push(['COMPARISON WITH PREVIOUS PERIOD', pp.label],['Measure','This period','Previous','Change','Change %']);
+    [['Income',cur.tInc,prev.tInc],['Expense',cur.tExp,prev.tExp],['Credit',cur.tCr,prev.tCr],['Settlements',cur.tSet,prev.tSet],
+     ['Net surplus',cur.net,prev.net],['Net cash flow',cur.cashNet,prev.cashNet],['Entries',cur.count,prev.count]]
+      .forEach(([l,a,b])=>rows.push([l,a,b,a-b,b?(((a-b)/Math.abs(b))*100).toFixed(2):'']));
     rows.push([]);
   }
-  rows.push([' ',' ',' ','Net Balance',net,'']);
-  const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+
+  rows.push([`TREND — ${gran.toUpperCase()}`],['Bucket','Income','Expense','Net','Cumulative','Entries']);
+  buckets.forEach(b=>rows.push([b.label,b.inc,b.exp,b.net,b.cum,b.count]));
+  rows.push([]);
+
+  rows.push(['WEEKDAY PATTERN'],['Day','Income','Expense','Net','Entries']);
+  dow.forEach(d=>rows.push([d.d,d.inc,d.exp,d.inc-d.exp,d.count]));
+  rows.push([]);
+
+  const grp=(title,list,total,extra)=>{
+    rows.push([title],['Name','Amount','Share %','Entries','Average'].concat(extra?['ABC']:[]));
+    list.forEach(r=>rows.push([r.key,r.total,total?((r.total/total)*100).toFixed(2):'',r.count,(r.total/r.count).toFixed(2)].concat(extra?[r.abc]:[])));
+    rows.push(['Total',total,'100',list.reduce((s,r)=>s+r.count,0),''],[]);
+  };
+  grp('EXPENSE BY CATEGORY', expByCat, cur.tExp, false);
+  grp('INCOME BY CATEGORY',  incByCat, cur.tInc, false);
+  grp('PAYEES / VENDORS (ABC)', expByParty, cur.tExp, true);
+  grp('INCOME SOURCES (ABC)',   incByParty, cur.tInc, true);
+
+  rows.push(['PAYABLES AGEING (all time, FIFO)'],['Party','0-30','31-60','61-90','90+','Total due','Oldest (days)']);
+  ageing.rows.forEach(r=>rows.push([r.party,r['0-30'],r['31-60'],r['61-90'],r['90+'],r.total,r.oldestAge]));
+  rows.push(['Total',ageing.buckets['0-30'],ageing.buckets['31-60'],ageing.buckets['61-90'],ageing.buckets['90+'],ageing.total,''],[]);
+
+  if(bals.length){
+    rows.push(['PARTY BALANCES (as on date)'],['Party','Credit taken','Paid','Balance','Status']);
+    bals.forEach(r=>rows.push([r.party,r.credit,r.paid,Math.abs(r.balance),r.balance===0?'Settled':(r.balance>0?'Due':'Advance')]));
+    rows.push([]);
+  }
+
+  rows.push(['CASH BOOK — RUNNING BALANCE'],['#','Date & Time','Type','Category','Description','Party','Note','In','Out','Credit (unpaid)','Balance']);
+  rows.push(['','Opening balance','','','','','','','','',opening.toFixed(2)]);
+  ledger.forEach((r,i)=>rows.push([i+1,fmtDTLine(r.e),r.e.type,categoryOf(r.e),r.e.description,r.e.party,r.e.note||'',
+    r.inAmt||'',r.outAmt||'',r.unpaid||'',r.bal.toFixed(2)]));
+  rows.push(['','Closing balance','','','','','',cur.tInc,cur.outflow,cur.tCr,closing.toFixed(2)],[]);
+
+  const sect=(title,list)=>{
+    if(!list.length) return;
+    rows.push([title],['#','Date & Time','Category','Description','Party','Amount','Note']);
+    list.forEach((e,i)=>rows.push([i+1,fmtDTLine(e),categoryOf(e),e.description,e.party,e.amount,e.note||'']));
+    rows.push(['','','','','Subtotal',_sum(list),''],[]);
+  };
+  sect('INCOME', cur.inc);
+  sect('EXPENSE (cash + credit)', cur.exp);
+  sect('SETTLEMENTS (clearing credit — not re-counted as expense)', cur.st);
+
+  const strip=s=>String(s).replace(/<[^>]+>/g,'');
+  rows.push(['INSIGHTS']); insights.forEach(i=>rows.push([strip(i.msg)]));
+  rows.push([]);
+  rows.push(['DATA QUALITY AUDIT']);
+  if(quality.length) quality.forEach(q=>rows.push([strip(q.msg)])); else rows.push(['No issues found.']);
+
+  const csv=rows.map(r=>r.map(v=>`"${String(v==null?'':v).replace(/"/g,'""')}"`).join(',')).join('\n');
   const a=document.createElement('a');
   a.href='data:text/csv;charset=utf-8,﻿'+encodeURIComponent(csv);
   const slug=p.label.replace(/[^0-9a-zA-Z]+/g,'_').replace(/^_|_$/g,'').toLowerCase();
-  a.download=`ibi_report_${slug}.csv`; a.click();
+  a.download=`ibi_analysis_${slug}.csv`; a.click();
 }
 
 // ── SERVICE WORKER ──
