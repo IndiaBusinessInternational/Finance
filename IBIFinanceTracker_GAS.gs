@@ -38,29 +38,275 @@
 const SHEET_ID    = "1hbh5E9kzX4632d4kaMHLXC-Aqhi5exgEJWOxMtSrttE";
 const SHEET_NAME  = "Transactions";
 const LEDGER_NAME = "Ledger";
-const HEADERS     = ["ID","Date","Type","Description","Party","Amount","Note","CreatedAt"];
+/* PaidBy and Mode are APPENDED after CreatedAt rather than inserted in the
+   middle: an existing sheet keeps every column exactly where it was, so the
+   hand-made filters and the bank-import stamps still point at the same thing. */
+const HEADERS     = ["ID","Date","Type","Description","Party","Amount","Note","CreatedAt",
+                     "PaidBy","Mode"];
 
-function getSheet() {
+const COMMIT_SHEET = "Commitments";
+const COMMIT_HDRS  = ["ID","Name","Kind","Category","Party","Amount","DueDay","Freq",
+                      "StartMonth","TotalInst","OpeningInst","OpeningPaid","Principal",
+                      "Outstanding","Unit","UnitPerInst","OpeningUnits","PayMode",
+                      "Active","Note","CreatedAt"];
+
+const PLAN_SHEET = "Plans";
+const PLAN_HDRS  = ["ID","Month","Side","CommitmentId","Item","Category","Party",
+                    "Proposed","Actual","DueDate","PaidDate","Status","PayMode",
+                    "PaidBy","TxId","Note","Sort","CreatedAt"];
+
+const APP_VERSION = "3.0";
+// Lets a page newer than this deployment detect what it can do, and say
+// "update the Apps Script" instead of failing oddly at Save.
+const FEATURES    = ["plans", "commitments", "paidby"];
+
+/* One helper builds every data sheet, so a sheet added in a later version gets
+   the same frozen, styled header row and — the part that matters on an upgrade
+   — the same "append any header this version added" migration. Columns are
+   only ever appended, never renumbered. */
+function getNamedSheet(name, headers, widths) {
   const ss = SpreadsheetApp.openById(SHEET_ID);
-  let sh = ss.getSheetByName(SHEET_NAME);
+  let sh = ss.getSheetByName(name);
   if (!sh) {
-    sh = ss.insertSheet(SHEET_NAME);
-    sh.appendRow(HEADERS);
+    sh = ss.insertSheet(name);
+    sh.appendRow(headers);
     sh.setFrozenRows(1);
-    sh.getRange(1, 1, 1, HEADERS.length)
-      .setFontWeight("bold")
-      .setBackground("#000000")
-      .setFontColor("#00c5ff");
-    sh.setColumnWidth(1, 130);
-    sh.setColumnWidth(2, 100);
-    sh.setColumnWidth(3, 90);
-    sh.setColumnWidth(4, 240);
-    sh.setColumnWidth(5, 170);
-    sh.setColumnWidth(6, 110);
-    sh.setColumnWidth(7, 210);
-    sh.setColumnWidth(8, 150);
+    styleHeader_(sh, headers.length);
+    if (widths) widths.forEach(function (w, i) { sh.setColumnWidth(i + 1, w); });
+    return sh;
+  }
+  const have = sh.getLastColumn();
+  if (have < headers.length) {
+    sh.getRange(1, have + 1, 1, headers.length - have).setValues([headers.slice(have)]);
+    styleHeader_(sh, headers.length);
   }
   return sh;
+}
+
+function styleHeader_(sh, n) {
+  sh.getRange(1, 1, 1, n)
+    .setFontWeight("bold")
+    .setBackground("#000000")
+    .setFontColor("#00c5ff");
+}
+
+function getSheet() {
+  return getNamedSheet(SHEET_NAME, HEADERS,
+                       [130, 100, 90, 240, 170, 110, 210, 150, 110, 100]);
+}
+
+function sheetTZ_() {
+  try { return SpreadsheetApp.openById(SHEET_ID).getSpreadsheetTimeZone() || 'Asia/Kolkata'; }
+  catch (e) { return 'Asia/Kolkata'; }
+}
+
+function num_(v) { const n = parseFloat(v); return isNaN(n) ? 0 : n; }
+function str_(v) { return v == null ? '' : String(v); }
+function bool_(v) {
+  const s = String(v == null ? '' : v).trim().toLowerCase();
+  return !(s === 'false' || s === 'no' || s === '0' || s === '');
+}
+
+/* A date cell can come back as a Date (Sheets parsed it) or as the plain
+   'yyyy-MM-dd' text we wrote. Formatting a Date in a timezone that is not the
+   Sheet's own shifts it by a day. */
+function isoOf_(v, tz) {
+  if (v instanceof Date) return Utilities.formatDate(v, tz, 'yyyy-MM-dd');
+  const s = String(v == null ? '' : v).trim();
+  if (!s) return '';
+  const m = s.match(/^(\d{4}-\d{2}-\d{2})/);
+  if (m) return m[1];
+  const d = new Date(s);
+  return isNaN(d.getTime()) ? s : Utilities.formatDate(d, tz, 'yyyy-MM-dd');
+}
+
+/* A month cell is 'yyyy-MM'. Sheets loves to read that as a date and hand back
+   a Date, which would come out as '2026-08-01' and stop matching the month key
+   the app wrote. */
+function monthOf_(v, tz) {
+  if (v instanceof Date) return Utilities.formatDate(v, tz, 'yyyy-MM');
+  const s = String(v == null ? '' : v).trim();
+  const m = s.match(/^(\d{4})-(\d{1,2})/);
+  return m ? m[1] + '-' + ('0' + m[2]).slice(-2) : s;
+}
+
+function readCommitments_(tz) {
+  const sh = getNamedSheet(COMMIT_SHEET, COMMIT_HDRS,
+    [130,220,100,160,150,100,70,100,100,90,100,110,110,110,80,100,100,100,70,220,150]);
+  const data = sh.getDataRange().getValues();
+  if (data.length <= 1) return [];
+  return data.slice(1)
+    .filter(function (r) { return String(r[0] || '').trim() !== ''; })
+    .map(function (r) {
+      return {
+        id: String(r[0]), name: str_(r[1]), kind: str_(r[2]) || 'bill',
+        category: str_(r[3]), party: str_(r[4]), amount: num_(r[5]),
+        dueDay: num_(r[6]), freq: str_(r[7]) || 'monthly',
+        startMonth: monthOf_(r[8], tz), totalInst: num_(r[9]),
+        openingInst: num_(r[10]), openingPaid: num_(r[11]),
+        principal: num_(r[12]), outstanding: num_(r[13]),
+        unit: str_(r[14]), unitPerInst: num_(r[15]), openingUnits: num_(r[16]),
+        payMode: str_(r[17]), active: bool_(r[18]), note: str_(r[19]),
+        createdAt: str_(r[20])
+      };
+    });
+}
+
+function readPlans_(tz) {
+  const sh = getNamedSheet(PLAN_SHEET, PLAN_HDRS,
+    [130,90,70,130,220,160,150,100,100,110,110,90,100,110,130,220,70,150]);
+  const data = sh.getDataRange().getValues();
+  if (data.length <= 1) return [];
+  return data.slice(1)
+    .filter(function (r) { return String(r[0] || '').trim() !== ''; })
+    .map(function (r) {
+      return {
+        id: String(r[0]), month: monthOf_(r[1], tz), side: str_(r[2]) || 'out',
+        commitmentId: str_(r[3]), item: str_(r[4]), category: str_(r[5]),
+        party: str_(r[6]), proposed: num_(r[7]), actual: num_(r[8]),
+        dueDate: isoOf_(r[9], tz), paidDate: isoOf_(r[10], tz),
+        status: str_(r[11]) || 'planned', payMode: str_(r[12]),
+        paidBy: str_(r[13]), txId: str_(r[14]), note: str_(r[15]),
+        sort: num_(r[16]), createdAt: str_(r[17])
+      };
+    });
+}
+
+/* ── COMMITMENTS ────────────────────────────────────────────────────────────
+   A commitment is the standing thing — "car loan, ₹12,111 on the 10th, 84
+   instalments". The month-by-month record of actually paying it lives in
+   Plans; nothing here is rewritten when a payment is made, so the instalment
+   count and the running total are always derived from the plan rows rather
+   than being a second copy that can drift out of step. */
+function commitmentRow_(id, p, createdAt) {
+  return [id, str_(p.name).slice(0,160), str_(p.kind) || 'bill',
+          str_(p.category).slice(0,80), str_(p.party).slice(0,120),
+          num_(p.amount), num_(p.dueDay), str_(p.freq) || 'monthly',
+          str_(p.startMonth), num_(p.totalInst), num_(p.openingInst),
+          num_(p.openingPaid), num_(p.principal), num_(p.outstanding),
+          str_(p.unit).slice(0,20), num_(p.unitPerInst), num_(p.openingUnits),
+          str_(p.payMode).slice(0,30), bool_(p.active) ? 'TRUE' : 'FALSE',
+          str_(p.note).slice(0,400), createdAt];
+}
+
+function saveCommitment(p) {
+  if (!String(p.name || '').trim()) return { status:'error', message:'A commitment needs a name.' };
+  const lock = LockService.getScriptLock();
+  try { lock.waitLock(20000); } catch (e) {
+    return { status:'error', message:'Busy — please try again in a moment.' };
+  }
+  try {
+    const sh = getNamedSheet(COMMIT_SHEET, COMMIT_HDRS);
+    const rows = sh.getDataRange().getValues();
+    if (p.id) {
+      for (let i = 1; i < rows.length; i++) {
+        if (String(rows[i][0]) === String(p.id)) {
+          const created = rows[i][COMMIT_HDRS.length - 1] || nowStamp_();
+          sh.getRange(i + 1, 1, 1, COMMIT_HDRS.length)
+            .setValues([commitmentRow_(String(p.id), p, created)]);
+          SpreadsheetApp.flush();
+          return { status:'ok', id:String(p.id), message:'Commitment updated.' };
+        }
+      }
+      return { status:'error', message:'Commitment not found: ' + p.id };
+    }
+    const id = 'CM' + Date.now();
+    sh.appendRow(commitmentRow_(id, p, nowStamp_()));
+    SpreadsheetApp.flush();
+    return { status:'ok', id:id, message:'Commitment saved.' };
+  } finally { try { lock.releaseLock(); } catch (e) {} }
+}
+
+/* ── PLAN ROWS ──────────────────────────────────────────────────────────── */
+function planRow_(id, p, createdAt) {
+  return [id, str_(p.month), str_(p.side) || 'out', str_(p.commitmentId),
+          str_(p.item).slice(0,160), str_(p.category).slice(0,80),
+          str_(p.party).slice(0,120), num_(p.proposed), num_(p.actual),
+          str_(p.dueDate), str_(p.paidDate), str_(p.status) || 'planned',
+          str_(p.payMode).slice(0,30), str_(p.paidBy).slice(0,80),
+          str_(p.txId), str_(p.note).slice(0,400), num_(p.sort), createdAt];
+}
+
+function savePlan(p) {
+  if (!String(p.month || '').trim()) return { status:'error', message:'A plan row needs a month.' };
+  if (!String(p.item  || '').trim()) return { status:'error', message:'A plan row needs an item name.' };
+  const lock = LockService.getScriptLock();
+  try { lock.waitLock(20000); } catch (e) {
+    return { status:'error', message:'Busy — please try again in a moment.' };
+  }
+  try {
+    const sh = getNamedSheet(PLAN_SHEET, PLAN_HDRS);
+    const rows = sh.getDataRange().getValues();
+    if (p.id) {
+      for (let i = 1; i < rows.length; i++) {
+        if (String(rows[i][0]) === String(p.id)) {
+          const created = rows[i][PLAN_HDRS.length - 1] || nowStamp_();
+          sh.getRange(i + 1, 1, 1, PLAN_HDRS.length)
+            .setValues([planRow_(String(p.id), p, created)]);
+          SpreadsheetApp.flush();
+          return { status:'ok', id:String(p.id), message:'Plan updated.' };
+        }
+      }
+      return { status:'error', message:'Plan row not found: ' + p.id };
+    }
+    const id = 'PL' + Date.now();
+    sh.appendRow(planRow_(id, p, nowStamp_()));
+    SpreadsheetApp.flush();
+    return { status:'ok', id:id, message:'Plan row saved.' };
+  } finally { try { lock.releaseLock(); } catch (e) {} }
+}
+
+/* Building a month writes twenty-odd rows at once. Sent one at a time that is
+   twenty round trips against a quota shared with every other script on the
+   account; here it is one call and one setValues. */
+function savePlans(p) {
+  let list;
+  try { list = JSON.parse(String(p.rows || '[]')); }
+  catch (e) { return { status:'error', message:'Plan rows were not valid JSON.' }; }
+  if (!list || !list.length) return { status:'ok', ids:[], message:'Nothing to add.' };
+  if (list.length > 120) return { status:'error', message:'Too many rows in one go.' };
+  const lock = LockService.getScriptLock();
+  try { lock.waitLock(25000); } catch (e) {
+    return { status:'error', message:'Busy — please try again in a moment.' };
+  }
+  try {
+    const sh = getNamedSheet(PLAN_SHEET, PLAN_HDRS);
+    const now = nowStamp_(), base = Date.now(), ids = [];
+    const values = list.map(function (row, i) {
+      const id = 'PL' + (base + i);      // +i so a batch cannot collide with itself
+      ids.push(id);
+      return planRow_(id, row, now);
+    });
+    sh.getRange(sh.getLastRow() + 1, 1, values.length, PLAN_HDRS.length).setValues(values);
+    SpreadsheetApp.flush();
+    return { status:'ok', ids:ids, message: values.length + ' rows added.' };
+  } finally { try { lock.releaseLock(); } catch (e) {} }
+}
+
+function nowStamp_() {
+  return Utilities.formatDate(new Date(), 'Asia/Kolkata', 'dd-MMM-yyyy HH:mm:ss');
+}
+
+/* One deleter for every sheet. Row order carries no meaning in any of them —
+   each row is found by its ID. */
+function deleteRowById(name, headers, id) {
+  if (!id) return { status:'error', message:'No ID provided.' };
+  const lock = LockService.getScriptLock();
+  try { lock.waitLock(20000); } catch (e) {
+    return { status:'error', message:'Busy — please try again in a moment.' };
+  }
+  try {
+    const sh = getNamedSheet(name, headers);
+    const rows = sh.getDataRange().getValues();
+    for (let i = 1; i < rows.length; i++) {
+      if (String(rows[i][0]) === String(id)) {
+        sh.deleteRow(i + 1);
+        SpreadsheetApp.flush();
+        return { status:'ok', message:'Deleted: ' + id };
+      }
+    }
+    return { status:'error', message:'ID not found: ' + id };
+  } finally { try { lock.releaseLock(); } catch (e) {} }
 }
 
 function doGet(e) {
@@ -71,8 +317,15 @@ function doGet(e) {
   try {
     switch (action) {
       case 'ping':
-        result = { status:'ok', message:'IBI Finance Tracker GAS v2.6 is live!' };
+        result = { status:'ok', message:'IBI Finance Tracker GAS v' + APP_VERSION + ' is live!',
+                   version: APP_VERSION, features: FEATURES };
         break;
+      case 'saveCommitment':   result = saveCommitment(p);                              break;
+      case 'deleteCommitment': result = deleteRowById(COMMIT_SHEET, COMMIT_HDRS, p.id); break;
+      case 'savePlan':         result = savePlan(p);                                    break;
+      case 'savePlans':        result = savePlans(p);                                   break;
+      case 'deletePlan':       result = deleteRowById(PLAN_SHEET, PLAN_HDRS, p.id);     break;
+
       case 'getAll':
         result = getAllTransactions();
         break;
@@ -124,10 +377,20 @@ function getAllTransactions() {
     party:       r[4],
     amount:      parseFloat(r[5]) || 0,
     note:        r[6] || '',
-    createdAt:   r[7] || ''
+    createdAt:   r[7] || '',
+    paidBy:      str_(r[8]),
+    mode:        str_(r[9])
   }));
 
-  return { status:'ok', transactions: rows };
+  /* One call returns the ledger, the standing commitments and every planned
+     month. Three separate round trips would each pay the Apps Script cold-start
+     cost, and on a phone that is the whole of the wait. */
+  const tz = sheetTZ_();
+  return { status:'ok', transactions: rows,
+           commitments: readCommitments_(tz),
+           plans:       readPlans_(tz),
+           version:     APP_VERSION,
+           features:    FEATURES };
 }
 
 function addTransaction(p) {
@@ -160,7 +423,9 @@ function addTransaction(p) {
     p.party  || '',
     parseFloat(p.amount) || 0,
     p.note   || '',
-    now
+    now,
+    p.paidBy || '',
+    p.mode   || ''
   ]);
 
   cache.put(key, id, 90);   // 90-second idempotency window for this exact payload
@@ -175,12 +440,18 @@ function updateTransaction(p) {
   for (let i = 1; i < rows.length; i++) {
     if (String(rows[i][0]) === String(p.id)) {
       const r = i + 1;
-      sh.getRange(r, 2).setValue(p.date        || '');
-      sh.getRange(r, 3).setValue(p.type        || 'income');
-      sh.getRange(r, 4).setValue(p.description || '');
-      sh.getRange(r, 5).setValue(p.party       || '');
-      sh.getRange(r, 6).setValue(parseFloat(p.amount) || 0);
-      sh.getRange(r, 7).setValue(p.note        || '');
+      // Two ranges, one setValues each — six single-cell writes were six round
+      // trips. Column 8 is CreatedAt and is deliberately skipped: it records
+      // when the row was first written and must survive every later edit.
+      sh.getRange(r, 2, 1, 6).setValues([[
+        p.date        || '',
+        p.type        || 'income',
+        p.description || '',
+        p.party       || '',
+        parseFloat(p.amount) || 0,
+        p.note        || ''
+      ]]);
+      sh.getRange(r, 9, 1, 2).setValues([[p.paidBy || '', p.mode || '']]);
       return { status:'ok', message:'Updated: ' + p.id };
     }
   }

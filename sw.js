@@ -1,8 +1,14 @@
-const CACHE = 'ibi-finance-v4.4.0';
+const CACHE = 'ibi-finance-v5.0.0';
 const ASSETS = ['./index.html', './manifest.json'];
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));
+  e.waitUntil(
+    caches.open(CACHE).then(c => Promise.all(
+      ASSETS.map(u => fetch(new Request(u, {cache: 'reload'}))
+        .then(r => r.ok ? c.put(u, r) : null)
+        .catch(() => null))
+    ))
+  );
   self.skipWaiting();
 });
 
