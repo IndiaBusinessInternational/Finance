@@ -651,7 +651,7 @@ tr.row-editing td{background:var(--info-bg) !important}
     <div class="topbar-left">
       <div class="ibi-logo"><span>IBI</span></div>
       <div>
-        <div class="app-name">IBI Finance Tracker <span class="ver-badge">v5.1</span></div>
+        <div class="app-name">IBI Finance Tracker <span class="ver-badge">v5.2</span></div>
       </div>
     </div>
     <div class="topbar-right">
@@ -936,7 +936,7 @@ tr.row-editing td{background:var(--info-bg) !important}
   <div id="commitList" class="cm-list"></div>
 </div><!-- /viewCommit -->
 
-  <div class="footer">IBI Finance Tracker v5.1 &mdash; India Business International &mdash; indiabusinessinternational@gmail.com</div>
+  <div class="footer">IBI Finance Tracker v5.2 &mdash; India Business International &mdash; indiabusinessinternational@gmail.com</div>
 </div>
 
 <!-- DRAWER MENU -->
@@ -2741,7 +2741,7 @@ async function savePay(){
       // about the plan either, and one tap of Cancel undoes the whole thing.
       const res = await gasCall({
         action:'add', date,
-        type: isIn ? 'income' : 'expense',
+        type: isIn ? 'income' : ledgerTypeFor(p),
         description: p.item,
         party: p.party || (isIn ? 'Received' : 'Paid'),
         amount: amt,
@@ -2759,6 +2759,15 @@ async function savePay(){
     if(ok){ closePay(); showToast(isIn ? 'Recorded as received' : 'Recorded as paid'); }
   }catch(e){ if(!AUTH_LOST) showToast('Could not reach Google Drive', 'error'); }
   finally{ gateBusy('paySaveBtn', false, '', '<i class="ti ti-check"></i> Record it'); }
+}
+
+/* v3.0 — a Savings/RD or Gold/Chit instalment is money put AWAY, not spent.
+   An app whose ledger knows the 'saving' type gets it; one that does not keeps
+   writing 'expense' — so this block still reads the same in all three trackers. */
+function ledgerTypeFor(p){
+  const c = p.commitmentId ? commitments.find(x=>x.id===p.commitmentId) : null;
+  const asset = !!(c && KINDS[c.kind] && KINDS[c.kind].asset);
+  return (asset && typeof TYPE_META !== 'undefined' && TYPE_META.saving) ? 'saving' : 'expense';
 }
 
 /* The instalment stamp that goes into the ledger note — so the Sheet row on
@@ -4357,7 +4366,7 @@ function printReport(){
     ${quality.length?`<h3 style="color:#a76b00">Data Quality Audit</h3>${quality.map(q=>`<div class="ins ${q.t}">${q.msg}</div>`).join('')}`:''}
 
     <div class="net">Net Surplus: <span style="color:${cur.net>=0?'#0086ad':'#b11'}">${S(cur.net)}</span></div>
-    <div class="foot"><span>Generated ${esc(genAt)} IST · IBI Finance Tracker v5.1</span><span>indiabusinessinternational@gmail.com</span></div>
+    <div class="foot"><span>Generated ${esc(genAt)} IST · IBI Finance Tracker v5.2</span><span>indiabusinessinternational@gmail.com</span></div>
   </body></html>`;
   const win=window.open('','_blank');
   if(!win){ showToast('Allow pop-ups to print, or use Download CSV','error'); return; }
