@@ -651,7 +651,7 @@ tr.row-editing td{background:var(--info-bg) !important}
     <div class="topbar-left">
       <div class="ibi-logo"><span>IBI</span></div>
       <div>
-        <div class="app-name">IBI Finance Tracker <span class="ver-badge">v5.3</span></div>
+        <div class="app-name">IBI Finance Tracker <span class="ver-badge">v5.4</span></div>
       </div>
     </div>
     <div class="topbar-right">
@@ -936,7 +936,7 @@ tr.row-editing td{background:var(--info-bg) !important}
   <div id="commitList" class="cm-list"></div>
 </div><!-- /viewCommit -->
 
-  <div class="footer">IBI Finance Tracker v5.3 &mdash; India Business International &mdash; indiabusinessinternational@gmail.com</div>
+  <div class="footer">IBI Finance Tracker v5.4 &mdash; India Business International &mdash; indiabusinessinternational@gmail.com</div>
 </div>
 
 <!-- DRAWER MENU -->
@@ -956,7 +956,10 @@ tr.row-editing td{background:var(--info-bg) !important}
   <button class="drawer-item" onclick="toggleTheme();closeDrawer()"><i class="ti ti-sun"></i> Toggle Dark / Light Mode</button>
   <button class="drawer-item" id="drawerInstallBtn" style="display:none" onclick="triggerInstall();closeDrawer()"><i class="ti ti-device-mobile-down"></i> Install as App (PWA)</button>
   <div class="drawer-section-label">About</div>
-  <div class="drawer-item" style="cursor:default;color:var(--text2);font-size:12px"><i class="ti ti-info-circle"></i> Version 5.1 — July 2026</div>
+  <!-- app and backend carry the SAME version number (CEO, 7 Sep 2026, "for easy
+       noting"). Both are shown here; a bare number mismatch is only a note, a
+       missing feature is what raises the amber prompts. -->
+  <div class="drawer-item" style="cursor:default;color:var(--text2);font-size:12px;align-items:flex-start"><i class="ti ti-info-circle"></i> <span id="aboutVer">App v5.4 · Backend: not connected yet</span></div>
 </div>
 
 <!-- REPORT MODAL -->
@@ -1636,9 +1639,10 @@ async function loadAll(){
       const hasPlans = Array.isArray(data.commitments) && Array.isArray(data.plans);
       if(hasPlans){ commitments = data.commitments; plans = data.plans; }
       setBackendOK(hasPlans);
+      paintBackendVer(data.version);                 // app and backend share one version number
       cacheEntries();
       setOffline(false);
-      setStatus(true,'Connected — Google Drive');
+      setStatus(true,'Connected — Google Drive' + (data.version ? ' · backend v' + data.version : ''));
       render(); renderPlan(); renderCommitments();
     }
     else{ setStatus(false,'Error: '+data.message); showToast('Load failed','error'); }
@@ -2283,6 +2287,16 @@ function paintNavBadges(){
    Her Apps Script is deployed by hand, so this page can easily be newer than
    the thing it talks to. Rather than letting Save fail with "Unknown action",
    the two new sections say plainly what has to be pasted and redeployed. */
+/* The About line names both halves. The app's own version is read off the
+   badge so there is one source for it; the backend's arrives with getAll. */
+function appVersion(){ const b = document.querySelector('.ver-badge'); return b ? b.textContent.replace(/^v/i, '') : ''; }
+function paintBackendVer(v){
+  const el = document.getElementById('aboutVer'); if(!el) return;
+  const app = appVersion(), be = String(v || '').trim();
+  if(!be){ el.textContent = `App v${app} · Backend: version not reported`; return; }
+  el.innerHTML = `App v${app} · Backend v${esc(be)}` + (be === app ? ' <span style="color:var(--success-text)">✓ in step</span>'
+    : ` <span style="color:var(--text3)">— paste the GAS file v${esc(app)} when convenient</span>`);
+}
 function setBackendOK(ok){
   BACKEND_OK = !!ok;
   document.getElementById('needsBackend').classList.toggle('show', !ok);
@@ -4367,7 +4381,7 @@ function printReport(){
     ${quality.length?`<h3 style="color:#a76b00">Data Quality Audit</h3>${quality.map(q=>`<div class="ins ${q.t}">${q.msg}</div>`).join('')}`:''}
 
     <div class="net">Net Surplus: <span style="color:${cur.net>=0?'#0086ad':'#b11'}">${S(cur.net)}</span></div>
-    <div class="foot"><span>Generated ${esc(genAt)} IST · IBI Finance Tracker v5.3</span><span>indiabusinessinternational@gmail.com</span></div>
+    <div class="foot"><span>Generated ${esc(genAt)} IST · IBI Finance Tracker v5.4</span><span>indiabusinessinternational@gmail.com</span></div>
   </body></html>`;
   const win=window.open('','_blank');
   if(!win){ showToast('Allow pop-ups to print, or use Download CSV','error'); return; }
