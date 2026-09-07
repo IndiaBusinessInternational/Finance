@@ -53,6 +53,7 @@
   --danger-bg:#2e0d0d;--danger-text:#ff7070;--danger-border:#5c1e1e;
   --warning-bg:#2e200d;--warning-text:#ffb84d;--warning-border:#5c3e1e;
   --info-bg:#0d1e2e;--info-text:#4db8ff;--info-border:#1e3e5c;
+  --save-bg:#1f0d2e;--save-text:#c58cff;--save-border:#3e1e5c;
   --radius:10px;--radius-lg:14px;--radius-xl:18px;
   --font:'Roboto',sans-serif;
 }
@@ -64,6 +65,7 @@ body[data-theme="light"]{
   --danger-bg:#fdeaea;--danger-text:#8b1a1a;--danger-border:#f5a5a5;
   --warning-bg:#fef6e4;--warning-text:#7a4a00;--warning-border:#ffd080;
   --info-bg:#e4f0fd;--info-text:#0c447c;--info-border:#85b7eb;
+  --save-bg:#f1e6fd;--save-text:#5b21b6;--save-border:#c4a5f0;
 }
 
 html,body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
@@ -126,6 +128,8 @@ body[data-theme="light"]{color-scheme:light}
 .metric.m-expense::before{background:var(--danger-text)}
 .metric.m-net::before{background:var(--cyan)}
 .metric.m-count::before{background:var(--text3)}
+.metric.m-saving::before{background:var(--save-text)}
+.metric-sub{font-size:10.5px;color:var(--text3);margin-top:4px;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .metric-label{font-size:11px;color:var(--text2);margin-bottom:6px;display:flex;align-items:center;gap:4px;text-transform:uppercase;letter-spacing:0.06em;font-weight:500}
 .metric-value{font-size:22px;font-weight:700;font-family:var(--font)}
 .metric-value.income{color:var(--success-text)}
@@ -133,6 +137,7 @@ body[data-theme="light"]{color-scheme:light}
 .metric-value.positive{color:var(--cyan)}
 .metric-value.negative{color:var(--danger-text)}
 .metric-value.count{color:var(--text)}
+.metric-value.saving{color:var(--save-text)}
 
 /* ── SECTION HEADER ── */
 .section-hdr{background:var(--black);border:1px solid var(--border);border-radius:var(--radius-lg) var(--radius-lg) 0 0;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
@@ -155,11 +160,13 @@ input:focus,select:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(0,19
 input[type="date"]{cursor:pointer}
 input[type="date"]::-webkit-calendar-picker-indicator{cursor:pointer;opacity:0.85}
 .type-toggle{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.type-toggle .type-btn:last-child:nth-child(odd){grid-column:1/-1}
 .type-btn{flex:1;padding:10px;font-size:13px;border:1px solid var(--border2);border-radius:var(--radius);background:transparent;color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;transition:all 0.15s;font-family:var(--font);font-weight:500}
 .type-btn.active-income{background:var(--success-bg);color:var(--success-text);border-color:var(--success-border)}
 .type-btn.active-expense{background:var(--danger-bg);color:var(--danger-text);border-color:var(--danger-border)}
 .type-btn.active-credit{background:var(--warning-bg);color:var(--warning-text);border-color:var(--warning-border)}
 .type-btn.active-settlement{background:var(--info-bg);color:var(--info-text);border-color:var(--info-border)}
+.type-btn.active-saving{background:var(--save-bg);color:var(--save-text);border-color:var(--save-border)}
 .btn-row{display:flex;gap:10px;margin-top:14px}
 .btn-save{flex:1;padding:12px;font-size:15px;font-weight:700;border:none;border-radius:var(--radius);background:var(--cyan);color:#000;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;transition:opacity 0.15s;font-family:var(--font)}
 .btn-save:hover{opacity:0.85}
@@ -215,10 +222,12 @@ tr.row-editing td{background:var(--info-bg) !important}
 .pill.expense{background:var(--danger-bg);color:var(--danger-text)}
 .pill.credit{background:var(--warning-bg);color:var(--warning-text)}
 .pill.settlement{background:var(--info-bg);color:var(--info-text)}
+.pill.saving{background:var(--save-bg);color:var(--save-text)}
 .amt-income{color:var(--success-text);font-weight:700}
 .amt-expense{color:var(--danger-text);font-weight:700}
 .amt-credit{color:var(--warning-text);font-weight:700}
 .amt-settlement{color:var(--info-text);font-weight:700}
+.amt-saving{color:var(--save-text);font-weight:700}
 .action-btn{background:none;border:none;cursor:pointer;padding:6px 9px;border-radius:7px;font-size:17px;line-height:1;color:var(--text3)}
 .action-btn.edit:hover{color:var(--cyan);background:rgba(0,197,255,0.1)}
 .action-btn.del:hover{color:var(--danger-text);background:var(--danger-bg)}
@@ -295,6 +304,7 @@ tr.row-editing td{background:var(--info-bg) !important}
 .chip.on.c-expense{background:var(--danger-text);border-color:var(--danger-text)}
 .chip.on.c-credit{background:var(--warning-text);border-color:var(--warning-text)}
 .chip.on.c-settlement{background:var(--info-text);border-color:var(--info-text)}
+.chip.on.c-saving{background:var(--save-text);border-color:var(--save-text)}
 .rep-mini-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
 .rep-check{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text2);cursor:pointer;user-select:none}
 .rep-check input{width:auto;margin:0;accent-color:var(--cyan);cursor:pointer}
@@ -310,6 +320,7 @@ tr.row-editing td{background:var(--info-bg) !important}
 /* KPI cards */
 .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:10px;margin-bottom:6px}
 .kpi{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:11px 12px}
+.k-save{color:var(--save-text)}
 .kpi .k-lbl{font-size:10px;text-transform:uppercase;letter-spacing:0.05em;color:var(--text2);margin-bottom:5px;display:flex;align-items:center;gap:4px}
 .kpi .k-val{font-size:17px;font-weight:700;font-family:var(--font);line-height:1.2}
 .kpi .k-sub{font-size:11px;color:var(--text3);margin-top:4px;display:flex;align-items:center;gap:4px;flex-wrap:wrap}
@@ -704,7 +715,7 @@ tr.row-editing td{background:var(--info-bg) !important}
     <div class="topbar-left">
       <div class="ibi-logo"><span>IBI</span></div>
       <div>
-        <div class="app-name">IBI Finance Tracker <span class="ver-badge">v5.5</span></div>
+        <div class="app-name">IBI Finance Tracker <span class="ver-badge">v5.6</span></div>
       </div>
     </div>
     <div class="topbar-right">
@@ -779,22 +790,29 @@ tr.row-editing td{background:var(--info-bg) !important}
     <div class="chip-row" id="dashChips"></div>
     <div class="dp-range" id="dashRangeTxt"></div>
   </div>
+  <!-- Balance = Income − (Savings + Expenses). Savings is money put AWAY (FD,
+       RD, investment): it leaves the account but is not spent, so it is neither
+       an expense nor part of the balance. (Ported from Mini v3.0.) -->
   <div class="summary-grid">
     <div class="metric m-income">
       <div class="metric-label"><i class="ti ti-arrow-down-circle"></i> Income</div>
       <div class="metric-value income" id="sumIncome">₹0</div>
+      <div class="metric-sub" id="sumIncomeSub"></div>
     </div>
     <div class="metric m-expense">
-      <div class="metric-label"><i class="ti ti-arrow-up-circle"></i> Expense</div>
+      <div class="metric-label"><i class="ti ti-arrow-up-circle"></i> Expenses</div>
       <div class="metric-value expense" id="sumExpense">₹0</div>
+      <div class="metric-sub" id="sumExpenseSub"></div>
+    </div>
+    <div class="metric m-saving">
+      <div class="metric-label"><i class="ti ti-pig-money"></i> Savings</div>
+      <div class="metric-value saving" id="sumSaving">₹0</div>
+      <div class="metric-sub" id="sumSavingSub"></div>
     </div>
     <div class="metric m-net">
-      <div class="metric-label"><i class="ti ti-scale"></i> Net Balance</div>
+      <div class="metric-label"><i class="ti ti-scale"></i> Balance</div>
       <div class="metric-value positive" id="sumNet">₹0</div>
-    </div>
-    <div class="metric m-count">
-      <div class="metric-label"><i class="ti ti-list-numbers"></i> Entries</div>
-      <div class="metric-value count" id="sumCount">0</div>
+      <div class="metric-sub" id="sumNetSub">Income − Expenses − Savings</div>
     </div>
   </div>
 
@@ -829,6 +847,7 @@ tr.row-editing td{background:var(--info-bg) !important}
         <div class="type-toggle">
           <button class="type-btn active-income" id="btnIncome" onclick="setType('income')"><i class="ti ti-arrow-down-circle"></i> Income</button>
           <button class="type-btn" id="btnExpense" onclick="setType('expense')"><i class="ti ti-arrow-up-circle"></i> Expense</button>
+          <button class="type-btn" id="btnSaving" onclick="setType('saving')" title="Money put away — FD, RD, investment, savings account. It leaves the account but is not spent, so it never counts as an expense"><i class="ti ti-pig-money"></i> Savings</button>
           <button class="type-btn" id="btnCredit" onclick="setType('credit')" title="Taken now, not yet paid for — raises what you owe this party"><i class="ti ti-clock-dollar"></i> Credit (unpaid)</button>
           <button class="type-btn" id="btnSettlement" onclick="setType('settlement')" title="Paying off what you already owe — clears the balance, not a new expense"><i class="ti ti-checkbox"></i> Settlement</button>
         </div>
@@ -902,6 +921,7 @@ tr.row-editing td{background:var(--info-bg) !important}
         <option value="all">All types</option>
         <option value="income">Income</option>
         <option value="expense">Expense</option>
+        <option value="saving">Savings</option>
         <option value="credit">Credit (unpaid)</option>
         <option value="settlement">Settlement</option>
       </select>
@@ -916,8 +936,9 @@ tr.row-editing td{background:var(--info-bg) !important}
       <span class="fs-label" id="fsLabel"></span>
       <span class="fs-item">Income <b class="amt-income" id="fsIncome">₹0</b></span>
       <span class="fs-item">Expense <b class="amt-expense" id="fsExpense">₹0</b></span>
+      <span class="fs-item" id="fsSavItem" style="display:none">Savings <b class="amt-saving" id="fsSaving">₹0</b></span>
       <span class="fs-item" id="fsSettled" style="display:none">Settled <b class="amt-settlement" id="fsSettledVal">₹0</b></span>
-      <span class="fs-item" id="fsNetItem" title="Net position after payments = Income − Expense + Settled"><span id="fsNetLabel">Net</span> <b id="fsNet">₹0</b></span>
+      <span class="fs-item" id="fsNetItem" title="Net position after payments = Income − Expense − Savings + Settled"><span id="fsNetLabel">Net</span> <b id="fsNet">₹0</b></span>
       <span class="fs-item">Entries <b id="fsCount">0</b></span>
     </div>
     <div style="overflow-x:auto">
@@ -989,7 +1010,7 @@ tr.row-editing td{background:var(--info-bg) !important}
   <div id="commitList" class="cm-list"></div>
 </div><!-- /viewCommit -->
 
-  <div class="footer">IBI Finance Tracker v5.5 &mdash; India Business International &mdash; indiabusinessinternational@gmail.com</div>
+  <div class="footer">IBI Finance Tracker v5.6 &mdash; India Business International &mdash; indiabusinessinternational@gmail.com</div>
 </div>
 
 <!-- DRAWER MENU -->
@@ -1025,7 +1046,7 @@ tr.row-editing td{background:var(--info-bg) !important}
   <!-- app and backend carry the SAME version number (CEO, 7 Sep 2026, "for easy
        noting"). Both are shown here; a bare number mismatch is only a note, a
        missing feature is what raises the amber prompts. -->
-  <div class="drawer-item" style="cursor:default;color:var(--text2);font-size:12px;align-items:flex-start"><i class="ti ti-info-circle"></i> <span id="aboutVer">App v5.5 · Backend: not connected yet</span></div>
+  <div class="drawer-item" style="cursor:default;color:var(--text2);font-size:12px;align-items:flex-start"><i class="ti ti-info-circle"></i> <span id="aboutVer">App v5.6 · Backend: not connected yet</span></div>
 </div>
 
 <!-- REPORT MODAL -->
@@ -1061,12 +1082,13 @@ tr.row-editing td{background:var(--info-bg) !important}
           <div class="chip-row" style="margin-bottom:10px">
             <button class="chip" onclick="setRepTypes(['income'])"><i class="ti ti-arrow-down-circle"></i> Revenue only</button>
             <button class="chip" onclick="setRepTypes(['expense','credit'])"><i class="ti ti-arrow-up-circle"></i> Spending only</button>
-            <button class="chip" onclick="setRepTypes(['income','expense','credit','settlement'])"><i class="ti ti-list"></i> Everything</button>
+            <button class="chip" onclick="setRepTypes(['income','expense','saving','credit','settlement'])"><i class="ti ti-list"></i> Everything</button>
           </div>
           <label style="display:block;margin-bottom:6px">Transaction type <span style="color:var(--text3);font-weight:400">— tap to include / exclude</span></label>
           <div class="chip-row" id="rTypes">
             <button class="chip on c-income"     data-t="income"     onclick="toggleRepType('income')"><i class="ti ti-arrow-down-circle"></i> Income</button>
             <button class="chip on c-expense"    data-t="expense"    onclick="toggleRepType('expense')"><i class="ti ti-arrow-up-circle"></i> Expense</button>
+            <button class="chip on c-saving"     data-t="saving"     onclick="toggleRepType('saving')"><i class="ti ti-pig-money"></i> Savings</button>
             <button class="chip on c-credit"     data-t="credit"     onclick="toggleRepType('credit')"><i class="ti ti-clock-dollar"></i> Credit</button>
             <button class="chip on c-settlement" data-t="settlement" onclick="toggleRepType('settlement')"><i class="ti ti-checkbox"></i> Settlement</button>
           </div>
@@ -1452,6 +1474,10 @@ let txType    = 'income';
 const isIncomeT = e => e.type === 'income';
 const isCreditT = e => e.type === 'credit';
 const isSettleT = e => e.type === 'settlement';
+/* Savings: money put AWAY (FD, RD, investment, savings account). It leaves the
+   account but it is not spent, so it is neither income, nor expense, nor a
+   settlement. Balance = Income − (Savings + Expenses). Ported from Mini v3.0. */
+const isSavingT = e => e.type === 'saving';
 // Both cash expenses and credit purchases are real spend — the only
 // difference is whether the money has left yet.
 const isExpenseT = e => e.type === 'expense' || e.type === 'credit';
@@ -1461,17 +1487,19 @@ const isExpenseT = e => e.type === 'expense' || e.type === 'credit';
    meant a typo'd row was LISTED in the table and the ledger but counted in NO
    total and moved no running balance — money silently disappearing. Everything
    that totals or buckets spend must use isOutT / isCashOut instead. */
-const isOutT = e => !isIncomeT(e) && !isSettleT(e);   // cash + credit + anything unrecognised
+const isOutT = e => !isIncomeT(e) && !isSettleT(e) && !isSavingT(e);   // cash + credit + anything unrecognised
 const TYPE_META = {
   income:     { label:'Income',     icon:'ti-arrow-down-circle', sign:'+' },
   expense:    { label:'Expense',    icon:'ti-arrow-up-circle',   sign:'−' },
+  saving:     { label:'Savings',    icon:'ti-pig-money',         sign:'−' },
   credit:     { label:'Credit',     icon:'ti-clock-dollar',      sign:'−' },
   settlement: { label:'Settlement', icon:'ti-checkbox',          sign:'−' }
 };
-const PARTY_LABEL = { income:'Received from', expense:'Paid to', credit:'Owed to', settlement:'Paid to' };
+const PARTY_LABEL = { income:'Received from', expense:'Paid to', saving:'Deposited to', credit:'Owed to', settlement:'Paid to' };
 const TYPE_HINT = {
   income:     '',
   expense:    'Paid on the spot.',
+  saving:     'Put away into an FD, RD, investment or savings account. Counted under Savings — never as an expense.',
   credit:     'Taken now, not paid yet — counts as spend today and raises what you owe this party.',
   settlement: 'Clears what you already owe. Not counted as spend again — the credit entries already did that.'
 };
@@ -1486,7 +1514,8 @@ const TYPE_HINT = {
 function normType(e){
   const t = String(e.type||'').trim().toLowerCase().replace(/s$/,'');
   const canon = { income:'income', expense:'expense', credit:'credit', settlement:'settlement',
-                  unpaid:'credit', due:'credit', settle:'settlement', payment:'settlement' }[t];
+                  unpaid:'credit', due:'credit', settle:'settlement', payment:'settlement',
+                  saving:'saving', deposit:'saving', investment:'saving' }[t];
   return canon ? { ...e, type:canon } : e;
 }
 
@@ -1665,7 +1694,7 @@ function showToast(msg, type='success'){
 function setType(t){
   if(!TYPE_META[t]) t = 'income';
   txType = t;
-  [['btnIncome','income'],['btnExpense','expense'],['btnCredit','credit'],['btnSettlement','settlement']]
+  [['btnIncome','income'],['btnExpense','expense'],['btnSaving','saving'],['btnCredit','credit'],['btnSettlement','settlement']]
     .forEach(([id,kind]) => {
       document.getElementById(id).className = 'type-btn' + (t===kind ? ' active-'+kind : '');
     });
@@ -1995,15 +2024,25 @@ function render(){
   // is money out too). Settlements are deliberately
   // excluded: they pay off credit that was already counted here.
   const expense=dashSet.filter(isOutT).reduce((s,e)=>s+e.amount,0);
-  const net=income-expense;
+  const credit=dashSet.filter(isCreditT).reduce((s,e)=>s+e.amount,0);
+  const saving=dashSet.filter(isSavingT).reduce((s,e)=>s+e.amount,0);
+  const net=income-expense-saving;          // Balance = Income − (Savings + Expenses)
+  const nInc=dashSet.filter(isIncomeT).length, nExp=dashSet.filter(isOutT).length, nSav=dashSet.filter(isSavingT).length;
+  const plural=(n,w)=>`${n} ${w}${n===1?'':'s'}`;
   document.getElementById('sumIncome').textContent=fmt(income);
+  document.getElementById('sumIncomeSub').textContent=nInc?plural(nInc,'receipt'):'nothing received yet';
   document.getElementById('sumExpense').textContent=fmt(expense);
+  document.getElementById('sumExpenseSub').textContent=credit?`incl. ${fmt(credit)} on credit`:(nExp?plural(nExp,'entry').replace('entrys','entries'):'nothing spent yet');
+  document.getElementById('sumSaving').textContent=fmt(saving);
+  document.getElementById('sumSavingSub').textContent=nSav?plural(nSav,'deposit'):'nothing put away yet';
+  document.getElementById('sumNetSub').textContent=income>0
+    ? `kept ${Math.max(-999,Math.round((income-expense)/income*100))}% of income · ${fmt(saving)} put away`
+    : 'Income − Expenses − Savings';
   const netEl=document.getElementById('sumNet');
   // fmt() puts the sign after the rupee symbol — "₹-84,753.97". The headline is
   // the one figure here that is routinely negative, so it reads as "−₹84,753.97"
   // like every other signed figure in the reports.
   netEl.textContent=fmtSigned(net); netEl.className='metric-value '+(net>=0?'positive':'negative');
-  document.getElementById('sumCount').textContent=dashSet.length;
   document.getElementById('countBadge').textContent=list.length;
   // summary of the filtered rows — shown whenever a search term or type filter is active
   const fq=document.getElementById('filterSearch').value.trim(), fType=document.getElementById('filterType').value;
@@ -2011,6 +2050,7 @@ function render(){
   if(fq||fType!=='all'){
     const fInc=list.filter(isIncomeT).reduce((s,e)=>s+e.amount,0);
     const fExp=list.filter(isOutT).reduce((s,e)=>s+e.amount,0);
+    const fSav=list.filter(isSavingT).reduce((s,e)=>s+e.amount,0);
     const fSet=list.filter(isSettleT).reduce((s,e)=>s+e.amount,0);
     // Settled money is shown apart from spend so the two can never read as one total.
     document.getElementById('fsSettled').style.display = fSet ? '' : 'none';
@@ -2019,9 +2059,11 @@ function render(){
     // Settlements pay down credit that's already inside fExp, so adding them back gives the
     // live outstanding position. It only equals fExp when nothing has been settled, so the
     // figure stops merely echoing Expense.
-    const fNet=fInc-fExp+fSet;
+    const fNet=fInc-fExp-fSav+fSet;
     const parts=[]; if(fq) parts.push(`&ldquo;${esc(fq)}&rdquo;`);
-    if(fType!=='all') parts.push({income:'Income only',expense:'Expense only',credit:'Credit only',settlement:'Settlements only'}[fType]||fType);
+    if(fType!=='all') parts.push({income:'Income only',expense:'Expense only',saving:'Savings only',credit:'Credit only',settlement:'Settlements only'}[fType]||fType);
+    document.getElementById('fsSavItem').style.display = fSav ? '' : 'none';
+    document.getElementById('fsSaving').textContent='−'+fmt(fSav);
     document.getElementById('fsLabel').innerHTML='<i class="ti ti-report-money"></i> Summary: '+parts.join(' &middot; ');
     document.getElementById('fsIncome').textContent='+'+fmt(fInc);
     document.getElementById('fsExpense').textContent='−'+fmt(fExp);
@@ -2067,7 +2109,8 @@ function exportCSV(){
   sorted.forEach((e,i)=>rows.push([i+1,fmtDTLine(e),e.type,e.description,e.party,e.amount,e.paidBy||'',e.mode||'',e.note||'']));
   const income=entries.filter(isIncomeT).reduce((s,e)=>s+e.amount,0);
   const expense=entries.filter(isOutT).reduce((s,e)=>s+e.amount,0);
-  rows.push([],[' ',' ',' ',' ','Total Income',income,''],[' ',' ',' ',' ','Total Expense',expense,''],[' ',' ',' ',' ','Net Balance',income-expense,'']);
+  const saving=entries.filter(isSavingT).reduce((s,e)=>s+e.amount,0);
+  rows.push([],[' ',' ',' ',' ','Total Income',income,''],[' ',' ',' ',' ','Total Expenses',expense,''],[' ',' ',' ',' ','Total Savings',saving,''],[' ',' ',' ',' ','Balance (Income − Expenses − Savings)',income-expense-saving,'']);
   const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"` ).join(',')).join('\n');
   const a=document.createElement('a');
   a.href='data:text/csv;charset=utf-8,﻿'+encodeURIComponent(csv);
@@ -2098,7 +2141,7 @@ function exportCSV(){
 const _MONFULL = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 let reportMode = 'month', lastReport = null;
 let repPreset  = 'thisMonth';
-let repTypes   = new Set(['income','expense','credit','settlement']);
+let repTypes   = new Set(['income','expense','saving','credit','settlement']);
 let repTab     = 'overview';
 function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 
@@ -2106,7 +2149,7 @@ function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g, c=>({'&':'&amp;'
 const _v      = id => (document.getElementById(id)||{}).value || '';
 const _sum    = rows => rows.reduce((s,e)=>s+(Number(e.amount)||0),0);
 const canonT  = e => TYPE_META[e.type] ? e.type : 'expense';   // unknown text in the Sheet = expense (pre-v3 behaviour)
-const isCashOut = e => (isOutT(e) && !isCreditT(e)) || isSettleT(e);   // money that actually left the account
+const isCashOut = e => (isOutT(e) && !isCreditT(e)) || isSettleT(e) || isSavingT(e);   // money that actually left the account (a deposit leaves too)
 const pcOf    = (a,b) => b ? (a/b*100) : 0;
 function isoOf(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
 function isoAdd(iso,n){ const d=new Date(iso+'T00:00:00'); d.setDate(d.getDate()+n); return isoOf(d); }
@@ -3333,9 +3376,26 @@ function savingsAnalysis(p){
   };
 }
 
+/* The deposits typed straight into the ledger, grouped by what they were —
+   shown above the schemes so the two views of "put away" sit together. Takes
+   only {p}, like the rest of the shared panes, and derives its own rows. */
+function ledgerSavingsBlock(A){
+  const list = Array.isArray(A.savings) ? A.savings
+             : entries.filter(e => isSavingT(e) && (e.date||'') >= A.p.from && (e.date||'') <= A.p.to);
+  if(!list.length) return '';
+  const m=new Map(); let tot=0;
+  list.forEach(e=>{ const k=String(e.description||'').trim().toLowerCase()||'(untitled)';
+    const r=m.get(k)||{name:String(e.description||'').trim()||'(untitled)',total:0,n:0,last:''};
+    const a=Number(e.amount)||0; r.total+=a; tot+=a; r.n++; if((e.date||'')>r.last) r.last=e.date||''; m.set(k,r); });
+  const rows=[...m.values()].sort((a,b)=>b.total-a.total);
+  return `<div class="rep-section-title" style="color:var(--save-text)"><i class="ti ti-pig-money"></i> Deposits recorded in the ledger — ${fmt(tot)}</div>
+  <div class="rep-scroll"><table class="rep-table" style="min-width:420px"><thead><tr><th>What</th><th class="num">Deposits</th><th class="num">Total</th><th>Last</th></tr></thead><tbody>
+  ${rows.map(r=>`<tr><td>${esc(r.name)}</td><td class="num">${r.n}</td><td class="num k-save" style="font-weight:700">${fmt(r.total)}</td><td style="color:var(--text3)">${fmtDate(r.last)}</td></tr>`).join('')}
+  </tbody></table></div>`;
+}
 function paneSavings(A){
   const S = savingsAnalysis(A.p);
-  if(!S.rows.length) return `<div class="rep-empty"><i class="ti ti-pig-money"></i>
+  if(!S.rows.length) return ledgerSavingsBlock(A) + `<div class="rep-empty"><i class="ti ti-pig-money"></i>
     <b style="color:var(--text)">No savings or schemes recorded.</b><br>
     <span style="color:var(--text3);line-height:1.7">Add them in the <b>Commitments</b> section — a recurring deposit, a gold scheme, a chit.<br>
     Each one then keeps its own instalment count, its running total and its finishing date.</span></div>`;
@@ -3373,7 +3433,7 @@ function paneSavings(A){
   </table></div>`);
 
   r.push(`<div class="rep-note"><b>Paid in total</b> includes whatever was already paid before this app was set up — the opening figure recorded on each scheme — plus every instalment ticked off here since.</div>`);
-  return r.join('');
+  return ledgerSavingsBlock(A) + r.join('');
 }
 
 /* ── LOANS & LIABILITIES ────────────────────────────────────────────────── */
@@ -3626,7 +3686,7 @@ function setPreset(id){
   document.getElementById('reportRangeWrap').style.display = id==='range' ? 'grid' : 'none';
 }
 function resetReportFilters(){
-  repTypes = new Set(['income','expense','credit','settlement']);
+  repTypes = new Set(['income','expense','saving','credit','settlement']);
   document.querySelectorAll('#rTypes .chip').forEach(c=>c.classList.add('on'));
   ['rParty','rCategory','rMin','rMax','rKeyword'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
   showToast('Filters reset');
@@ -3666,13 +3726,15 @@ function filterLabel(){
 /* ── STATS ─────────────────────────────────────────────────────────────── */
 function statsOf(rows, from, to){
   const inc = rows.filter(isIncomeT), exp = rows.filter(isOutT),
-        cash= rows.filter(e=>isOutT(e)&&!isCreditT(e)), cr = rows.filter(isCreditT), st = rows.filter(isSettleT);
-  const tInc=_sum(inc), tExp=_sum(exp), tCash=_sum(cash), tCr=_sum(cr), tSet=_sum(st);
+        cash= rows.filter(e=>isOutT(e)&&!isCreditT(e)), cr = rows.filter(isCreditT), st = rows.filter(isSettleT),
+        sav = rows.filter(isSavingT);                 // put away, not spent
+  const tInc=_sum(inc), tExp=_sum(exp), tCash=_sum(cash), tCr=_sum(cr), tSet=_sum(st), tSav=_sum(sav);
   const days = (from&&to) ? Math.max(1, daysBetween(from,to)) : 1;
-  const outflow = tCash + tSet;                       // money that actually left
+  const outflow = tCash + tSet + tSav;                // money that actually left (deposits leave too)
   return {
-    rows, inc, exp, cr, st, days,
-    tInc, tExp, tCash, tCr, tSet, outflow,
+    rows, inc, exp, cr, st, sav, days,
+    tInc, tExp, tCash, tCr, tSet, tSav, outflow,
+    balance: tInc - tExp - tSav,                      // Income − (Savings + Expenses)
     net: tInc - tExp,                                 // accrual surplus / deficit
     cashNet: tInc - outflow,                          // real bank movement
     margin: pcOf(tInc - tExp, tInc),
@@ -4116,6 +4178,8 @@ function generateReport(){
     <div class="kpi-grid">
       ${kpi('<i class="ti ti-arrow-down-circle"></i> Total Income', fmt(cur.tInc), (prev?deltaBadge(cur.tInc,prev.tInc,true)+` vs ${fmtC(prev.tInc)}`:`${cur.inc.length} entries`), 'var(--success-text)')}
       ${kpi('<i class="ti ti-arrow-up-circle"></i> Total Expense', fmt(cur.tExp), (prev?deltaBadge(cur.tExp,prev.tExp,false)+` vs ${fmtC(prev.tExp)}`:`${cur.exp.length} entries`), 'var(--danger-text)')}
+      ${kpi('<i class="ti ti-pig-money"></i> Put into Savings', fmt(cur.tSav), (prev?deltaBadge(cur.tSav,prev.tSav,true)+` vs ${fmtC(prev.tSav)}`:`${cur.sav.length} deposit${cur.sav.length===1?'':'s'} · FD, RD, investment`), 'var(--save-text)')}
+      ${kpi('<i class="ti ti-wallet"></i> Balance (left to spend)', fmtSigned(cur.balance), (prev?deltaBadge(cur.balance,prev.balance,true)+` vs ${fmtC(prev.balance)}`:'income − expenses − savings'), cur.balance>=0?'var(--cyan)':'var(--danger-text)')}
       ${kpi('<i class="ti ti-scale"></i> Net Surplus', fmtSigned(cur.net), (prev?deltaBadge(cur.net,prev.net,true)+` vs ${fmtC(prev.net)}`:'income − expense'), cur.net>=0?'var(--cyan)':'var(--danger-text)')}
       ${kpi('<i class="ti ti-percentage"></i> Profit Margin', (cur.tInc?cur.margin.toFixed(1)+'%':'—'), (prev&&prev.tInc?deltaBadge(cur.margin,prev.margin,true)+` vs ${prev.margin.toFixed(1)}%`:'net ÷ income'), cur.margin>=0?'var(--cyan)':'var(--danger-text)')}
       ${kpi('<i class="ti ti-cash"></i> Net Cash Flow', fmtSigned(cur.cashNet), 'income − cash paid out', cur.cashNet>=0?'var(--success-text)':'var(--danger-text)')}
@@ -4132,7 +4196,8 @@ function generateReport(){
       <div class="rep-note">This period ${esc(fmtDate(p.from))} → ${esc(fmtDate(p.to))} &nbsp;vs&nbsp; previous ${esc(pp.label)} (${cur.days} days each).</div>
       <div class="rep-scroll"><table class="rep-table auto"><thead><tr><th>Measure</th><th class="num">This period</th><th class="num">Previous</th><th class="num">Change</th><th class="num">%</th></tr></thead><tbody>
       ${[['Income',cur.tInc,prev.tInc,true],['Expense',cur.tExp,prev.tExp,false],['— of which credit',cur.tCr,prev.tCr,false],
-         ['Settlements',cur.tSet,prev.tSet,true],['Net surplus',cur.net,prev.net,true],['Net cash flow',cur.cashNet,prev.cashNet,true],
+         ['Settlements',cur.tSet,prev.tSet,true],['Put into savings',cur.tSav,prev.tSav,true],['Balance (left to spend)',cur.balance,prev.balance,true],
+         ['Net surplus',cur.net,prev.net,true],['Net cash flow',cur.cashNet,prev.cashNet,true],
          ['Entries',cur.count,prev.count,true]].map(([l,a,b,g])=>{
         const isN = l==='Entries';
         return `<tr><td>${l}</td><td class="num">${isN?a:fmtSigned(a)}</td><td class="num" style="color:var(--text2)">${isN?b:fmtSigned(b)}</td><td class="num">${isN?(a-b>=0?'+':'−')+Math.abs(a-b):fmtSigned(a-b)}</td><td class="num">${deltaBadge(a,b,g)}</td></tr>`;
@@ -4357,6 +4422,8 @@ function printReport(){
     <div class="cards">
       <div class="card"><div class="l">Total Income</div><div class="v" style="color:#1a7d1a">${M(cur.tInc)}</div><div class="s">${cur.inc.length} entries</div></div>
       <div class="card"><div class="l">Total Expense</div><div class="v" style="color:#b11">${M(cur.tExp)}</div><div class="s">incl. ${M(cur.tCr)} on credit</div></div>
+      <div class="card"><div class="l">Put into Savings</div><div class="v" style="color:#5b21b6">${S(cur.tSav)}</div><div class="s">FD, RD, investment</div></div>
+      <div class="card"><div class="l">Balance (left to spend)</div><div class="v" style="color:${cur.balance>=0?'#0086ad':'#b11'}">${S(cur.balance)}</div><div class="s">income − expenses − savings</div></div>
       <div class="card"><div class="l">Net Surplus</div><div class="v" style="color:${cur.net>=0?'#0086ad':'#b11'}">${S(cur.net)}</div><div class="s">margin ${cur.tInc?cur.margin.toFixed(1)+'%':'—'}</div></div>
       <div class="card"><div class="l">Net Cash Flow</div><div class="v" style="color:${cur.cashNet>=0?'#1a7d1a':'#b11'}">${S(cur.cashNet)}</div><div class="s">money actually moved</div></div>
       <div class="card"><div class="l">Avg Daily Burn</div><div class="v">${M(cur.burn)}</div><div class="s">income ${M(cur.dailyInc)}/day</div></div>
@@ -4367,6 +4434,7 @@ function printReport(){
     ${prev?`<h3 style="color:#0086ad">Comparison with the Previous Period (${esc(pp.label)})</h3>
     <table><thead><tr><th>Measure</th><th class="r">This period</th><th class="r">Previous</th><th class="r">Change</th><th class="r">%</th></tr></thead><tbody>
     ${[['Income',cur.tInc,prev.tInc],['Expense',cur.tExp,prev.tExp],['— of which credit',cur.tCr,prev.tCr],['Settlements',cur.tSet,prev.tSet],
+       ['Put into savings',cur.tSav,prev.tSav],['Balance (left to spend)',cur.balance,prev.balance],
        ['Net surplus',cur.net,prev.net],['Net cash flow',cur.cashNet,prev.cashNet]].map(([l,a,b])=>
       `<tr><td>${l}</td><td class="r">${S(a)}</td><td class="r">${S(b)}</td><td class="r">${S(a-b)}</td><td class="r">${b?(((a-b)/Math.abs(b))*100).toFixed(1)+'%':'—'}</td></tr>`).join('')}
     <tr><td>Entries</td><td class="r">${cur.count}</td><td class="r">${prev.count}</td><td class="r">${cur.count-prev.count>=0?'+':'−'}${Math.abs(cur.count-prev.count)}</td><td class="r">${prev.count?(((cur.count-prev.count)/prev.count)*100).toFixed(1)+'%':'—'}</td></tr>
@@ -4464,7 +4532,7 @@ function printReport(){
     ${quality.length?`<h3 style="color:#a76b00">Data Quality Audit</h3>${quality.map(q=>`<div class="ins ${q.t}">${q.msg}</div>`).join('')}`:''}
 
     <div class="net">Net Surplus: <span style="color:${cur.net>=0?'#0086ad':'#b11'}">${S(cur.net)}</span></div>
-    <div class="foot"><span>Generated ${esc(genAt)} IST · IBI Finance Tracker v5.5</span><span>indiabusinessinternational@gmail.com</span></div>
+    <div class="foot"><span>Generated ${esc(genAt)} IST · IBI Finance Tracker v5.6</span><span>indiabusinessinternational@gmail.com</span></div>
   </body></html>`;
   const win=window.open('','_blank');
   if(!win){ showToast('Allow pop-ups to print, or use Download CSV','error'); return; }
@@ -4529,7 +4597,7 @@ function downloadReportCSV(){
 
   rows.push(['KEY FIGURES'],['Measure','Value']);
   [['Total Income',cur.tInc],['Total Expense (accrual: cash + credit)',cur.tExp],['— of which bought on credit',cur.tCr],
-   ['Cash expenses',cur.tCash],['Settlements paid',cur.tSet],['Total cash outflow',cur.outflow],
+   ['Cash expenses',cur.tCash],['Settlements paid',cur.tSet],['Put into savings (FD, RD, investment)',cur.tSav],['Balance - left to spend (income - expenses - savings)',cur.balance],['Total cash outflow (paid + settled + saved)',cur.outflow],
    ['Net Surplus (income − expense)',cur.net],['Net Cash Flow (income − outflow)',cur.cashNet],
    ['Profit margin %',cur.tInc?cur.margin.toFixed(2):''],['Expense ratio %',cur.tInc?cur.expRatio.toFixed(2):''],
    ['Average daily burn',cur.burn.toFixed(2)],['Average daily income',cur.dailyInc.toFixed(2)],
@@ -4542,6 +4610,7 @@ function downloadReportCSV(){
   if(prev){
     rows.push(['COMPARISON WITH PREVIOUS PERIOD', pp.label],['Measure','This period','Previous','Change','Change %']);
     [['Income',cur.tInc,prev.tInc],['Expense',cur.tExp,prev.tExp],['Credit',cur.tCr,prev.tCr],['Settlements',cur.tSet,prev.tSet],
+     ['Put into savings',cur.tSav,prev.tSav],['Balance (left to spend)',cur.balance,prev.balance],
      ['Net surplus',cur.net,prev.net],['Net cash flow',cur.cashNet,prev.cashNet],['Entries',cur.count,prev.count]]
       .forEach(([l,a,b])=>rows.push([l,a,b,a-b,b?(((a-b)/Math.abs(b))*100).toFixed(2):'']));
     rows.push([]);
