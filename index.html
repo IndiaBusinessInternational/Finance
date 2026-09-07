@@ -228,6 +228,7 @@ tr.row-editing td{background:var(--info-bg) !important}
 .amt-credit{color:var(--warning-text);font-weight:700}
 .amt-settlement{color:var(--info-text);font-weight:700}
 .amt-saving{color:var(--save-text);font-weight:700}
+tbody tr.tx-row{cursor:pointer}
 .action-btn{background:none;border:none;cursor:pointer;padding:6px 9px;border-radius:7px;font-size:17px;line-height:1;color:var(--text3)}
 .action-btn.edit:hover{color:var(--cyan);background:rgba(0,197,255,0.1)}
 .action-btn.del:hover{color:var(--danger-text);background:var(--danger-bg)}
@@ -652,6 +653,23 @@ tr.row-editing td{background:var(--info-bg) !important}
 .dash-period .chip-row::-webkit-scrollbar{display:none}
 .dash-period .chip{flex-shrink:0}
 .dp-range{font-size:10.5px;color:var(--text3);width:100%;line-height:1.4;margin-top:-3px}
+.dash-period .mini-btn{flex-shrink:0;padding:5px 11px;border-radius:20px;font-size:12px}
+/* ── QUICK ENTRY — one tap fills the form from something entered before ── */
+.quick-lbl{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);font-weight:700;display:flex;align-items:center;gap:5px;margin-bottom:7px;flex-wrap:wrap}
+.quick-lbl .plain{font-weight:400;text-transform:none;letter-spacing:0}
+.quick-strip{display:flex;gap:7px;overflow-x:auto;scrollbar-width:none;padding:2px 0 10px;margin-bottom:8px;border-bottom:1px dashed var(--border)}
+.quick-strip::-webkit-scrollbar{display:none}
+.qk{flex-shrink:0;display:flex;flex-direction:column;align-items:flex-start;gap:2px;min-width:100px;max-width:150px;padding:8px 11px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg3);color:var(--text);cursor:pointer;font-family:var(--font);text-align:left}
+.qk:hover{border-color:var(--cyan)}
+.qk-name{font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;display:flex;align-items:center;gap:5px}
+.qk-sub{font-size:10.5px;color:var(--text3);white-space:nowrap}
+.qk.t-income .qk-name i{color:var(--success-text)}.qk.t-expense .qk-name i{color:var(--danger-text)}.qk.t-saving .qk-name i{color:var(--save-text)}.qk.t-credit .qk-name i{color:var(--warning-text)}.qk.t-settlement .qk-name i{color:var(--info-text)}
+/* ── TRANSACTION DETAIL — tap a row, see every field ── */
+.dt-amt{font-size:26px;font-weight:700;letter-spacing:-.01em;margin:4px 0 6px}
+.dt-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px 14px;margin-top:12px}
+.dt-f{min-width:0}.dt-f.full{grid-column:1/-1}
+.dt-f .lg{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);font-weight:700;margin-bottom:3px;display:block}
+.dt-f .v{font-size:13.5px;color:var(--text);word-break:break-word;line-height:1.45}
 @media(max-width:600px){ .dash-period{padding:0 10px} }
 
 /* ══ v3.4 — PHONE TYPE SCALE · v3.5 — × the Text size setting (--ts) ═══════
@@ -715,7 +733,7 @@ tr.row-editing td{background:var(--info-bg) !important}
     <div class="topbar-left">
       <div class="ibi-logo"><span>IBI</span></div>
       <div>
-        <div class="app-name">IBI Finance Tracker <span class="ver-badge">v5.6</span></div>
+        <div class="app-name">IBI Finance Tracker <span class="ver-badge">v5.7</span></div>
       </div>
     </div>
     <div class="topbar-right">
@@ -788,6 +806,7 @@ tr.row-editing td{background:var(--info-bg) !important}
   <div class="dash-period">
     <span class="dp-label"><i class="ti ti-calendar-stats"></i> Showing</span>
     <div class="chip-row" id="dashChips"></div>
+    <button class="mini-btn" onclick="openReportFor(dashPeriod)" title="The full report for the same period as these tiles"><i class="ti ti-report-analytics"></i> Report</button>
     <div class="dp-range" id="dashRangeTxt"></div>
   </div>
   <!-- Balance = Income − (Savings + Expenses). Savings is money put AWAY (FD,
@@ -837,6 +856,11 @@ tr.row-editing td{background:var(--info-bg) !important}
       <div class="edit-banner-left"><i class="ti ti-pencil"></i> Editing — make changes then click Update</div>
       <button class="edit-cancel-btn" onclick="cancelEdit()"><i class="ti ti-x"></i> Cancel</button>
     </div>
+    <!-- QUICK ENTRY — learned from the ledger; nothing to set up -->
+    <div id="quickWrap">
+      <div class="quick-lbl"><i class="ti ti-bolt"></i> Quick entry <span class="plain">— tap one, check the amount, save</span></div>
+      <div class="quick-strip" id="quickStrip"></div>
+    </div>
     <div class="form-grid">
       <div class="form-group">
         <label for="fDate">Date</label>
@@ -855,11 +879,12 @@ tr.row-editing td{background:var(--info-bg) !important}
       </div>
       <div class="form-group full">
         <label for="fDesc">Description / Particulars</label>
-        <input type="text" id="fDesc" placeholder="e.g. Amazon payout, Packaging supply, EB bill...">
+        <input type="text" id="fDesc" list="dlDesc" autocomplete="off" placeholder="e.g. Amazon payout, Packaging supply, EB bill...">
+        <datalist id="dlDesc"></datalist>
       </div>
       <div class="form-group">
         <label for="fParty" id="partyLabel">Received from</label>
-        <input type="text" id="fParty" placeholder="Party / vendor / customer">
+        <input type="text" id="fParty" list="dlParty" autocomplete="off" placeholder="Party / vendor / customer">
       </div>
       <div class="form-group">
         <label for="fAmount">Amount (₹)</label>
@@ -885,6 +910,14 @@ tr.row-editing td{background:var(--info-bg) !important}
           <option value="Auto-debit">Auto-debit / ECS</option>
           <option value="Other">Other</option>
         </select>
+      </div>
+      <!-- One Category per entry, as every money app keeps. It is GUESSED from
+           the description (the last choice for the same thing, else the report's
+           rules) so it is rarely typed; it can be overruled. -->
+      <div class="form-group">
+        <label for="fCat">Category <span style="color:var(--text3);font-weight:400">— guessed, change if wrong</span></label>
+        <input type="text" id="fCat" list="dlCat" autocomplete="off" placeholder="e.g. Packaging & Supplies" oninput="this.dataset.auto=''">
+        <div id="catBackendNote" style="display:none;font-size:11px;color:var(--warning-text);margin-top:5px;line-height:1.4"><i class="ti ti-alert-triangle"></i> Your Apps Script is the older version — the category will be guessed but not saved until you paste the new GAS file and deploy a <b>New version</b>.</div>
       </div>
       <div class="form-group full">
         <label for="fNote">Note (optional)</label>
@@ -1010,7 +1043,7 @@ tr.row-editing td{background:var(--info-bg) !important}
   <div id="commitList" class="cm-list"></div>
 </div><!-- /viewCommit -->
 
-  <div class="footer">IBI Finance Tracker v5.6 &mdash; India Business International &mdash; indiabusinessinternational@gmail.com</div>
+  <div class="footer">IBI Finance Tracker v5.7 &mdash; India Business International &mdash; indiabusinessinternational@gmail.com</div>
 </div>
 
 <!-- DRAWER MENU -->
@@ -1046,7 +1079,7 @@ tr.row-editing td{background:var(--info-bg) !important}
   <!-- app and backend carry the SAME version number (CEO, 7 Sep 2026, "for easy
        noting"). Both are shown here; a bare number mismatch is only a note, a
        missing feature is what raises the amber prompts. -->
-  <div class="drawer-item" style="cursor:default;color:var(--text2);font-size:12px;align-items:flex-start"><i class="ti ti-info-circle"></i> <span id="aboutVer">App v5.6 · Backend: not connected yet</span></div>
+  <div class="drawer-item" style="cursor:default;color:var(--text2);font-size:12px;align-items:flex-start"><i class="ti ti-info-circle"></i> <span id="aboutVer">App v5.7 · Backend: not connected yet</span></div>
 </div>
 
 <!-- REPORT MODAL -->
@@ -1450,6 +1483,21 @@ tr.row-editing td{background:var(--info-bg) !important}
   </div>
 </div>
 
+<!-- ═══ TRANSACTION DETAIL — every field of one entry, with Edit / Duplicate / Delete ═══ -->
+<div class="sheet-overlay" id="detailOverlay" onclick="closeDetail()"></div>
+<div class="sheet-modal wide" id="detailModal" role="dialog" aria-modal="true" aria-labelledby="detailTitle">
+  <div class="sheet-hdr">
+    <span class="sheet-hdr-title" id="detailTitle"><i class="ti ti-receipt"></i> Transaction</span>
+    <button class="drawer-close" onclick="closeDetail()" aria-label="Close"><i class="ti ti-x"></i></button>
+  </div>
+  <div class="sheet-body" id="detailBody"></div>
+  <div class="sheet-foot">
+    <button class="mini-btn danger" onclick="detailDelete()"><i class="ti ti-trash"></i> Delete</button>
+    <button class="mini-btn" onclick="detailDuplicate()" title="Start a new entry with these details"><i class="ti ti-copy"></i> Duplicate</button>
+    <button class="btn-save" onclick="detailEdit()"><i class="ti ti-pencil"></i> Edit</button>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -1700,6 +1748,7 @@ function setType(t){
     });
   document.getElementById('partyLabel').textContent = PARTY_LABEL[t] || 'Paid to';
   document.getElementById('typeHint').textContent   = TYPE_HINT[t] || '';
+  if(typeof suggestCategory === 'function') suggestCategory(false);   // side (in/out) changes the rule set
 }
 function today(){ return new Date().toISOString().split('T')[0]; }
 document.getElementById('fDate').value = today();
@@ -1751,6 +1800,7 @@ async function loadAll(){
       const hasPlans = Array.isArray(data.commitments) && Array.isArray(data.plans);
       if(hasPlans){ commitments = data.commitments; plans = data.plans; }
       setBackendOK(hasPlans);
+      setCatBackend(Array.isArray(data.features) && data.features.indexOf('category') >= 0);
       paintBackendVer(data.version);                 // app and backend share one version number
       cacheEntries();
       setOffline(false);
@@ -1778,8 +1828,10 @@ function startEdit(id){
   document.getElementById('fNote').value   = e.note||'';
   document.getElementById('fPaidBy').value = e.paidBy||'';
   document.getElementById('fMode').value   = e.mode||'';
+  const _fc = document.getElementById('fCat'); _fc.value = e.category||''; _fc.dataset.auto = '';
   setType(e.type||'income');
   document.getElementById('editBanner').style.display  = 'flex';
+  document.getElementById('quickWrap').style.display   = 'none';
   document.getElementById('formCard').classList.add('editing');
   document.getElementById('formTitle').innerHTML = '<i class="ti ti-pencil"></i> Edit Transaction';
   document.getElementById('btnSave').classList.add('mode-edit');
@@ -1789,7 +1841,9 @@ function startEdit(id){
 }
 function cancelEdit(){
   editingId = null;
-  ['fDesc','fParty','fAmount','fNote','fPaidBy'].forEach(id=>document.getElementById(id).value='');
+  ['fDesc','fParty','fAmount','fNote','fPaidBy','fCat'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('fCat').dataset.auto = '';
+  document.getElementById('quickWrap').style.display  = '';
   document.getElementById('fMode').value = '';
   document.getElementById('fDate').value = today();
   setType('income');
@@ -1808,7 +1862,8 @@ async function saveEntry(){
         party=document.getElementById('fParty').value.trim(), amount=parseFloat(document.getElementById('fAmount').value),
         note=document.getElementById('fNote').value.trim(),
         paidBy=document.getElementById('fPaidBy').value.trim(),
-        mode=document.getElementById('fMode').value;
+        mode=document.getElementById('fMode').value,
+        category=document.getElementById('fCat').value.trim();
   if(!date||!desc||!party||!amount||amount<=0){ showToast('Fill date, description, party & amount','error'); return; }
   // Guard against a double-tap / rapid re-fire while the first save is still running.
   if(_saving){ return; }
@@ -1819,8 +1874,8 @@ async function saveEntry(){
   const wasEditing = editingId;
   const preCount   = entries.length;
   const params = editingId
-    ? {action:'update', id:editingId, date, type:txType, description:desc, party, amount, note, paidBy, mode}
-    : {action:'add', date, type:txType, description:desc, party, amount, note, paidBy, mode};
+    ? {action:'update', id:editingId, date, type:txType, description:desc, party, amount, note, paidBy, mode, category}
+    : {action:'add', date, type:txType, description:desc, party, amount, note, paidBy, mode, category};
 
   // Has the entry actually landed in a freshly-fetched list?
   const matches = t => String(t.description).trim()===desc
@@ -1897,7 +1952,7 @@ function filtered(){
         q=document.getElementById('filterSearch').value.toLowerCase();
   let list=entries.filter(e=>{
     if(type!=='all'&&e.type!==type) return false;
-    if(q&&!`${e.description}${e.party}${e.note}`.toLowerCase().includes(q)) return false;
+    if(q&&!`${e.description}${e.party}${e.note}${categoryOf(e)}`.toLowerCase().includes(q)) return false;
     return true;
   });
   const tcmp=(a,b)=>(Date.parse(a.createdAt)||0)-(Date.parse(b.createdAt)||0);
@@ -2018,6 +2073,7 @@ function paintDashChips(){
 function render(){
   const list=filtered(), body=document.getElementById('txBody'), empty=document.getElementById('emptyState');
   paintDashChips();
+  renderQuick(); fillLedgerLists(); fillDatalists();
   const dashSet=dashRows();
   const income=dashSet.filter(isIncomeT).reduce((s,e)=>s+e.amount,0);
   // Expense = cash expenses + credit purchases (+ any unrecognised type, which
@@ -2086,15 +2142,15 @@ function render(){
   body.innerHTML=list.map((e,i)=>{
     const dt=fmtDTParts(e);
     return `
-    <tr class="${editingId===e.id?'row-editing':''}">
+    <tr class="tx-row ${editingId===e.id?'row-editing':''}" onclick="openDetail('${e.id}')" title="Tap for details">
       <td style="color:var(--text2)">${i+1}</td>
       <td class="dt-cell" style="color:var(--text2);font-size:12px"><div>${dt.date}</div>${dt.sub?`<div class="dt-sub">${dt.sub}</div>`:''}</td>
       <td><span class="pill ${e.type}">${(m=>`<i class="ti ${m.icon}"></i> ${m.label}`)(TYPE_META[e.type]||TYPE_META.expense)}</span></td>
-      <td title="${e.description}">${e.description}</td>
+      <td title="${e.description}">${e.description}<div class="dt-sub">${esc(categoryOf(e))}</div></td>
       <td class="dt-cell" title="${e.party||''}" style="color:var(--text2)">${e.party||'—'}${(w=>w?`<div class="dt-sub">${esc(w)}</div>`:'')([e.paidBy,e.mode].filter(Boolean).join(' · '))}</td>
       <td style="text-align:right" class="amt-${e.type}">${(TYPE_META[e.type]||TYPE_META.expense).sign}${fmt(e.amount)}</td>
       <td style="color:var(--text2);font-size:12px;font-style:italic" title="${e.note||''}">${e.note||'—'}</td>
-      <td><div class="action-cell">
+      <td><div class="action-cell" onclick="event.stopPropagation()">
         <button class="action-btn edit" onclick="startEdit('${e.id}')" title="Edit"><i class="ti ti-pencil"></i></button>
         <button class="action-btn del"  onclick="deleteEntry('${e.id}')" title="Delete"><i class="ti ti-trash"></i></button>
       </div></td>
@@ -2105,12 +2161,12 @@ function render(){
 function exportCSV(){
   if(!entries.length){ showToast('No data to export','error'); return; }
   const sorted=[...entries].sort((a,b)=>(a.date||'').localeCompare(b.date||''));
-  const rows=[['#','Date & Time','Type','Description','Party','Amount','Paid by','Mode','Note']];
-  sorted.forEach((e,i)=>rows.push([i+1,fmtDTLine(e),e.type,e.description,e.party,e.amount,e.paidBy||'',e.mode||'',e.note||'']));
+  const rows=[['#','Date & Time','Type','Description','Category','Party','Amount','Paid by','Mode','Note']];
+  sorted.forEach((e,i)=>rows.push([i+1,fmtDTLine(e),e.type,e.description,categoryOf(e),e.party,e.amount,e.paidBy||'',e.mode||'',e.note||'']));
   const income=entries.filter(isIncomeT).reduce((s,e)=>s+e.amount,0);
   const expense=entries.filter(isOutT).reduce((s,e)=>s+e.amount,0);
   const saving=entries.filter(isSavingT).reduce((s,e)=>s+e.amount,0);
-  rows.push([],[' ',' ',' ',' ','Total Income',income,''],[' ',' ',' ',' ','Total Expenses',expense,''],[' ',' ',' ',' ','Total Savings',saving,''],[' ',' ',' ',' ','Balance (Income − Expenses − Savings)',income-expense-saving,'']);
+  rows.push([],[' ',' ',' ',' ',' ','Total Income',income,''],[' ',' ',' ',' ',' ','Total Expenses',expense,''],[' ',' ',' ',' ',' ','Total Savings',saving,''],[' ',' ',' ',' ',' ','Balance (Income − Expenses − Savings)',income-expense-saving,'']);
   const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"` ).join(',')).join('\n');
   const a=document.createElement('a');
   a.href='data:text/csv;charset=utf-8,﻿'+encodeURIComponent(csv);
@@ -2222,7 +2278,7 @@ function kpi(cls,label,val,valCls,sub){
 /* Every category the rules currently produce, for the editors' suggestion
    lists. Derived, never a stored column — see the categoriser notes. */
 function allCategories(){
-  const set = new Set();
+  const set = new Set(['Savings & Deposits']); CAT_RULES.forEach(r=>set.add(r.cat));
   entries.forEach(e => set.add(categoryOf(e)));
   return [...set].sort();
 }
@@ -2305,6 +2361,173 @@ function renderCached(){
 function setOffline(on){
   const el = document.getElementById('offlineNote');
   if(el) el.classList.toggle('show', !!on);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   QUICK ENTRY, AUTOCOMPLETE, TRANSACTION DETAIL, REPORT SHORTCUT, CATEGORY
+   (ported from Mini v3.0 / v3.1)
+   ──────────────────────────────────────────────────────────────────────────
+     • QUICK ENTRY — a strip of one-tap presets learned from the ledger (most
+       used in the last four months first). A tap fills type, description,
+       party, mode, who-paid, category and the LAST amount, then puts the
+       cursor on the amount. Nothing to set up: it is derived every render.
+     • AUTOCOMPLETE — the description suggests what was typed before.
+     • DETAIL — tapping a row opens every field, with Edit / Duplicate / Delete.
+     • REPORT — the dashboard's period chips gain a Report button that opens
+       the full report for the same window.
+     • CATEGORY — guessed, never demanded: the last category used for the same
+       description wins, else the report's rules; a typed value is never
+       overwritten (dataset.auto is cleared on input).
+   Nothing here runs at module-eval time except two event listeners.
+   ══════════════════════════════════════════════════════════════════════════ */
+const QUICK_SEED = [
+  { type:'income',  description:'Amazon payout',     party:'Amazon' },
+  { type:'income',  description:'Flipkart payout',   party:'Flipkart' },
+  { type:'income',  description:'Meesho payout',     party:'Meesho' },
+  { type:'expense', description:'Courier charges',   party:'Courier' },
+  { type:'expense', description:'Packing material',  party:'Supplier' },
+  { type:'expense', description:'EB bill',           party:'TNEB' },
+  { type:'expense', description:'Internet',          party:'ISP' },
+  { type:'expense', description:'Staff salary',      party:'Staff' },
+  { type:'expense', description:'GST payment',       party:'GST' },
+  { type:'saving',  description:'FD deposit',        party:'Bank' }
+];
+const QUICK_MAX = 12;
+let QUICK = [];
+function _qkKey(e){ return (e.type||'expense') + '|' + String(e.description||'').trim().toLowerCase(); }
+function _qkCutoff(days){ const d = new Date(); d.setDate(d.getDate() - days); return d.toISOString().slice(0,10); }
+function quickPresets(){
+  const cutoff = _qkCutoff(120), m = new Map();
+  entries.forEach(e => {
+    if(!e.description || !String(e.description).trim()) return;
+    const k = _qkKey(e);
+    const r = m.get(k) || { type:e.type||'expense', description:String(e.description).trim(), n:0, recent:0, last:'', party:'', amount:0, mode:'', paidBy:'', category:'' };
+    r.n++; if((e.date||'') >= cutoff) r.recent++;
+    if((e.date||'') >= r.last){ r.last = e.date||''; r.party = e.party||''; r.amount = Number(e.amount)||0; r.mode = e.mode||''; r.paidBy = e.paidBy||''; r.category = e.category||''; }
+    m.set(k, r);
+  });
+  const list = [...m.values()].sort((a,b) => b.recent-a.recent || b.n-a.n || b.last.localeCompare(a.last)).slice(0, QUICK_MAX);
+  if(list.length < 6){
+    QUICK_SEED.forEach(s => { if(list.length < QUICK_MAX && !m.has(_qkKey(s))) list.push({ ...s, n:0, recent:0, last:'', amount:0, mode:'', paidBy:'', category:'' }); });
+  }
+  return list;
+}
+function renderQuick(){
+  const box = document.getElementById('quickStrip'); if(!box) return;
+  QUICK = quickPresets();
+  box.innerHTML = QUICK.map((q,i) => {
+    const meta = TYPE_META[q.type] || TYPE_META.expense;
+    const sub  = q.amount ? fmt(q.amount) + (q.n > 1 ? ` · ${q.n}×` : '') : meta.label;
+    return `<button type="button" class="qk t-${esc(q.type)}" onclick="quickFill(${i})" title="${esc(meta.label)}${q.party ? ' · ' + esc(q.party) : ''}${q.last ? ' · last ' + esc(fmtDate(q.last)) : ''}">
+      <span class="qk-name"><i class="ti ${meta.icon}"></i>${esc(q.description)}</span>
+      <span class="qk-sub">${esc(sub)}</span></button>`;
+  }).join('');
+}
+function quickFill(i){
+  const q = QUICK[i]; if(!q) return;
+  if(editingId) cancelEdit();
+  setType(TYPE_META[q.type] ? q.type : 'expense');
+  document.getElementById('fDate').value   = today();
+  document.getElementById('fDesc').value   = q.description || '';
+  document.getElementById('fParty').value  = q.party || '';
+  document.getElementById('fAmount').value = q.amount || '';
+  document.getElementById('fMode').value   = q.mode || '';
+  document.getElementById('fPaidBy').value = q.paidBy || '';
+  document.getElementById('fNote').value   = '';
+  const _fc = document.getElementById('fCat'); _fc.value = q.category || ''; _fc.dataset.auto = ''; if(!_fc.value) suggestCategory(true);
+  const a = document.getElementById('fAmount');
+  a.focus(); if(a.value) a.select();
+}
+// Description suggestions from history, newest first, one per distinct value.
+// (Party / paid-by / category lists are filled by the shared module.)
+function fillLedgerLists(){
+  const dd = document.getElementById('dlDesc'); if(!dd) return;
+  const seen = new Set(), out = [];
+  [...entries].sort((a,b) => (b.date||'').localeCompare(a.date||'')).forEach(e => {
+    const v = String(e.description||'').trim(); const k = v.toLowerCase();
+    if(!v || seen.has(k)) return; seen.add(k); out.push(v);
+  });
+  dd.innerHTML = out.slice(0, 80).map(v => `<option value="${esc(v)}">`).join('');
+}
+function guessCategory(desc, party, type){
+  const key = String(desc||'').trim().toLowerCase();
+  if(key){
+    const prev = [...entries].filter(e => e.category && String(e.description||'').trim().toLowerCase() === key)
+                             .sort((a,b) => (b.date||'').localeCompare(a.date||''))[0];
+    if(prev) return String(prev.category).trim();
+  }
+  return categoryOf({ type, description: desc, party, note: '' });
+}
+function suggestCategory(force){
+  const fc = document.getElementById('fCat'); if(!fc) return;
+  if(!force && fc.value && fc.dataset.auto !== '1') return;      // typed by hand — leave it alone
+  const desc = document.getElementById('fDesc').value, party = document.getElementById('fParty').value;
+  if(!String(desc).trim()){ if(fc.dataset.auto === '1'){ fc.value = ''; fc.dataset.auto = ''; } return; }
+  fc.value = guessCategory(desc, party, txType); fc.dataset.auto = '1';
+}
+document.getElementById('fDesc').addEventListener('change', () => suggestCategory(false));
+document.getElementById('fParty').addEventListener('change', () => suggestCategory(false));
+// Does the deployment store the category yet? (The GAS lists it in features.)
+let CAT_BACKEND = true;
+function setCatBackend(ok){
+  CAT_BACKEND = !!ok;
+  const n = document.getElementById('catBackendNote'); if(n) n.style.display = ok ? 'none' : 'block';
+}
+// ── transaction detail ────────────────────────────────────────────────────
+let detailId = null;
+function openDetail(id){
+  const e = entries.find(x => x.id === id); if(!e) return;
+  detailId = id;
+  const meta = TYPE_META[e.type] || TYPE_META.expense;
+  const plan = (typeof plans !== 'undefined' && Array.isArray(plans)) ? plans.find(p => p.txId === id) : null;
+  const f = (lbl, val, full) => val ? `<div class="dt-f${full ? ' full' : ''}"><span class="lg">${lbl}</span><div class="v">${val}</div></div>` : '';
+  document.getElementById('detailTitle').innerHTML = `<i class="ti ${meta.icon}"></i> ${meta.label}`;
+  document.getElementById('detailBody').innerHTML = `
+    <div class="fld-set">
+      <span class="lg">${esc(PARTY_LABEL[e.type] || 'Paid to')} · ${esc(e.party || '—')}</span>
+      <div style="font-size:15px;font-weight:600;color:var(--text)">${esc(e.description || '')}</div>
+      <div class="dt-amt amt-${esc(e.type)}">${meta.sign}${fmt(e.amount)}</div>
+      <div class="fld-hint">${esc(fmtDTLine(e))}</div>
+    </div>
+    <div class="dt-grid">
+      ${f('Type', `<span class="pill ${esc(e.type)}"><i class="ti ${meta.icon}"></i> ${meta.label}</span>`)}
+      ${f('Date', esc(fmtDate(e.date)))}
+      ${f('Category', esc(categoryOf(e)) + (e.category ? '' : ' <span style="color:var(--text3);font-size:11px">(guessed)</span>'))}
+      ${f('Paid by / received by', esc(e.paidBy || ''))}
+      ${f('Payment mode', esc(e.mode || ''))}
+      ${f('Note', esc(e.note || ''), true)}
+      ${plan ? f('Linked plan line', `${esc(plan.item || '')} · ${esc(monthLabel(plan.month))} · ${esc(plan.status || '')}`, true) : ''}
+      ${f('Reference', `<span style="font-family:monospace;font-size:11.5px;color:var(--text3)">${esc(e.id)}</span>`, true)}
+    </div>
+    ${TYPE_HINT[e.type] ? `<div class="fld-hint" style="margin-top:12px">${esc(TYPE_HINT[e.type])}</div>` : ''}`;
+  openSheet('detail');
+}
+function closeDetail(){ closeSheet('detail'); detailId = null; }
+function detailEdit(){ const id = detailId; closeDetail(); if(id) startEdit(id); }
+function detailDelete(){ const id = detailId; closeDetail(); if(id) deleteEntry(id); }
+function detailDuplicate(){
+  const e = entries.find(x => x.id === detailId); closeDetail(); if(!e) return;
+  if(editingId) cancelEdit();
+  setType(TYPE_META[e.type] ? e.type : 'expense');
+  document.getElementById('fDate').value   = today();
+  document.getElementById('fDesc').value   = e.description || '';
+  document.getElementById('fParty').value  = e.party || '';
+  document.getElementById('fAmount').value = e.amount || '';
+  document.getElementById('fMode').value   = e.mode || '';
+  document.getElementById('fPaidBy').value = e.paidBy || '';
+  document.getElementById('fNote').value   = '';
+  const _fc = document.getElementById('fCat'); _fc.value = categoryOf(e); _fc.dataset.auto = '';
+  document.getElementById('formCard').scrollIntoView({ behavior:'smooth', block:'start' });
+  const a = document.getElementById('fAmount'); a.focus(); a.select();
+  showToast('Copied — check the amount, then save');
+}
+// The dashboard chips and the report share one set of presets, so the report
+// can open on exactly the window the tiles are answering for.
+function openReportFor(k){
+  // This app's report spells one preset differently from the dashboard chips.
+  const id = k === 'thisQuarter' ? 'thisQtr' : k;
+  if(typeof REPORT_PRESETS !== 'undefined' && REPORT_PRESETS.some(p => p.id === id)) repPreset = id;
+  openReport();
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -3581,6 +3804,8 @@ const CAT_RULES = [
 ];
 const _catCache = new Map();
 function categoryOf(e){
+  if(e && e.category && String(e.category).trim()) return String(e.category).trim();   // what was chosen wins
+  if(isSavingT(e)) return 'Savings & Deposits';                                          // a deposit is not an expense of any kind
   const key = e.id || (e.description+'|'+e.party+'|'+e.amount);
   if(_catCache.has(key)) return _catCache.get(key);
   const hay  = `${e.description||''} ${e.party||''} ${e.note||''}`.toLowerCase().trim();
@@ -4532,7 +4757,7 @@ function printReport(){
     ${quality.length?`<h3 style="color:#a76b00">Data Quality Audit</h3>${quality.map(q=>`<div class="ins ${q.t}">${q.msg}</div>`).join('')}`:''}
 
     <div class="net">Net Surplus: <span style="color:${cur.net>=0?'#0086ad':'#b11'}">${S(cur.net)}</span></div>
-    <div class="foot"><span>Generated ${esc(genAt)} IST · IBI Finance Tracker v5.6</span><span>indiabusinessinternational@gmail.com</span></div>
+    <div class="foot"><span>Generated ${esc(genAt)} IST · IBI Finance Tracker v5.7</span><span>indiabusinessinternational@gmail.com</span></div>
   </body></html>`;
   const win=window.open('','_blank');
   if(!win){ showToast('Allow pop-ups to print, or use Download CSV','error'); return; }

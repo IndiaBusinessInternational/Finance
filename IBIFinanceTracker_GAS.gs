@@ -1,4 +1,4 @@
-// IBI Finance Tracker — GAS Backend v5.6  (same version number as the web app)
+// IBI Finance Tracker — GAS Backend v5.7  (same version number as the web app)
 // India Business International — Finance & Accounts Ledger
 // Sheet ID: 1hbh5E9kzX4632d4kaMHLXC-Aqhi5exgEJWOxMtSrttE
 // All requests via GET (URL params) — avoids CORS/redirect issues
@@ -42,7 +42,7 @@ const LEDGER_NAME = "Ledger";
    middle: an existing sheet keeps every column exactly where it was, so the
    hand-made filters and the bank-import stamps still point at the same thing. */
 const HEADERS     = ["ID","Date","Type","Description","Party","Amount","Note","CreatedAt",
-                     "PaidBy","Mode"];
+                     "PaidBy","Mode","Category"];   // Category appended, same append-only rule
 
 const COMMIT_SHEET = "Commitments";
 const COMMIT_HDRS  = ["ID","Name","Kind","Category","Party","Amount","DueDay","Freq",
@@ -55,10 +55,10 @@ const PLAN_HDRS  = ["ID","Month","Side","CommitmentId","Item","Category","Party"
                     "Proposed","Actual","DueDate","PaidDate","Status","PayMode",
                     "PaidBy","TxId","Note","Sort","CreatedAt"];
 
-const APP_VERSION = "5.6";   // kept in step with the web app's badge (7 Sep 2026)
+const APP_VERSION = "5.7";   // kept in step with the web app's badge (7 Sep 2026)
 // Lets a page newer than this deployment detect what it can do, and say
 // "update the Apps Script" instead of failing oddly at Save.
-const FEATURES    = ["plans", "commitments", "paidby"];
+const FEATURES    = ["plans", "commitments", "paidby", "category"];   // category: Category column on Transactions
 
 /* One helper builds every data sheet, so a sheet added in a later version gets
    the same frozen, styled header row and — the part that matters on an upgrade
@@ -92,7 +92,7 @@ function styleHeader_(sh, n) {
 
 function getSheet() {
   return getNamedSheet(SHEET_NAME, HEADERS,
-                       [130, 100, 90, 240, 170, 110, 210, 150, 110, 100]);
+                       [130, 100, 90, 240, 170, 110, 210, 150, 110, 100, 170]);
 }
 
 function sheetTZ_() {
@@ -379,7 +379,8 @@ function getAllTransactions() {
     note:        r[6] || '',
     createdAt:   r[7] || '',
     paidBy:      str_(r[8]),
-    mode:        str_(r[9])
+    mode:        str_(r[9]),
+    category:    str_(r[10])
   }));
 
   /* One call returns the ledger, the standing commitments and every planned
@@ -425,7 +426,8 @@ function addTransaction(p) {
     p.note   || '',
     now,
     p.paidBy || '',
-    p.mode   || ''
+    p.mode   || '',
+    p.category || ''
   ]);
 
   cache.put(key, id, 90);   // 90-second idempotency window for this exact payload
@@ -451,7 +453,7 @@ function updateTransaction(p) {
         parseFloat(p.amount) || 0,
         p.note        || ''
       ]]);
-      sh.getRange(r, 9, 1, 2).setValues([[p.paidBy || '', p.mode || '']]);
+      sh.getRange(r, 9, 1, 3).setValues([[p.paidBy || '', p.mode || '', p.category || '']]);
       return { status:'ok', message:'Updated: ' + p.id };
     }
   }
