@@ -1,4 +1,4 @@
-# IBI Finance Tracker v5.8.3
+# IBI Finance Tracker v5.9
 
 Income &amp; expense ledger for **India Business International** (Kanyakumari).
 
