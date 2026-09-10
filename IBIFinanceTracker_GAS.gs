@@ -1,4 +1,4 @@
-// IBI Finance Tracker — GAS Backend v5.8  (same version number as the web app)
+// IBI Finance Tracker — GAS Backend v5.8.1  (same version number as the web app)
 // India Business International — Finance & Accounts Ledger
 // Sheet ID: 1hbh5E9kzX4632d4kaMHLXC-Aqhi5exgEJWOxMtSrttE
 // All requests via GET (URL params) — avoids CORS/redirect issues
@@ -55,7 +55,7 @@ const PLAN_HDRS  = ["ID","Month","Side","CommitmentId","Item","Category","Party"
                     "Proposed","Actual","DueDate","PaidDate","Status","PayMode",
                     "PaidBy","TxId","Note","Sort","CreatedAt"];
 
-const APP_VERSION = "5.8";   // kept in step with the web app's badge (7 Sep 2026)
+const APP_VERSION = "5.8.1";   // kept in step with the web app's badge (7 Sep 2026)
 // Lets a page newer than this deployment detect what it can do, and say
 // "update the Apps Script" instead of failing oddly at Save.
 const FEATURES    = ["plans", "commitments", "paidby", "category"];   // category: Category column on Transactions
