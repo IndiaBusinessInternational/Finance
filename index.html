@@ -311,7 +311,7 @@ tbody tr.tx-row{cursor:pointer}
 .rep-check input{width:auto;margin:0;accent-color:var(--cyan);cursor:pointer}
 
 /* tabs */
-.rep-tabs{display:flex;gap:2px;overflow-x:auto;border-bottom:1px solid var(--border);margin:14px 0 12px;scrollbar-width:thin}
+.rep-tabs{display:flex;gap:2px;overflow-x:auto;border-bottom:1px solid var(--border);margin:14px 0 12px;scrollbar-width:thin;-webkit-mask-image:linear-gradient(to right,#000 calc(100% - 26px),transparent);mask-image:linear-gradient(to right,#000 calc(100% - 26px),transparent)}
 .rep-tab{background:none;border:none;border-bottom:2px solid transparent;color:var(--text2);font-size:12px;font-weight:600;padding:9px 12px;cursor:pointer;font-family:var(--font);white-space:nowrap;text-transform:uppercase;letter-spacing:0.04em;display:flex;align-items:center;gap:5px}
 .rep-tab:hover{color:var(--cyan)}
 .rep-tab.on{color:var(--cyan);border-bottom-color:var(--cyan)}
@@ -795,7 +795,7 @@ tbody tr.tx-row{cursor:pointer}
     <div class="topbar-left">
       <div class="ibi-logo"><span>IBI</span></div>
       <div>
-        <div class="app-name">IBI Finance Tracker <span class="ver-badge">v5.10</span></div>
+        <div class="app-name">IBI Finance Tracker <span class="ver-badge">v5.10.1</span></div>
       </div>
     </div>
     <div class="topbar-right">
@@ -1111,7 +1111,7 @@ tbody tr.tx-row{cursor:pointer}
   <div id="commitList" class="cm-list"></div>
 </div><!-- /viewCommit -->
 
-  <div class="footer">IBI Finance Tracker v5.10 &mdash; India Business International &mdash; indiabusinessinternational@gmail.com</div>
+  <div class="footer">IBI Finance Tracker v5.10.1 &mdash; India Business International &mdash; indiabusinessinternational@gmail.com</div>
 </div>
 
 <!-- DRAWER MENU -->
@@ -1163,7 +1163,7 @@ tbody tr.tx-row{cursor:pointer}
   <!-- app and backend carry the SAME version number (CEO, 7 Sep 2026, "for easy
        noting"). Both are shown here; a bare number mismatch is only a note, a
        missing feature is what raises the amber prompts. -->
-  <div class="drawer-item" style="cursor:default;color:var(--text2);font-size:12px;align-items:flex-start"><i class="ti ti-info-circle"></i> <span id="aboutVer">App v5.10 · Backend: not connected yet</span></div>
+  <div class="drawer-item" style="cursor:default;color:var(--text2);font-size:12px;align-items:flex-start"><i class="ti ti-info-circle"></i> <span id="aboutVer">App v5.10.1 · Backend: not connected yet</span></div>
 </div>
 
 <!-- REPORT MODAL -->
@@ -4770,10 +4770,10 @@ function generateReport(){
 
   const TABS = [
     ['overview','Overview','ti-layout-dashboard', paneOverview + paneStanding],
+    ['lists','Lists','ti-receipt-2',              paneListsT],   // SECOND, so a phone shows it without scrolling the strip
     ['budget','Budget','ti-target',               paneBudgetT],
     ['savings','Savings','ti-pig-money',          paneSavingsT],
     ['liabilities','Loans','ti-building-bank',    paneLoansT],
-    ['lists','Lists','ti-receipt-2',              paneListsT],
     ['statement','Statement','ti-list-details',   paneStatement],
     ['trends','Trends','ti-chart-line',           paneTrends],
     ['categories','Categories','ti-tags',         paneCats],
@@ -4964,7 +4964,7 @@ function printReport(){
     ${quality.length?`<h3 style="color:#a76b00">Data Quality Audit</h3>${quality.map(q=>`<div class="ins ${q.t}">${q.msg}</div>`).join('')}`:''}
 
     <div class="net">Net Surplus: <span style="color:${cur.net>=0?'#0086ad':'#b11'}">${S(cur.net)}</span></div>
-    <div class="foot"><span>Generated ${esc(genAt)} IST · IBI Finance Tracker v5.10</span><span>indiabusinessinternational@gmail.com</span></div>
+    <div class="foot"><span>Generated ${esc(genAt)} IST · IBI Finance Tracker v5.10.1</span><span>indiabusinessinternational@gmail.com</span></div>
   </body></html>`;
   const win=window.open('','_blank');
   if(!win){ showToast('Allow pop-ups to print, or use Download CSV','error'); return; }
