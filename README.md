@@ -1,4 +1,7 @@
-# IBI Finance Tracker v5.11
+# IBI Finance Tracker v5.12
+
+**Payment mode EFT (v5.12)** — *EFT — Electronic Funds Transfer* sits beside Bank transfer in every payment-mode list (ledger form, plan payment, commitment editor, voice check screen), and voice entry hears "by EFT" / "electronic funds transfer". Added for royalties such as Amazon KDP, whose payment reports name the method EFT. It is a label only — no total is split by mode — and the backend stores it as typed, so no Apps Script change is needed.
+
 
 Income &amp; expense ledger for **India Business International** (Kanyakumari).
 

@@ -797,7 +797,7 @@ tbody tr.tx-row{cursor:pointer}
     <div class="topbar-left">
       <div class="ibi-logo"><span>IBI</span></div>
       <div>
-        <div class="app-name">IBI Finance Tracker <span class="ver-badge">v5.11</span></div>
+        <div class="app-name">IBI Finance Tracker <span class="ver-badge">v5.12</span></div>
       </div>
     </div>
     <div class="topbar-right">
@@ -975,6 +975,7 @@ tbody tr.tx-row{cursor:pointer}
           <option value="Cash">Cash</option>
           <option value="GPay">GPay / UPI</option>
           <option value="Bank">Bank transfer</option>
+          <option value="EFT">EFT — Electronic Funds Transfer</option>
           <option value="Card">Card</option>
           <option value="Cheque">Cheque</option>
           <option value="Auto-debit">Auto-debit / ECS</option>
@@ -1113,7 +1114,7 @@ tbody tr.tx-row{cursor:pointer}
   <div id="commitList" class="cm-list"></div>
 </div><!-- /viewCommit -->
 
-  <div class="footer">IBI Finance Tracker v5.11 &mdash; India Business International &mdash; indiabusinessinternational@gmail.com</div>
+  <div class="footer">IBI Finance Tracker v5.12 &mdash; India Business International &mdash; indiabusinessinternational@gmail.com</div>
 </div>
 
 <!-- DRAWER MENU -->
@@ -1165,7 +1166,7 @@ tbody tr.tx-row{cursor:pointer}
   <!-- app and backend carry the SAME version number (CEO, 7 Sep 2026, "for easy
        noting"). Both are shown here; a bare number mismatch is only a note, a
        missing feature is what raises the amber prompts. -->
-  <div class="drawer-item" style="cursor:default;color:var(--text2);font-size:12px;align-items:flex-start"><i class="ti ti-info-circle"></i> <span id="aboutVer">App v5.11 · Backend: not connected yet</span></div>
+  <div class="drawer-item" style="cursor:default;color:var(--text2);font-size:12px;align-items:flex-start"><i class="ti ti-info-circle"></i> <span id="aboutVer">App v5.12 · Backend: not connected yet</span></div>
 </div>
 
 <!-- REPORT MODAL -->
@@ -1359,6 +1360,7 @@ tbody tr.tx-row{cursor:pointer}
           <option value="Cash">Cash</option>
           <option value="GPay">GPay / UPI</option>
           <option value="Bank">Bank transfer</option>
+          <option value="EFT">EFT — Electronic Funds Transfer</option>
           <option value="Card">Card</option>
           <option value="Cheque">Cheque</option>
           <option value="Auto-debit">Auto-debit / ECS</option>
@@ -1547,6 +1549,7 @@ tbody tr.tx-row{cursor:pointer}
           <option value="Cash">Cash</option>
           <option value="GPay">GPay / UPI</option>
           <option value="Bank">Bank transfer</option>
+          <option value="EFT">EFT — Electronic Funds Transfer</option>
           <option value="Card">Card</option>
           <option value="Cheque">Cheque</option>
           <option value="Auto-debit">Auto-debit / ECS</option>
@@ -4966,7 +4969,7 @@ function printReport(){
     ${quality.length?`<h3 style="color:#a76b00">Data Quality Audit</h3>${quality.map(q=>`<div class="ins ${q.t}">${q.msg}</div>`).join('')}`:''}
 
     <div class="net">Net Surplus: <span style="color:${cur.net>=0?'#0086ad':'#b11'}">${S(cur.net)}</span></div>
-    <div class="foot"><span>Generated ${esc(genAt)} IST · IBI Finance Tracker v5.11</span><span>indiabusinessinternational@gmail.com</span></div>
+    <div class="foot"><span>Generated ${esc(genAt)} IST · IBI Finance Tracker v5.12</span><span>indiabusinessinternational@gmail.com</span></div>
   </body></html>`;
   const win=window.open('','_blank');
   if(!win){ showToast('Allow pop-ups to print, or use Download CSV','error'); return; }
@@ -5832,6 +5835,7 @@ function vFindSeq(st, phrase){ return vFind(st, phrase.split(' ')); }
 const V_MODES = [
   ['google pay','GPay'],['g pay','GPay'],['gpay','GPay'],['phone pe','GPay'],['phonepe','GPay'],
   ['paytm','GPay'],['upi','GPay'],['bhim','GPay'],['qr code','GPay'],['scanner','GPay'],['scan','GPay'],
+  ['electronic funds transfer','EFT'],['electronic fund transfer','EFT'],['e f t','EFT'],['eft','EFT'],
   ['net banking','Bank'],['netbanking','Bank'],['bank transfer','Bank'],['neft','Bank'],['imps','Bank'],['rtgs','Bank'],
   ['credit card','Card'],['debit card','Card'],['atm card','Card'],
   ['auto debit','Auto-debit'],['autodebit','Auto-debit'],['standing instruction','Auto-debit'],['ecs','Auto-debit'],['nach','Auto-debit'],['mandate','Auto-debit'],
@@ -6599,7 +6603,7 @@ function voiceUseAlt(i){
 }
 
 /* ── the check screen ───────────────────────────────────────────────────── */
-const V_MODE_OPTS = [['',"Not stated"],['Cash','Cash'],['GPay','GPay / UPI'],['Bank','Bank transfer'],
+const V_MODE_OPTS = [['',"Not stated"],['Cash','Cash'],['GPay','GPay / UPI'],['Bank','Bank transfer'],['EFT','EFT — Electronic Funds Transfer'],
   ['Card','Card'],['Cheque','Cheque'],['Auto-debit','Auto-debit / ECS'],['Other','Other']];
 function vSrcHTML(k){
   const s = (vDraft && vDraft.src && vDraft.src[k]) || {};
