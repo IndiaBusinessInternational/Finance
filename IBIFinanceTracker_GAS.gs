@@ -55,10 +55,10 @@ const PLAN_HDRS  = ["ID","Month","Side","CommitmentId","Item","Category","Party"
                     "Proposed","Actual","DueDate","PaidDate","Status","PayMode",
                     "PaidBy","TxId","Note","Sort","CreatedAt"];
 
-const APP_VERSION = "5.12";   // kept in step with the web app's badge (7 Sep 2026)
+const APP_VERSION = "5.13";   // kept in step with the web app's badge (7 Sep 2026)
 // Lets a page newer than this deployment detect what it can do, and say
 // "update the Apps Script" instead of failing oddly at Save.
-const FEATURES    = ["plans", "commitments", "paidby", "category"];   // category: Category column on Transactions
+const FEATURES    = ["plans", "commitments", "paidby", "category", "rid"];   // category: Category column on Transactions
 
 /* One helper builds every data sheet, so a sheet added in a later version gets
    the same frozen, styled header row and — the part that matters on an upgrade
@@ -210,10 +210,12 @@ function saveCommitment(p) {
       }
       return { status:'error', message:'Commitment not found: ' + p.id };
     }
+    const again = ridSeen_(p);
+    if (again) return again;
     const id = 'CM' + Date.now();
     sh.appendRow(commitmentRow_(id, p, nowStamp_()));
     SpreadsheetApp.flush();
-    return { status:'ok', id:id, message:'Commitment saved.' };
+    return ridKeep_(p, { status:'ok', id:id, message:'Commitment saved.' });
   } finally { try { lock.releaseLock(); } catch (e) {} }
 }
 
@@ -249,10 +251,12 @@ function savePlan(p) {
       }
       return { status:'error', message:'Plan row not found: ' + p.id };
     }
+    const again = ridSeen_(p);
+    if (again) return again;
     const id = 'PL' + Date.now();
     sh.appendRow(planRow_(id, p, nowStamp_()));
     SpreadsheetApp.flush();
-    return { status:'ok', id:id, message:'Plan row saved.' };
+    return ridKeep_(p, { status:'ok', id:id, message:'Plan row saved.' });
   } finally { try { lock.releaseLock(); } catch (e) {} }
 }
 
@@ -395,43 +399,56 @@ function getAllTransactions() {
 }
 
 function addTransaction(p) {
-  const sh  = getSheet();
-
-  // ── Duplicate-submit guard ────────────────────────────────────────────────
-  // A cold start can make a save feel stuck, so the user reloads and resubmits
-  // the same row (seen as two identical entries seconds apart); a double-tap can
-  // also fire twice. Fingerprint the payload and suppress an identical add seen
-  // within a short window. Shared, cross-execution CacheService = no schema change.
-  const cache = CacheService.getScriptCache();
-  const fp = [p.date, p.type, p.description, p.party,
-              parseFloat(p.amount) || 0, p.note]
-              .map(x => String(x == null ? '' : x).trim()).join('|');
-  const key = 'add_' + Utilities.base64EncodeWebSafe(
-              Utilities.computeDigest(Utilities.DigestAlgorithm.MD5, fp));
-  const seen = cache.get(key);
-  if (seen) {
-    return { status:'ok', id: seen, duplicate:true, message:'Duplicate suppressed — already saved.' };
+  // One writer at a time: a slow first request and its repeat must never both
+  // pass the NO REPEATS check before either has written.
+  const lock = LockService.getScriptLock();
+  try { lock.waitLock(20000); } catch (e) {
+    return { status:'error', message:'Busy — please try again in a moment.' };
   }
+  try {
+    const again = ridSeen_(p);
+    if (again) return again;
 
-  const id  = 'TX' + Date.now();
-  const now = Utilities.formatDate(new Date(), 'Asia/Kolkata', 'dd-MMM-yyyy HH:mm:ss');
+    // Older page (no request id — a cached copy of the app): fall back to the
+    // v5 guard — an identical payload inside 90 seconds is the same save.
+    const cache = CacheService.getScriptCache();
+    let key = '';
+    if (!String(p.rid || '').trim()) {
+      const fp = [p.date, p.type, p.description, p.party,
+                  parseFloat(p.amount) || 0, p.note]
+                  .map(x => String(x == null ? '' : x).trim()).join('|');
+      key = 'add_' + Utilities.base64EncodeWebSafe(
+            Utilities.computeDigest(Utilities.DigestAlgorithm.MD5, fp));
+      const seen = cache.get(key);
+      if (seen) {
+        return { status:'ok', id: seen, duplicate:true, message:'Duplicate suppressed — already saved.' };
+      }
+    }
 
-  sh.appendRow([
-    id,
-    p.date   || '',
-    p.type   || 'income',
-    p.description || '',
-    p.party  || '',
-    parseFloat(p.amount) || 0,
-    p.note   || '',
-    now,
-    p.paidBy || '',
-    p.mode   || '',
-    p.category || ''
-  ]);
+    const sh  = getSheet();
+    const id  = 'TX' + Date.now();
+    const now = Utilities.formatDate(new Date(), 'Asia/Kolkata', 'dd-MMM-yyyy HH:mm:ss');
 
-  cache.put(key, id, 90);   // 90-second idempotency window for this exact payload
-  return { status:'ok', id: id, message:'Added successfully.' };
+    sh.appendRow([
+      id,
+      p.date   || '',
+      p.type   || 'income',
+      p.description || '',
+      p.party  || '',
+      parseFloat(p.amount) || 0,
+      p.note   || '',
+      now,
+      p.paidBy || '',
+      p.mode   || '',
+      p.category || ''
+    ]);
+    SpreadsheetApp.flush();
+
+    if (key) cache.put(key, id, 90);
+    return ridKeep_(p, { status:'ok', id: id, message:'Added successfully.' });
+  } finally {
+    try { lock.releaseLock(); } catch (e) {}
+  }
 }
 
 function updateTransaction(p) {
@@ -651,4 +668,28 @@ function fmtDisp_(d) {
 function fmtTime_(t) {
   if (t instanceof Date) return Utilities.formatDate(t, 'Asia/Kolkata', 'h:mm a');
   return String(t || '').trim();
+}
+
+/* ── NO REPEATS — idempotency key (pairs with the web app's NO REPEATS block) ──
+   Every create the app sends (ledger entry, plan line, commitment) carries a
+   request id, `rid`. A repeat of the same rid — a retry after a lost reply, a
+   Save tapped again — gets the FIRST answer back instead of a second row.
+   Checked INSIDE the script lock, so a slow first request and its repeat can
+   never both write. Six hours is the CacheService maximum. */
+function ridSeen_(p) {
+  const rid = String((p && p.rid) || '').trim();
+  if (!rid) return null;
+  const hit = CacheService.getScriptCache().get('rid_' + rid.slice(0, 200));
+  if (!hit) return null;
+  const first = JSON.parse(hit);
+  first.duplicate = true;
+  first.message = 'Already saved — not added twice.';
+  return first;
+}
+function ridKeep_(p, result) {
+  const rid = String((p && p.rid) || '').trim();
+  if (rid && result && result.status === 'ok') {
+    CacheService.getScriptCache().put('rid_' + rid.slice(0, 200), JSON.stringify(result), 21600);
+  }
+  return result;
 }

@@ -1,4 +1,7 @@
-# IBI Finance Tracker v5.12
+# IBI Finance Tracker v5.13
+
+**No repeated entries (v5.13)** — every new ledger entry, plan line and commitment now carries a request id (the industry-standard idempotency key). The Apps Script remembers it for six hours, so a save that is sent again after a lost reply — the app's old automatic retry, a Save tapped twice, Plan → Record it retried — returns the first row instead of writing a second. A create is never re-sent automatically any more; a lost reply is checked against Google Drive instead. A genuinely new entry with the same date, party and amount shows a *Possible repeat* warning (OK = save anyway, Cancel = go back), and Plan → Record it offers to link to a matching ledger row rather than adding one. Paste the Apps Script for the server half.
+
 
 **Payment mode EFT (v5.12)** — *EFT — Electronic Funds Transfer* sits beside Bank transfer in every payment-mode list (ledger form, plan payment, commitment editor, voice check screen), and voice entry hears "by EFT" / "electronic funds transfer". Added for royalties such as Amazon KDP, whose payment reports name the method EFT. It is a label only — no total is split by mode — and the backend stores it as typed, so no Apps Script change is needed.
 

@@ -797,7 +797,7 @@ tbody tr.tx-row{cursor:pointer}
     <div class="topbar-left">
       <div class="ibi-logo"><span>IBI</span></div>
       <div>
-        <div class="app-name">IBI Finance Tracker <span class="ver-badge">v5.12</span></div>
+        <div class="app-name">IBI Finance Tracker <span class="ver-badge">v5.13</span></div>
       </div>
     </div>
     <div class="topbar-right">
@@ -1114,7 +1114,7 @@ tbody tr.tx-row{cursor:pointer}
   <div id="commitList" class="cm-list"></div>
 </div><!-- /viewCommit -->
 
-  <div class="footer">IBI Finance Tracker v5.12 &mdash; India Business International &mdash; indiabusinessinternational@gmail.com</div>
+  <div class="footer">IBI Finance Tracker v5.13 &mdash; India Business International &mdash; indiabusinessinternational@gmail.com</div>
 </div>
 
 <!-- DRAWER MENU -->
@@ -1166,7 +1166,7 @@ tbody tr.tx-row{cursor:pointer}
   <!-- app and backend carry the SAME version number (CEO, 7 Sep 2026, "for easy
        noting"). Both are shown here; a bare number mismatch is only a note, a
        missing feature is what raises the amber prompts. -->
-  <div class="drawer-item" style="cursor:default;color:var(--text2);font-size:12px;align-items:flex-start"><i class="ti ti-info-circle"></i> <span id="aboutVer">App v5.12 · Backend: not connected yet</span></div>
+  <div class="drawer-item" style="cursor:default;color:var(--text2);font-size:12px;align-items:flex-start"><i class="ti ti-info-circle"></i> <span id="aboutVer">App v5.13 · Backend: not connected yet</span></div>
 </div>
 
 <!-- REPORT MODAL -->
@@ -1724,7 +1724,6 @@ function renderBalances(){
   }).join('');
 }
 let editingId = null;
-let _saving   = false;   // re-entrancy guard — blocks a second save while one is in flight
 let deferredPrompt = null;
 
 // ── THEME ──
@@ -1880,6 +1879,8 @@ document.querySelectorAll('input[type="date"]').forEach(el=>{
 
 // ── GAS — all via GET, with auto-retry on failure ──
 async function gasCall(params, retries=2, timeoutMs=20000){
+  params = ridStamp(params);                 // NO REPEATS — a create carries its request id
+  if(params.rid) retries = 1;                // …and is never re-sent automatically
   const url = GAS_URL + '?' + new URLSearchParams(params).toString();
   for(let attempt = 1; attempt <= retries; attempt++){
     const controller = new AbortController();
@@ -1888,7 +1889,7 @@ async function gasCall(params, retries=2, timeoutMs=20000){
       const r = await fetch(url, {redirect:'follow', signal: controller.signal});
       const text = await r.text();          // keep the abort timer armed through the body read
       clearTimeout(timer);
-      try{ return JSON.parse(text); }
+      try{ const d = JSON.parse(text); if(d && d.status === 'ok') ridDone(params); return d; }
       catch(e){ throw new Error('Bad JSON: '+text.slice(0,80)); }
     } catch(e){
       clearTimeout(timer);
@@ -1975,66 +1976,144 @@ function cancelEdit(){
   render();
 }
 
-async function saveEntry(){
+/* ══ NO REPEATS — one entry, one row (shared by all three finance trackers) ══
+   Two things put the same entry in the books twice, and nobody saw either:
+   1. A create request sent AGAIN after its answer was lost — the app's own
+      automatic retry, a Save tapped again after "couldn't confirm", a double
+      tap. The first request had usually landed already. The fix is the
+      industry-standard IDEMPOTENCY KEY: every new ledger entry, plan line and
+      commitment carries a request id (`rid`); the Apps Script remembers it for
+      six hours and answers a repeat with the FIRST row's id instead of writing
+      a second row. The same payload keeps the same rid until the server has
+      confirmed it, so any re-send is recognised. A create is also never
+      re-sent automatically any more — a lost reply is checked, not repeated.
+   2. A genuinely new entry that matches one already in the books — same date,
+      party and amount. That is a WARNING, not a block (two ₹30 milk entries
+      on one day are real): lookAlikeOk() shows it and the person decides.
+   Change this block in all three apps together. */
+const RID_ACTIONS = ['add', 'savePlan', 'saveCommitment'];
+const _ridPending = new Map();              // payload fingerprint → rid, until the server confirms it
+let _saveBusy = false;                      // a second Save while the first is still running is ignored
+
+function _ridKey(params){
+  return Object.keys(params).filter(k => k !== 'token' && k !== 'rid').sort()
+    .map(k => k + '=' + String(params[k] == null ? '' : params[k]).trim()).join('&');
+}
+/* Called by gasCall() on every request. Only a CREATE gets a rid — an update
+   or a delete names its row, so sending it twice already changes nothing. */
+function ridStamp(params){
+  if(!params || RID_ACTIONS.indexOf(params.action) < 0 || params.id || params.rid) return params;
+  const k = _ridKey(params);
+  let rid = _ridPending.get(k);
+  if(!rid){
+    rid = 'R' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+    _ridPending.set(k, rid);
+  }
+  return Object.assign({}, params, { rid: rid });
+}
+/* Confirmed — the next identical entry is a NEW one and gets a new rid. */
+function ridDone(params){ if(params) _ridPending.delete(_ridKey(params)); }
+
+function _laNorm(s){ return String(s == null ? '' : s).toLowerCase().replace(/\s+/g, ' ').trim(); }
+/* An entry already in the books with the same date, party and amount. */
+function lookAlike(d, exceptId){
+  const amt = Math.round((Number(d.amount) || 0) * 100), party = _laNorm(d.party),
+        date = String(d.date || '').slice(0, 10);
+  if(!amt || !party || !date) return null;
+  return entries.find(e => e.id !== exceptId && String(e.date || '').slice(0, 10) === date
+    && Math.round((Number(e.amount) || 0) * 100) === amt && _laNorm(e.party) === party) || null;
+}
+function _laLine(e){
+  return fmtDate(e.date) + ' · ' + (e.party || '') + ' · ' + fmt(e.amount) + '\n' + (e.description || '');
+}
+/* true = go ahead. A look-alike asks first; Cancel is the safe answer. */
+function lookAlikeOk(d, exceptId){
+  const twin = lookAlike(d, exceptId);
+  if(!twin) return true;
+  return confirm('Possible repeat — this entry is already in the books:\n\n' + _laLine(twin)
+    + '\n\nOK = save it anyway (a genuine second entry)\nCancel = go back, nothing is saved');
+}
+
+/* The ONE way a ledger row is created (typed form, voice, quick entry, and
+   Plan → Record it). One attempt; if the reply is lost, Google Drive is
+   READ to see whether the row landed — it is never simply sent again.
+   → {state:'saved'|'error'|'missing'|'unknown', id, repeat, fresh, message} */
+async function addTx(fields){
+  const body = Object.assign({ action:'add' }, fields);
+  const before = new Set(entries.map(e => e.id));
+  const same = t => String(t.date || '').slice(0, 10) === String(fields.date) && t.type === fields.type
+    && _laNorm(t.description) === _laNorm(fields.description) && _laNorm(t.party) === _laNorm(fields.party)
+    && Math.abs((Number(t.amount) || 0) - Number(fields.amount)) < 0.005;
+  try{
+    const res = await gasCall(body, 1, 25000);
+    if(res && res.status === 'ok') return { state:'saved', id: res.id || '', repeat: !!res.duplicate };
+    if(res) return { state:'error', message: res.message || 'Not saved' };
+  } catch(e){
+    if(AUTH_LOST) return { state:'error', message:'Signed out — sign in again' };
+    console.warn('Save reply lost — reading Google Drive before anything is sent again.', e);
+  }
+  let fresh = null;
+  for(let i = 0; i < 4; i++){
+    await new Promise(r => setTimeout(r, 1800 + 700 * i));
+    try{
+      const check = await gasCall({ action:'getAll' }, 1, 20000);
+      if(check && check.status === 'ok'){
+        fresh = check.transactions || [];
+        const row = fresh.find(t => !before.has(t.id) && same(t));
+        if(row){ ridDone(body); return { state:'saved', id: row.id, fresh: fresh }; }
+      }
+    } catch(_){ /* still unreachable — keep looking */ }
+  }
+  return { state: fresh ? 'missing' : 'unknown', fresh: fresh };
+}
+
+async function saveEntry(opts){
+  opts = opts || {};
   const date=document.getElementById('fDate').value, desc=document.getElementById('fDesc').value.trim(),
         party=document.getElementById('fParty').value.trim(), amount=parseFloat(document.getElementById('fAmount').value),
         note=document.getElementById('fNote').value.trim(),
         paidBy=document.getElementById('fPaidBy').value.trim(),
         mode=document.getElementById('fMode').value,
         category=document.getElementById('fCat').value.trim();
-  if(!date||!desc||!party||!amount||amount<=0){ showToast('Fill date, description, party & amount','error'); return; }
-  // Guard against a double-tap / rapid re-fire while the first save is still running.
-  if(_saving){ return; }
-  _saving=true;
+  if(!date||!desc||!party||!amount||amount<=0){ showToast('Fill date, description, party & amount','error'); return false; }
+  if(_saveBusy) return false;                       // double tap while the first save is still running
+  const wasEditing = editingId;
+  // Voice entry has already shown the same warning on its check screen.
+  if(!opts.lookAlikeSeen && !lookAlikeOk({ date, party, amount }, wasEditing)) return false;
+  _saveBusy = true;
+  if(paidBy) localStorage.setItem(LS.lastPaidBy, paidBy);
   const btn=document.getElementById('btnSave');
   btn.disabled=true;
-  btn.innerHTML='<div class="spinner" style="width:16px;height:16px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:6px"></div> '+(editingId?'Updating...':'Saving...');
-  const wasEditing = editingId;
-  const preCount   = entries.length;
-  const params = editingId
-    ? {action:'update', id:editingId, date, type:txType, description:desc, party, amount, note, paidBy, mode, category}
-    : {action:'add', date, type:txType, description:desc, party, amount, note, paidBy, mode, category};
-
-  // Has the entry actually landed in a freshly-fetched list?
-  const matches = t => String(t.description).trim()===desc
-                     && Math.round(parseFloat(t.amount)||0)===Math.round(amount)
-                     && t.type===txType;
-  const isSaved = list => editingId
-    ? list.some(t => t.id===editingId && matches(t))
-    : (list.length > preCount && list.some(t => matches(t) && (t.date||'')===date));
-
-  let ok=false, hardErr=false, fresh=null;
+  btn.innerHTML='<div class="spinner" style="width:16px;height:16px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:6px"></div> '+(wasEditing?'Updating...':'Saving...');
+  const fields = { date, type:txType, description:desc, party, amount, note, paidBy, mode, category };
+  let ok = false;
   try{
-    try{
-      // ONE attempt (no auto-retry → never double-inserts); long timeout absorbs GAS cold starts.
-      const res = await gasCall(params, 1, 25000);
-      if(res && res.status==='ok') ok=true;
-      else if(res){ showToast('Error: '+res.message, 'error'); hardErr=true; }
-    } catch(e){
-      console.warn('Save response not received — will verify server-side.', e);
+    let r = { state:'unknown' };
+    if(wasEditing){
+      try{
+        const res = await gasCall(Object.assign({ action:'update', id:wasEditing }, fields), 2, 25000);
+        r = (res && res.status === 'ok') ? { state:'saved' } : { state:'error', message: res && res.message };
+      } catch(e){ console.warn('Update reply lost', e); }
+    } else {
+      r = await addTx(fields);
     }
-    // Cold start often saves the row but the response is lost. Re-fetch and confirm instead of crying failure.
-    if(!ok && !hardErr){
-      for(let i=0; i<4 && !ok; i++){
-        await new Promise(r => setTimeout(r, 1800));
-        try{
-          const check = await gasCall({action:'getAll'}, 1, 20000);
-          if(check && check.status==='ok'){ fresh = check.transactions||[]; if(isSaved(fresh)) ok=true; }
-        } catch(_){ /* keep verifying */ }
-      }
-    }
-
-    if(ok){
-      showToast(wasEditing ? 'Updated in Google Drive!' : 'Saved to Google Drive!');
+    if(r.state === 'saved'){
+      ok = true;
+      showToast(r.repeat ? 'Already saved — it was not added twice'
+                         : (wasEditing ? 'Updated in Google Drive!' : 'Saved to Google Drive!'));
       cancelEdit();
-      if(fresh){ entries=fresh; setStatus(true,'Connected — Google Drive'); render(); }
-      else { await loadAll(); }
-    } else if(!hardErr){
-      showToast('Could not confirm — tap Sync to check', 'error');
+      if(r.fresh){ entries = r.fresh; render(); } else { await loadAll(); }
+    } else if(r.state === 'error'){
+      showToast('Error: ' + (r.message || 'not saved'), 'error');
+    } else if(r.state === 'missing'){
+      showToast('Not saved — tap Save again (it cannot be added twice)', 'error');
+    } else {
+      // Could not reach Google Drive at all — the form stays filled so nothing is lost.
+      showToast('Slow connection — couldn’t confirm. Tap Sync; the entry is still here.', 'error');
     }
   } finally {
     // ALWAYS restore the button — even if a step above throws — so it never sticks on "Saving...".
-    _saving=false;
+    _saveBusy = false;
     btn.disabled=false;
     btn.innerHTML='<i class="ti ti-device-floppy"></i> <span id="btnSaveLabel">'+(editingId?'Update in Google Drive':'Save to Google Drive')+'</span>';
   }
@@ -3223,8 +3302,8 @@ async function savePay(){
     if(toLedger){
       // The ledger entry is written FIRST: if it fails, nothing has been said
       // about the plan either, and one tap of Cancel undoes the whole thing.
-      const res = await gasCall({
-        action:'add', date,
+      const entry = {
+        date,
         type: isIn ? 'income' : ledgerTypeFor(p),
         description: p.item,
         party: p.party || (isIn ? 'Received' : 'Paid'),
@@ -3232,9 +3311,32 @@ async function savePay(){
         note: [note, p.commitmentId ? commitmentNoteFor(p) : ''].filter(Boolean).join(' · '),
         paidBy, mode,
         category: p.category || ''            // ignored by a backend without the column
-      }, 2, 30000);
-      if(res && res.status==='ok') txId = res.id || '';
-      else { showToast(backendMsg(res), 'error'); gateBusy('paySaveBtn', false, '', '<i class="ti ti-check"></i> Record it'); return; }
+      };
+      /* NO REPEATS — the same payment is often typed in the ledger first.
+         Link the plan line to that row instead of writing a second one. */
+      const twin = lookAlike(entry);
+      let linked = false;
+      if(twin){
+        if(confirm('This payment looks already recorded in the ledger:\n\n' + _laLine(twin)
+             + '\n\nOK = link this plan line to that entry (no second row)\nCancel = more choices')){
+          txId = twin.id; linked = true;
+        } else if(!confirm('Add a SECOND ledger entry for this payment anyway?\n\nOK = add it\nCancel = go back, nothing is recorded')){
+          gateBusy('paySaveBtn', false, '', '<i class="ti ti-check"></i> Record it'); return;
+        }
+      }
+      if(!linked){
+        const r = await addTx(entry);
+        if(r.state === 'saved') txId = r.id || '';
+        else {
+          showToast(r.state === 'error' ? (r.message || 'Not recorded')
+                    : r.state === 'missing' ? 'Not recorded — tap Record it again (it cannot be added twice)'
+                    : 'Slow connection — couldn’t confirm. Tap Sync before trying again.', 'error');
+          gateBusy('paySaveBtn', false, '', '<i class="ti ti-check"></i> Record it'); return;
+        }
+        // Keep the ledger in step, so the very next save sees this row too.
+        if(r.fresh) entries = r.fresh;
+        else if(txId && !entries.some(e => e.id === txId)) entries.push(Object.assign({ id: txId }, entry));
+      }
     }
     if(paidBy) localStorage.setItem(LS.lastPaidBy, paidBy);
     const ok = await pushPlan(Object.assign({}, p, {
@@ -4969,7 +5071,7 @@ function printReport(){
     ${quality.length?`<h3 style="color:#a76b00">Data Quality Audit</h3>${quality.map(q=>`<div class="ins ${q.t}">${q.msg}</div>`).join('')}`:''}
 
     <div class="net">Net Surplus: <span style="color:${cur.net>=0?'#0086ad':'#b11'}">${S(cur.net)}</span></div>
-    <div class="foot"><span>Generated ${esc(genAt)} IST · IBI Finance Tracker v5.12</span><span>indiabusinessinternational@gmail.com</span></div>
+    <div class="foot"><span>Generated ${esc(genAt)} IST · IBI Finance Tracker v5.13</span><span>indiabusinessinternational@gmail.com</span></div>
   </body></html>`;
   const win=window.open('','_blank');
   if(!win){ showToast('Allow pop-ups to print, or use Download CSV','error'); return; }
@@ -6916,7 +7018,7 @@ async function voiceConfirm(){
   document.getElementById('fNote').value   = d.note || '';
   const fc = document.getElementById('fCat'); fc.value = d.category || ''; fc.dataset.auto = '';
   let ok = false;
-  try{ ok = await saveEntry(); } catch(e){ ok = false; }
+  try{ ok = await saveEntry({ lookAlikeSeen:true }); } catch(e){ ok = false; }
   if(!ok){
     if(btn){ btn.disabled = false; btn.innerHTML = '<i class="ti ti-check"></i> Confirm &amp; Save'; }
     showToast('Not saved — the entry is still here, try again', 'error');
