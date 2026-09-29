@@ -1,4 +1,4 @@
-// IBI Finance Tracker — GAS Backend v5.12  (same version number as the web app)
+// IBI Finance Tracker — GAS Backend v5.13  (same version number as the web app)
 // India Business International — Finance & Accounts Ledger
 // Sheet ID: 1hbh5E9kzX4632d4kaMHLXC-Aqhi5exgEJWOxMtSrttE
 // All requests via GET (URL params) — avoids CORS/redirect issues
