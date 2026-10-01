@@ -1,4 +1,7 @@
-# IBI Finance Tracker v5.14
+# IBI Finance Tracker v5.15
+
+**Profile & Photo (v5.15)** — tap the IBI circle (camera badge) or the name, or Menu → Profile & Photo, to set a photo or the company logo, the display name and the subtitle any time. The picture is cropped square, shrunk to fit a Sheet cell and kept in the hidden **Settings** tab, so every device shows the same; it is UPLOADED (POST, text/plain JSON body — Google refuses URLs over ~12,000 characters), and doPost now merges the JSON body. "No photo" brings back the IBI mark. Paste the Apps Script 5.15 for the sync.
+
 
 **Bank & Cash Balances (v5.14)** — a new **Balances** section (bottom bar on a phone) keeps each account's balance as a *reading*, never as a transaction: account, date, balance, note. Each account shows its latest reading, the change since the one before and its history; the section totals every account and flags one not updated for 30 days. Readings live in their own **Balances** sheet (date stored as text, read with getDisplayValues), so they never touch Income, Expenses or any report — no more ₹1 entries. *Review & move* finds the old ₹1 / ₹0 balance rows in the ledger, reads the figure out of the description, and moves the ticked ones into Balances (idempotent: each reading's ID is BL + the ledger row's ID). Typing a ₹1 balance into the ledger now offers to record it under Balances instead. Paste the Apps Script v5.14 for the server half.
 

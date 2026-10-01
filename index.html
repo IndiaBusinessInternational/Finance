@@ -824,6 +824,22 @@ tbody tr.tx-row{cursor:pointer}
   .bal-big{font-size:18px}
   .bal-mv .fld-row{grid-template-columns:1fr 1fr}
 }
+
+/* ══ PROFILE — photo/logo, name and subtitle, changeable any time (v5.15) ══
+   Same feature as TSM and Mini. Tap the IBI circle or the name. */
+button.hero-logo{padding:0;cursor:pointer;position:relative;background-position:center top;background-size:cover;background-repeat:no-repeat;font:inherit}
+.hero-logo.has-photo span{display:none}
+.hero-logo .hero-cam{position:absolute;right:-2px;bottom:-2px;width:28px;height:28px;border-radius:50%;background:var(--cyan);color:#000;display:flex;align-items:center;justify-content:center;font-size:16px;border:2px solid var(--bg);line-height:1}
+.hero-logo .hero-cam i{font-size:16px}
+.hero-name-btn{background:none;border:0;padding:0;font:inherit;color:inherit;text-align:left;cursor:pointer;display:block}
+.hero-logo:focus-visible,.hero-name-btn:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
+.pf-preview{display:flex;align-items:center;gap:14px;margin-bottom:18px;flex-wrap:wrap}
+.pf-avatar{width:76px;height:76px;border-radius:50%;border:2px solid var(--cyan);background:var(--bg3) center top/cover no-repeat;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.pf-avatar span{font-size:20px;font-weight:700;color:var(--cyan)}
+.pf-avatar.has-photo span{display:none}
+.pf-photo-btns{display:flex;flex-wrap:wrap;gap:8px}
+.pf-hint{font-size:12.5px;color:var(--text3);line-height:1.5;margin-top:12px}
+@media(max-width:600px){ .hero-logo .hero-cam{width:24px;height:24px} .hero-logo .hero-cam i{font-size:14px} }
 </style>
 </head>
 <body>
@@ -834,7 +850,7 @@ tbody tr.tx-row{cursor:pointer}
     <div class="topbar-left">
       <div class="ibi-logo"><span>IBI</span></div>
       <div>
-        <div class="app-name">IBI Finance Tracker <span class="ver-badge">v5.14</span></div>
+        <div class="app-name">IBI Finance Tracker <span class="ver-badge">v5.15</span></div>
       </div>
     </div>
     <div class="topbar-right">
@@ -864,10 +880,12 @@ tbody tr.tx-row{cursor:pointer}
 <!-- HERO -->
 <div class="hero">
   <div class="hero-inner">
-    <div class="hero-logo"><span>IBI</span></div>
+    <button class="hero-logo" id="heroPhotoBtn" type="button" onclick="openProfile()" aria-label="Change the photo, name and subtitle" title="Change photo"><span>IBI</span><span class="hero-cam"><i class="ti ti-camera"></i></span></button>
     <div class="hero-info">
-      <div class="hero-name">India Business International</div>
-      <div class="hero-sub">Finance &amp; Accounts Ledger — Kanyakumari</div>
+      <button class="hero-name-btn" type="button" onclick="openProfile()" title="Edit name, subtitle and photo">
+        <div class="hero-name" id="heroName">India Business International</div>
+        <div class="hero-sub" id="heroSub">Finance &amp; Accounts Ledger — Kanyakumari</div>
+      </button>
       <div class="hero-clock"><span id="liveClock">Loading...</span></div>
     </div>
   </div>
@@ -1178,7 +1196,7 @@ tbody tr.tx-row{cursor:pointer}
   <div id="bankBalList" class="cm-list"></div>
 </div><!-- /viewBal -->
 
-  <div class="footer">IBI Finance Tracker v5.14 &mdash; India Business International &mdash; indiabusinessinternational@gmail.com</div>
+  <div class="footer">IBI Finance Tracker v5.15 &mdash; India Business International &mdash; indiabusinessinternational@gmail.com</div>
 </div>
 
 <!-- DRAWER MENU -->
@@ -1189,6 +1207,7 @@ tbody tr.tx-row{cursor:pointer}
     <button class="drawer-close" onclick="closeDrawer()"><i class="ti ti-x"></i></button>
   </div>
   <div class="drawer-section-label">App</div>
+  <button class="drawer-item" onclick="closeDrawer();openProfile()"><i class="ti ti-user-circle"></i> Profile &amp; Photo</button>
   <button class="drawer-item" onclick="closeDrawer();openVoice()"><i class="ti ti-microphone"></i> Add entry by voice</button>
   <button class="drawer-item" onclick="loadAll();closeDrawer()"><i class="ti ti-refresh"></i> Sync with Google Drive</button>
   <button class="drawer-item" onclick="closeDrawer();openReport()"><i class="ti ti-report-analytics"></i> Financial Analysis Report</button>
@@ -1230,7 +1249,7 @@ tbody tr.tx-row{cursor:pointer}
   <!-- app and backend carry the SAME version number (CEO, 7 Sep 2026, "for easy
        noting"). Both are shown here; a bare number mismatch is only a note, a
        missing feature is what raises the amber prompts. -->
-  <div class="drawer-item" style="cursor:default;color:var(--text2);font-size:12px;align-items:flex-start"><i class="ti ti-info-circle"></i> <span id="aboutVer">App v5.14 · Backend: not connected yet</span></div>
+  <div class="drawer-item" style="cursor:default;color:var(--text2);font-size:12px;align-items:flex-start"><i class="ti ti-info-circle"></i> <span id="aboutVer">App v5.15 · Backend: not connected yet</span></div>
 </div>
 
 <!-- REPORT MODAL -->
@@ -1357,6 +1376,35 @@ tbody tr.tx-row{cursor:pointer}
   <div class="report-actions" id="impActions" style="display:none">
     <button class="s-btn" onclick="resetImport()"><i class="ti ti-arrow-back-up"></i> Choose another file</button>
     <button class="s-btn rep-btn" id="impConfirmBtn" onclick="confirmImport()"><i class="ti ti-check"></i> Confirm &amp; Save</button>
+  </div>
+</div>
+
+<!-- PROFILE — photo/logo, name and subtitle (v5.15) -->
+<div class="sheet-overlay" id="profileOverlay" onclick="closeProfile()"></div>
+<div class="sheet-modal" id="profileModal" role="dialog" aria-modal="true" aria-labelledby="profileTitle">
+  <div class="sheet-hdr">
+    <span class="sheet-hdr-title" id="profileTitle"><i class="ti ti-user-circle"></i> Profile &amp; Photo</span>
+    <button class="drawer-close" type="button" onclick="closeProfile()" aria-label="Close"><i class="ti ti-x"></i></button>
+  </div>
+  <div class="sheet-body">
+    <div class="pf-preview">
+      <div class="pf-avatar" id="pfAvatar"><span>IBI</span></div>
+      <div class="pf-photo-btns">
+        <button class="s-btn" type="button" onclick="document.getElementById('pfFile').click()"><i class="ti ti-camera"></i> Choose photo</button>
+        <button class="s-btn" type="button" onclick="clearPhoto()"><i class="ti ti-photo-off"></i> No photo</button>
+        <input type="file" id="pfFile" accept="image/*" style="display:none" onchange="pickPhoto(this)">
+      </div>
+    </div>
+    <div class="form-group" style="margin-bottom:12px">
+      <label for="pfName">Display name</label>
+      <input type="text" id="pfName" autocomplete="organization">
+    </div>
+    <div class="form-group" style="margin-bottom:16px">
+      <label for="pfSub">Subtitle</label>
+      <input type="text" id="pfSub">
+    </div>
+    <button class="btn-save" type="button" style="width:100%;justify-content:center" onclick="saveProfile()"><i class="ti ti-device-floppy"></i> Save profile</button>
+    <div class="pf-hint">A photo or the company logo. It is cropped square, made small, and kept in the Google Sheet — it shows on every device. Change it any time by tapping the circle.</div>
   </div>
 </div>
 
@@ -2045,7 +2093,7 @@ async function loadAll(){
       if(hasPlans){ commitments = data.commitments; plans = data.plans; }
       setBackendOK(hasPlans);
       setCatBackend(Array.isArray(data.features) && data.features.indexOf('category') >= 0);
-      balLoad(data); paintBackendVer(data.version);                 // app and backend share one version number
+      balLoad(data); paintBackendVer(data.version); syncProfileIfStale(data.profileAt);                 // app and backend share one version number
       cacheEntries();
       setOffline(false);
       setStatus(true,'Connected — Google Drive' + (data.version ? ' · backend v' + data.version : ''));
@@ -5491,7 +5539,7 @@ function printReport(){
     ${quality.length?`<h3 style="color:#a76b00">Data Quality Audit</h3>${quality.map(q=>`<div class="ins ${q.t}">${q.msg}</div>`).join('')}`:''}
 
     <div class="net">Net Surplus: <span style="color:${cur.net>=0?'#0086ad':'#b11'}">${S(cur.net)}</span></div>
-    <div class="foot"><span>Generated ${esc(genAt)} IST · IBI Finance Tracker v5.14</span><span>indiabusinessinternational@gmail.com</span></div>
+    <div class="foot"><span>Generated ${esc(genAt)} IST · IBI Finance Tracker v5.15</span><span>indiabusinessinternational@gmail.com</span></div>
   </body></html>`;
   const win=window.open('','_blank');
   if(!win){ showToast('Allow pop-ups to print, or use Download CSV','error'); return; }
@@ -7522,6 +7570,121 @@ setView(localStorage.getItem(LS.view) || 'ledger');
 renderCached();     // paint the saved copy first, then replace it with a live read
 loadAll();
 window.addEventListener('online', () => loadAll());
+
+/* ══ PROFILE — photo/logo, name and subtitle, changeable any time (v5.15) ══════
+   Ported from TSM / Mini. Kept in the Sheet (hidden Settings tab, key 'profile'
+   + 'profileAt' version stamp) so every device shows the same. photo '' or
+   'none' = the IBI mark. Saved by POST: a photo is ~33,000 characters and
+   Google refuses a URL over ~12,000. */
+const PROFILE_DEFAULT = { name:'India Business International', sub:'Finance & Accounts Ledger — Kanyakumari', photo:'' };
+const PF_KEY = 'ibift_profile', PF_AT_KEY = 'ibift_profile_at';
+let PROFILE = Object.assign({}, PROFILE_DEFAULT);
+let pfPhotoDraft = '';
+const PHOTO_TRIES = [[320, 0.85], [288, 0.78], [256, 0.72], [224, 0.64], [192, 0.55]];
+const PHOTO_MAX   = 40000;                         // characters — a Sheet cell holds 50,000
+
+function _pfSrc(photo){ return photo && photo !== 'none' ? photo : ''; }
+function loadProfile(){
+  try{ PROFILE = Object.assign({}, PROFILE_DEFAULT, JSON.parse(localStorage.getItem(PF_KEY) || '{}') || {}); }
+  catch(e){ PROFILE = Object.assign({}, PROFILE_DEFAULT); }
+  paintProfile();
+}
+function paintProfile(){
+  document.getElementById('heroName').textContent = PROFILE.name;
+  document.getElementById('heroSub').textContent  = PROFILE.sub;
+  const src = _pfSrc(PROFILE.photo), btn = document.getElementById('heroPhotoBtn');
+  btn.classList.toggle('has-photo', !!src);
+  btn.style.backgroundImage = src ? 'url("' + src + '")' : '';
+}
+function openProfile(){
+  document.getElementById('pfName').value = PROFILE.name;
+  document.getElementById('pfSub').value  = PROFILE.sub;
+  pfPhotoDraft = PROFILE.photo || '';
+  paintProfilePreview();
+  openSheet('profile');
+}
+function closeProfile(){ closeSheet('profile'); }
+function paintProfilePreview(){
+  const av = document.getElementById('pfAvatar'), src = _pfSrc(pfPhotoDraft);
+  av.classList.toggle('has-photo', !!src);
+  av.style.backgroundImage = src ? 'url("' + src + '")' : '';
+}
+/* A phone photo is 3–5 MB: centre-crop it square (top-weighted, so a face
+   stays in) and re-encode smaller until it fits a Sheet cell with room. */
+function squashPhoto(img){
+  const side = Math.min(img.width, img.height);
+  const sy = img.height > img.width ? Math.max(0, (img.height - side) * 0.2) : 0;
+  let out = '';
+  for(const [S, q] of PHOTO_TRIES){
+    const c = document.createElement('canvas'); c.width = c.height = S;
+    const x = c.getContext('2d'); x.fillStyle = '#000'; x.fillRect(0, 0, S, S);   // a transparent logo gets a black ground, not JPEG grey
+    x.drawImage(img, (img.width - side) / 2, sy, side, side, 0, 0, S, S);
+    out = c.toDataURL('image/jpeg', q);
+    if(out.length <= PHOTO_MAX) return out;
+  }
+  return out;
+}
+function pickPhoto(input){
+  const f = input.files && input.files[0];
+  input.value = '';                                // re-picking the same file still fires
+  if(!f) return;
+  const rd = new FileReader();
+  rd.onload = () => {
+    const img = new Image();
+    img.onload = () => { pfPhotoDraft = squashPhoto(img); paintProfilePreview(); };
+    img.onerror = () => showToast('That file is not an image', 'error');
+    img.src = rd.result;
+  };
+  rd.onerror = () => showToast('Could not read that file', 'error');
+  rd.readAsDataURL(f);
+}
+function clearPhoto(){ pfPhotoDraft = 'none'; paintProfilePreview(); }
+async function gasPost(params, timeoutMs = 45000){
+  const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), timeoutMs);
+  try{
+    const r = await fetch(GAS_URL, { method:'POST', redirect:'follow', signal: ctl.signal,
+      headers:{ 'Content-Type':'text/plain;charset=utf-8' }, body: JSON.stringify(params) });
+    return JSON.parse(await r.text());
+  } finally { clearTimeout(t); }
+}
+async function saveProfile(){
+  const name = document.getElementById('pfName').value.trim() || PROFILE_DEFAULT.name;
+  const sub  = document.getElementById('pfSub').value.trim()  || PROFILE_DEFAULT.sub;
+  const next = { name, sub, photo: pfPhotoDraft || '' };
+  const json = JSON.stringify(next);
+  try{ localStorage.setItem(PF_KEY, json); }
+  catch(e){ showToast('That photo is too large to keep on this device', 'error'); return; }
+  PROFILE = next; paintProfile(); closeProfile();
+  showToast('Profile saved — syncing…');
+  try{
+    const res = await gasPost({ action:'saveProfile', profile: json });
+    if(res && res.status === 'ok'){
+      localStorage.setItem(PF_AT_KEY, String(res.profileAt || Date.now()));
+      showToast('Profile saved on all your devices');
+    } else if(res && /Unknown action/i.test(res.message || '')){
+      showToast('Saved on this device only — paste the new Apps Script to sync it', 'error');
+    } else showToast((res && res.message) || 'Saved here, but syncing failed', 'error');
+  }catch(e){ showToast('Saved here — it reaches your other devices on the next sync', 'error'); }
+}
+/* After every ledger sync: pull the profile only when the Sheet's copy is newer. */
+async function syncProfileIfStale(remoteAt){
+  const at = Number(remoteAt || 0);
+  if(!at || at <= Number(localStorage.getItem(PF_AT_KEY) || 0)) return;
+  try{
+    const res = await gasCall({ action:'getProfile' }, 1, 20000);
+    if(res && res.status === 'ok' && res.profile){
+      PROFILE = { name: String(res.profile.name || PROFILE_DEFAULT.name), sub: String(res.profile.sub || PROFILE_DEFAULT.sub), photo: String(res.profile.photo || '') };
+      try{ localStorage.setItem(PF_KEY, JSON.stringify(PROFILE)); }catch(e){}
+      localStorage.setItem(PF_AT_KEY, String(res.profileAt || at));
+      paintProfile();
+      showToast('Profile updated from your other device');
+    }
+  }catch(e){ /* the next sync tries again */ }
+}
+document.addEventListener('keydown', e => {
+  if(e.key === 'Escape' && document.getElementById('profileModal').classList.contains('open')) closeProfile();
+});
+window.addEventListener('DOMContentLoaded', loadProfile);
 </script>
 </body>
 </html>
