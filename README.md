@@ -1,4 +1,7 @@
-# IBI Finance Tracker v5.15
+# IBI Finance Tracker v5.16
+
+**Balances: edit, rename, delete (v5.16)** — every account card now has **Edit** (latest reading), **Rename** (renaming to an existing account's name offers to MERGE them — e.g. "HDFC Bank Savings Account" into "HDFC Savings"), and **Delete** (the account and all its readings, after a confirm); History rows gain a delete button. Changes show on screen at once and are sent in the background. GAS is a number-only bump.
+
 
 **Profile & Photo (v5.15)** — tap the IBI circle (camera badge) or the name, or Menu → Profile & Photo, to set a photo or the company logo, the display name and the subtitle any time. The picture is cropped square, shrunk to fit a Sheet cell and kept in the hidden **Settings** tab, so every device shows the same; it is UPLOADED (POST, text/plain JSON body — Google refuses URLs over ~12,000 characters), and doPost now merges the JSON body. "No photo" brings back the IBI mark. Paste the Apps Script 5.15 for the sync.
 
