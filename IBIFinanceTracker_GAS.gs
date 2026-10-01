@@ -1,4 +1,4 @@
-// IBI Finance Tracker — GAS Backend v5.16  (same version number as the web app)
+// IBI Finance Tracker — GAS Backend v5.17  (same version number as the web app)
 // India Business International — Finance & Accounts Ledger
 // Sheet ID: 1hbh5E9kzX4632d4kaMHLXC-Aqhi5exgEJWOxMtSrttE
 // All requests via GET (URL params) — avoids CORS/redirect issues
@@ -55,7 +55,7 @@ const PLAN_HDRS  = ["ID","Month","Side","CommitmentId","Item","Category","Party"
                     "Proposed","Actual","DueDate","PaidDate","Status","PayMode",
                     "PaidBy","TxId","Note","Sort","CreatedAt"];
 
-const APP_VERSION = "5.16";   // kept in step with the web app's badge (7 Sep 2026)
+const APP_VERSION = "5.17";   // kept in step with the web app's badge (7 Sep 2026)
 // Lets a page newer than this deployment detect what it can do, and say
 // "update the Apps Script" instead of failing oddly at Save.
 const FEATURES    = ["plans", "commitments", "paidby", "category", "rid", "balances", "profile"];   // category: Category column on Transactions
@@ -65,7 +65,7 @@ const FEATURES    = ["plans", "commitments", "paidby", "category", "rid", "balan
    — the same "append any header this version added" migration. Columns are
    only ever appended, never renumbered. */
 function getNamedSheet(name, headers, widths) {
-  const ss = SpreadsheetApp.openById(SHEET_ID);
+  const ss = book_();
   let sh = ss.getSheetByName(name);
   if (!sh) {
     sh = ss.insertSheet(name);
@@ -96,7 +96,7 @@ function getSheet() {
 }
 
 function sheetTZ_() {
-  try { return SpreadsheetApp.openById(SHEET_ID).getSpreadsheetTimeZone() || 'Asia/Kolkata'; }
+  try { return book_().getSpreadsheetTimeZone() || 'Asia/Kolkata'; }
   catch (e) { return 'Asia/Kolkata'; }
 }
 
@@ -595,7 +595,7 @@ function migrateFromLedger_(force) {
   const props = PropertiesService.getScriptProperties();
   if (!force && props.getProperty('ledger_migrated') === '1') return 0;
 
-  const ss = SpreadsheetApp.openById(SHEET_ID);
+  const ss = book_();
 
   // Locate the Ledger tab (case-insensitive, tolerant of stray spaces).
   let led = ss.getSheetByName(LEDGER_NAME);
@@ -839,7 +839,7 @@ const SETTINGS_SHEET = 'Settings';
 const PROFILE_MAX = 45000;                     // a Sheet cell holds 50,000 characters
 
 function settingsSheet_() {
-  const ss = SpreadsheetApp.openById(SHEET_ID);
+  const ss = book_();
   let sh = ss.getSheetByName(SETTINGS_SHEET);
   if (!sh) {
     sh = ss.insertSheet(SETTINGS_SHEET);
@@ -887,3 +887,9 @@ function saveProfile_(p) {
     return { status:'ok', profileAt: at, message:'Profile saved.' };
   } finally { try { lock.releaseLock(); } catch (e) {} }
 }
+
+/* ── One spreadsheet handle per request (v5.17) ─────────────────────────────
+   getAll used to call openById six times — once per sheet — and each call is
+   a round trip inside Google. The handle is opened once and reused. */
+let _book = null;
+function book_() { return _book || (_book = SpreadsheetApp.openById(SHEET_ID)); }
