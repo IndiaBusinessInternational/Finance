@@ -1,4 +1,6 @@
-# IBI Finance Tracker v5.17
+# IBI Finance Tracker v5.18
+
+**Sign-in (v5.18)** — the Apps Script now checks a password (salted hash in Script Property `FINANCE_PASSWORD_HASH`, set by running `setStaffPassword()` from a temporary `FINANCE_PASSWORD_NEW`) and hands the page a 30-day signed token. Every write needs it; an anonymous read gets no rows. Username **IBI-Finance-Data**. Staff Supervision reads with the read-only `FINANCE_SERVICE_KEY`. Entries waiting in the outbox are kept through a sign-out and sent after sign-in with the same request id — never twice. Check the set-up with `checkAuthSetup()`.
 
 **Instant save (v5.17)** — a new entry appears at once (list and totals) and goes into an on-device outbox that syncs to Google Drive in the background, in order, retrying with growing gaps; the NO REPEATS request id makes every retry safe. A small badge in the status bar shows "N syncing…" or, if the server refuses one, "N not saved — tap" (send again / remove). The outbox survives closing the app. Edits update the row in place instead of re-downloading the ledger. Measured before: Apps Script took 4–50 s just to start a request.
 

@@ -266,6 +266,28 @@ tbody tr.tx-row{cursor:pointer}
 .drawer-item{display:flex;align-items:center;gap:10px;padding:13px 16px;border-bottom:1px solid var(--border);color:var(--text);font-size:14px;cursor:pointer;text-decoration:none;background:none;border-left:none;border-right:none;border-top:none;width:100%;font-family:var(--font);text-align:left}
 .drawer-item:hover{background:var(--bg3);color:var(--cyan)}
 .drawer-item i{font-size:18px;color:var(--cyan);width:22px;flex-shrink:0}
+/* ══ SIGN-IN SCREEN (v5.18) — the Mini app's gate. Above every sheet (they sit at 520);
+   the toast (9999) still shows over it. Sizes at phone width come from the late
+   phone block's .gate-* rules, which is why this sits early in the sheet. ══ */
+.gate{position:fixed;inset:0;z-index:9000;background:var(--bg);display:none;overflow-y:auto;padding:max(22px,env(safe-area-inset-top)) 16px calc(28px + env(safe-area-inset-bottom))}
+.gate.open{display:block}
+.gate-card{max-width:432px;margin:min(5vh,44px) auto 0;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-xl);padding:26px 22px}
+.gate-brand{display:flex;align-items:center;gap:11px;margin-bottom:20px}
+.gate-mark{width:46px;height:46px;border-radius:50%;background:#000;border:2px solid var(--cyan);display:flex;align-items:center;justify-content:center;color:var(--cyan);font-size:22px;flex-shrink:0}
+.gate-title{font-size:16px;font-weight:700;color:var(--text);line-height:1.3}
+.gate-sub{font-size:12px;color:var(--text3);margin-top:2px}
+.gate-h{font-size:15px;font-weight:600;color:var(--cyan);margin-bottom:5px;display:flex;align-items:center;gap:7px}
+.gate-p{font-size:13px;color:var(--text2);line-height:1.65;margin-bottom:16px}
+.gate-q{margin:0 0 14px;padding:10px 12px;border-radius:var(--radius);background:var(--info-bg);color:var(--info-text);border:1px solid var(--info-border);font-size:13px;line-height:1.55}
+.gate-form .form-group{margin-bottom:13px}
+.gate-btn{width:100%;justify-content:center;margin-top:4px}
+.gate-msg{display:none;margin-top:13px;padding:10px 12px;border-radius:var(--radius);font-size:13px;line-height:1.6}
+.gate-msg.show{display:block}
+.gate-msg.err{background:var(--danger-bg);color:var(--danger-text);border:1px solid var(--danger-border)}
+.gate-msg.ok{background:var(--success-bg);color:var(--success-text);border:1px solid var(--success-border)}
+.gate-msg.warn{background:var(--warning-bg);color:var(--warning-text);border:1px solid var(--warning-border)}
+.gate-help{margin-top:18px;border-top:1px solid var(--border);padding-top:14px;font-size:12px;color:var(--text3);line-height:1.7}
+@media(max-width:600px){ .gate-card{margin-top:0;padding:22px 17px} }
 .drawer-section-label{padding:10px 16px 4px;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;font-weight:600}
 
 /* ── REPORT MODAL ── */
@@ -860,7 +882,7 @@ button.hero-logo{padding:0;cursor:pointer;position:relative;background-position:
     <div class="topbar-left">
       <div class="ibi-logo"><span>IBI</span></div>
       <div>
-        <div class="app-name">IBI Finance Tracker <span class="ver-badge">v5.17</span></div>
+        <div class="app-name">IBI Finance Tracker <span class="ver-badge">v5.18</span></div>
       </div>
     </div>
     <div class="topbar-right">
@@ -1206,7 +1228,7 @@ button.hero-logo{padding:0;cursor:pointer;position:relative;background-position:
   <div id="bankBalList" class="cm-list"></div>
 </div><!-- /viewBal -->
 
-  <div class="footer">IBI Finance Tracker v5.17 &mdash; India Business International &mdash; indiabusinessinternational@gmail.com</div>
+  <div class="footer">IBI Finance Tracker v5.18 &mdash; India Business International &mdash; indiabusinessinternational@gmail.com</div>
 </div>
 
 <!-- DRAWER MENU -->
@@ -1220,6 +1242,7 @@ button.hero-logo{padding:0;cursor:pointer;position:relative;background-position:
   <button class="drawer-item" onclick="closeDrawer();openProfile()"><i class="ti ti-user-circle"></i> Profile &amp; Photo</button>
   <button class="drawer-item" onclick="closeDrawer();openVoice()"><i class="ti ti-microphone"></i> Add entry by voice</button>
   <button class="drawer-item" onclick="loadAll();closeDrawer()"><i class="ti ti-refresh"></i> Sync with Google Drive</button>
+  <button class="drawer-item" id="drawerSignOut" style="display:none" onclick="signOut()"><i class="ti ti-logout"></i> Sign out on this device</button>
   <button class="drawer-item" onclick="closeDrawer();openReport()"><i class="ti ti-report-analytics"></i> Financial Analysis Report</button>
   <button class="drawer-item" onclick="closeDrawer();openImport()"><i class="ti ti-file-spreadsheet"></i> Import Bank Statement</button>
   <button class="drawer-item" onclick="exportCSV();closeDrawer()"><i class="ti ti-download"></i> Export CSV</button>
@@ -1259,7 +1282,7 @@ button.hero-logo{padding:0;cursor:pointer;position:relative;background-position:
   <!-- app and backend carry the SAME version number (CEO, 7 Sep 2026, "for easy
        noting"). Both are shown here; a bare number mismatch is only a note, a
        missing feature is what raises the amber prompts. -->
-  <div class="drawer-item" style="cursor:default;color:var(--text2);font-size:12px;align-items:flex-start"><i class="ti ti-info-circle"></i> <span id="aboutVer">App v5.17 · Backend: not connected yet</span></div>
+  <div class="drawer-item" style="cursor:default;color:var(--text2);font-size:12px;align-items:flex-start"><i class="ti ti-info-circle"></i> <span id="aboutVer">App v5.18 · Backend: not connected yet</span></div>
 </div>
 
 <!-- REPORT MODAL -->
@@ -1799,6 +1822,35 @@ button.hero-logo{padding:0;cursor:pointer;position:relative;background-position:
   </div>
 </div>
 
+<!-- SIGN-IN SCREEN (v5.18) — the Apps Script checks the password, never this page -->
+<div class="gate" id="gate" role="dialog" aria-modal="true" aria-labelledby="gateTitle">
+  <div class="gate-card">
+    <div class="gate-brand">
+      <div class="gate-mark"><i class="ti ti-lock"></i></div>
+      <div>
+        <div class="gate-title" id="gateTitle">IBI Finance Tracker</div>
+        <div class="gate-sub">Finance &amp; Accounts Ledger &middot; v5.18</div>
+      </div>
+    </div>
+    <div class="gate-h"><i class="ti ti-lock"></i> Sign in</div>
+    <div class="gate-p">The ledger opens only after sign-in. Your password is checked inside the Apps Script, never by this page, and you stay signed in on this device for 30 days.</div>
+    <div class="gate-q" id="gateQueue" style="display:none"></div>
+    <form class="gate-form" id="signInForm" onsubmit="gateSignIn(event)">
+      <div class="form-group">
+        <label for="gUser">Username</label>
+        <input type="text" id="gUser" name="username" value="IBI-Finance-Data" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" required>
+      </div>
+      <div class="form-group">
+        <label for="gPass">Password</label>
+        <input type="password" id="gPass" name="password" autocomplete="current-password" placeholder="Password" required>
+      </div>
+      <button type="submit" class="btn-save gate-btn" id="gSignInBtn"><i class="ti ti-login-2"></i> Sign in</button>
+    </form>
+    <div class="gate-msg" id="signInMsg" role="status" aria-live="polite"></div>
+    <div class="gate-help">Forgotten the password? It is set in the Apps Script editor: Script Property <b>FINANCE_PASSWORD_NEW</b>, then run <b>setStaffPassword</b>.</div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -2061,10 +2113,17 @@ document.querySelectorAll('input[type="date"]').forEach(el=>{
 });
 
 // ── GAS — all via GET, with auto-retry on failure ──
+// v5.18 SIGN-IN: every call carries the token once there is one. An 'auth'
+// answer is never retried: it opens the sign-in screen and the call fails like
+// a lost connection — an outbox entry waits and later goes with the SAME rid.
 async function gasCall(params, retries=2, timeoutMs=20000){
+  if(AUTH_LOST) throw authError();
   params = ridStamp(params);                 // NO REPEATS — a create carries its request id
   if(params.rid) retries = 1;                // …and is never re-sent automatically
-  const url = GAS_URL + '?' + new URLSearchParams(params).toString();
+  const q = Object.assign({}, params);
+  if(AUTH_TOKEN) q.token = AUTH_TOKEN;       // an older Apps Script simply ignores it
+  const url = GAS_URL + '?' + new URLSearchParams(q).toString();
+  let d;
   for(let attempt = 1; attempt <= retries; attempt++){
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
@@ -2072,8 +2131,9 @@ async function gasCall(params, retries=2, timeoutMs=20000){
       const r = await fetch(url, {redirect:'follow', signal: controller.signal});
       const text = await r.text();          // keep the abort timer armed through the body read
       clearTimeout(timer);
-      try{ const d = JSON.parse(text); if(d && d.status === 'ok') ridDone(params); return d; }
+      try{ d = JSON.parse(text); }
       catch(e){ throw new Error('Bad JSON: '+text.slice(0,80)); }
+      break;
     } catch(e){
       clearTimeout(timer);
       if(attempt === retries) throw e;
@@ -2081,6 +2141,9 @@ async function gasCall(params, retries=2, timeoutMs=20000){
       await new Promise(r => setTimeout(r, 1500 * attempt)); // 1.5s, then 3s
     }
   }
+  if(authRefused(d)){ handleAuthLoss(d.message); throw authError(d.message); }
+  if(d && d.status === 'ok') ridDone(params);
+  return d;
 }
 
 async function loadAll(){
@@ -2095,7 +2158,7 @@ async function loadAll(){
   try{
     const data = await gasCall({action:'getAll'});
     if(data.status==='ok'){
-      entries=(data.transactions||[]).map(normType); outboxMerge(); setTimeout(flushOutbox, 0);
+      entries=(data.transactions||[]).map(normType); outboxSynced(); outboxMerge(); setTimeout(flushOutbox, 0);
       /* An older deployment answers with transactions and nothing else. The
          ABSENCE of the key — not an empty array, which is a real answer — is
          what says the Plan and Commitments sheets do not exist there yet. */
@@ -2111,9 +2174,11 @@ async function loadAll(){
     }
     else{ setStatus(false,'Error: '+data.message); showToast('Load failed','error'); }
   }catch(e){
-    setStatus(false, haveRows ? 'Offline — showing saved copy' : 'Connection failed');
-    setOffline(haveRows);
-    showToast('Cannot reach Google Drive','error');
+    if(!AUTH_LOST){                                     // the sign-in screen is already up in that case
+      setStatus(false, haveRows ? 'Offline — showing saved copy' : 'Connection failed');
+      setOffline(haveRows);
+      showToast('Cannot reach Google Drive','error');
+    }
     console.error(e);
   }
   document.getElementById('loadingState').style.display = 'none';
@@ -2505,6 +2570,34 @@ async function runBalMove(){
   await loadAll();
 }
 
+/* ══ AUTH CLIENT — shared by all three finance trackers (Mini v4.8 / IBI v5.18 / TSM v6.18) ══
+   The Apps Script holds the password; this page only forwards what was typed
+   once and then carries the token it is handed. Change this block in all
+   three apps together.
+   • authRefused(d) — the backend's "please sign in" answer, in either
+     spelling: Mini's status:'auth', or code:'auth' (the IBI and TSM scripts
+     send both, like Order Processing and Package Tracker).
+   • authError() — a call that failed because of sign-in, not the network.
+     The outbox keeps such an entry, does not count it as an attempt, and
+     sends it after sign-in with the SAME request id — it can never land twice.
+   • authLogin() — the password travels in a POST body, never in a URL. */
+function authRefused(d){ return !!d && (d.status === 'auth' || d.code === 'auth'); }
+function authError(msg){ const e = new Error(msg || 'Signed out — sign in again'); e.auth = true; return e; }
+async function authLogin(base, user, pw){
+  const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 30000);
+  try{
+    const r = await fetch(base, { method:'POST', redirect:'follow', signal: ctl.signal,
+      headers:{ 'Content-Type':'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action:'login', user: user, pw: pw }) });
+    return JSON.parse(await r.text());
+  } finally { clearTimeout(t); }
+}
+/* What the sign-in screen says about entries still waiting on this device. */
+function authQueueNote(){
+  const n = (typeof outbox !== 'undefined' && Array.isArray(outbox)) ? outbox.length : 0;
+  return n ? (n === 1 ? '1 entry is' : n + ' entries are') + ' saved on this device and will be sent after you sign in — never twice.' : '';
+}
+
 /* ══ INSTANT SAVE — an outbox, the way WhatsApp, Gmail and Sheets offline work ══
    Google's Apps Script servers sometimes take 20–50 s just to START a request
    (measured 1 Oct 2026: a 'ping' that does nothing took 4 s, then 38 s, while
@@ -2520,6 +2613,8 @@ let outbox = (() => { try{ const a = JSON.parse(localStorage.getItem(OB_KEY) || 
 let _obBusy = false, _obTimer = 0, _obWait = 0;
 const _obConfirmed = new Map();                         // id → {row, at}: landed rows a slower sync may not list yet
 const OB_RID_TTL = 5.5 * 3600e3;                        // the server remembers a request id for 6 h
+let _obSyncedAt = 0;                                    // last time the whole ledger was read from the Sheet
+function outboxSynced(){ _obSyncedAt = Date.now(); }   // called by loadAll() on every good read
 
 function _obSave(){ try{ localStorage.setItem(OB_KEY, JSON.stringify(outbox)); }catch(_){} }
 function _obRow(it){ return Object.assign({ id:'LOCAL-' + it.rid, _pending:true, _failed: !!it.failed }, it.fields); }
@@ -2583,15 +2678,23 @@ async function flushOutbox(){
   try{
     for(const it of outbox.slice()){
       if(it.failed) continue;
-      // Past the server's memory of this request id, check the Sheet before re-sending.
-      if(it.tries > 0 && Date.now() - it.at > OB_RID_TTL &&
-         entries.some(e => String(e.id).indexOf('LOCAL-') !== 0 && _obSame(e, it.fields))){
-        outbox = outbox.filter(x => x !== it); _obSave(); continue;
+      // Past the server's memory of this request id, check the Sheet before re-sending —
+      // against a read made AFTER the last attempt (a sign-in can come hours later).
+      if(it.tries > 0 && Date.now() - it.at > OB_RID_TTL){
+        if(_obSyncedAt < (it.last || it.at)){ later = true; setTimeout(() => { try{ loadAll(); }catch(_){} }, 0); break; }
+        if(entries.some(e => String(e.id).indexOf('LOCAL-') !== 0 && _obSame(e, it.fields))){
+          outbox = outbox.filter(x => x !== it); _obSave(); continue;
+        }
       }
-      it.tries++; _obSave();
+      it.tries++; it.last = Date.now(); _obSave();
       let res = null;
       try{ res = await gasCall(Object.assign({ action:'add', rid: it.rid }, it.fields), 1, 30000); }
-      catch(e){ later = true; break; }                  // offline or Google slow — keep the order, try again soon
+      catch(e){
+        // Refused for sign-in = nothing was written, so it is not an attempt. The
+        // entry waits for the sign-in and then goes with the SAME request id.
+        if(e && e.auth){ it.tries = Math.max(0, it.tries - 1); _obSave(); }
+        later = true; break;                            // offline, signed out or Google slow — keep the order, try again soon
+      }
       if(res && res.status === 'ok'){
         const row = Object.assign({}, it.fields, { id: res.id || ('TX' + Date.now()) });
         outbox = outbox.filter(x => x !== it); _obSave();
@@ -3096,12 +3199,17 @@ function deltaBadge(cur, prev, goodUp){
    are supplied here.
    ══════════════════════════════════════════════════════════════════════════ */
 
-/* This app has no sign-in gate, so a call can never fail *because* of auth —
-   but the shared module short-circuits on this flag, so it has to exist. */
+/* v5.18 SIGN-IN. AUTH_TOKEN = the 30-day token the Apps Script issued at sign-in.
+   AUTH_LOST = the backend refused this device (or it never signed in): every
+   call short-circuits on it and the sign-in screen is up. An older Apps
+   Script never refuses, so with one nothing here ever changes anything. */
 let AUTH_LOST = false;
 
 const LS = { cache:'ibift_cache', view:'ibift_view', planMonth:'ibift_plan_month',
-             lastPaidBy:'ibift_last_paidby' };
+             lastPaidBy:'ibift_last_paidby', token:'ibift_token', expires:'ibift_expires', user:'ibift_user' };
+const AUTH_USER_HINT = 'IBI-Finance-Data';
+let AUTH_TOKEN = (() => { try{ const t = localStorage.getItem(LS.token) || '', x = +(localStorage.getItem(LS.expires) || 0);
+  return (t && (!x || x > Date.now())) ? t : ''; }catch(_){ return ''; } })();
 
 /* Money out = not income and not a settlement. This app calls it isOutT; the
    shared module calls it repIsOut. Same predicate, and it MUST stay the same
@@ -5727,7 +5835,7 @@ function printReport(){
     ${quality.length?`<h3 style="color:#a76b00">Data Quality Audit</h3>${quality.map(q=>`<div class="ins ${q.t}">${q.msg}</div>`).join('')}`:''}
 
     <div class="net">Net Surplus: <span style="color:${cur.net>=0?'#0086ad':'#b11'}">${S(cur.net)}</span></div>
-    <div class="foot"><span>Generated ${esc(genAt)} IST · IBI Finance Tracker v5.17</span><span>indiabusinessinternational@gmail.com</span></div>
+    <div class="foot"><span>Generated ${esc(genAt)} IST · IBI Finance Tracker v5.18</span><span>indiabusinessinternational@gmail.com</span></div>
   </body></html>`;
   const win=window.open('','_blank');
   if(!win){ showToast('Allow pop-ups to print, or use Download CSV','error'); return; }
@@ -7755,6 +7863,7 @@ if('serviceWorker' in navigator){
    lean on has been evaluated by the time this line runs. */
 planMonth = localStorage.getItem(LS.planMonth) || thisMonthKey();
 setView(localStorage.getItem(LS.view) || 'ledger');
+paintAuthUi();
 renderCached();     // paint the saved copy first, then replace it with a live read
 loadAll();
 window.addEventListener('online', () => loadAll());
@@ -7828,11 +7937,15 @@ function pickPhoto(input){
 }
 function clearPhoto(){ pfPhotoDraft = 'none'; paintProfilePreview(); }
 async function gasPost(params, timeoutMs = 45000){
+  if(AUTH_LOST) throw authError();
+  const body = Object.assign({}, params); if(AUTH_TOKEN) body.token = AUTH_TOKEN;   // v5.18: the token rides in the body
   const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), timeoutMs);
   try{
     const r = await fetch(GAS_URL, { method:'POST', redirect:'follow', signal: ctl.signal,
-      headers:{ 'Content-Type':'text/plain;charset=utf-8' }, body: JSON.stringify(params) });
-    return JSON.parse(await r.text());
+      headers:{ 'Content-Type':'text/plain;charset=utf-8' }, body: JSON.stringify(body) });
+    const data = JSON.parse(await r.text());
+    if(authRefused(data)){ handleAuthLoss(data.message); throw authError(data.message); }
+    return data;
   } finally { clearTimeout(t); }
 }
 async function saveProfile(){
@@ -7852,7 +7965,7 @@ async function saveProfile(){
     } else if(res && /Unknown action/i.test(res.message || '')){
       showToast('Saved on this device only — paste the new Apps Script to sync it', 'error');
     } else showToast((res && res.message) || 'Saved here, but syncing failed', 'error');
-  }catch(e){ showToast('Saved here — it reaches your other devices on the next sync', 'error'); }
+  }catch(e){ if(!AUTH_LOST) showToast('Saved here — it reaches your other devices on the next sync', 'error'); }
 }
 /* After every ledger sync: pull the profile only when the Sheet's copy is newer. */
 async function syncProfileIfStale(remoteAt){
@@ -7873,6 +7986,102 @@ document.addEventListener('keydown', e => {
   if(e.key === 'Escape' && document.getElementById('profileModal').classList.contains('open')) closeProfile();
 });
 window.addEventListener('DOMContentLoaded', loadProfile);
+
+/* ══ SIGN-IN SCREEN (IBI v5.18 / TSM v6.18) — the Mini app's gate, sign-in step only ══
+   Until now the backend answered anyone holding its address. The Apps Script
+   now checks a password and hands back a 30-day token; this screen is how the
+   token is got. The backend address is fixed in this page, so there is no
+   Connect step. An older Apps Script never answers 'auth', so with one this
+   screen simply never opens — the page works exactly as before. */
+function openGate(msg){
+  const g = document.getElementById('gate'); if(!g) return;
+  g.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  const q = authQueueNote(), qe = document.getElementById('gateQueue');
+  qe.textContent = q; qe.style.display = q ? '' : 'none';
+  if(msg) gateMsg('warn', esc(msg)); else gateClearMsg();
+  const u = document.getElementById('gUser');
+  if(!u.value) u.value = localStorage.getItem(LS.user) || AUTH_USER_HINT;
+  // Focus only on a pointer device — throwing the phone keyboard up at once hides the screen.
+  if(window.matchMedia('(min-width:700px)').matches) setTimeout(() => document.getElementById('gPass').focus(), 60);
+}
+function closeGate(){
+  document.getElementById('gate').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function gateMsg(kind, html){
+  const m = document.getElementById('signInMsg');
+  m.className = 'gate-msg show ' + kind;
+  m.innerHTML = html;
+}
+function gateClearMsg(){ document.getElementById('signInMsg').className = 'gate-msg'; }
+
+async function gateSignIn(ev){
+  if(ev) ev.preventDefault();
+  const user = document.getElementById('gUser').value.trim();
+  const pwEl = document.getElementById('gPass'), pw = pwEl.value;
+  gateClearMsg();
+  if(!user || !pw){ gateMsg('err', 'Enter both the username and the password.'); return; }
+  gateBusy('gSignInBtn', true, 'Signing in…');
+  try{
+    const data = await authLogin(GAS_URL, user, pw);
+    if(!data || data.status !== 'ok' || !data.token){
+      gateMsg('err', esc((data && (data.message || data.error)) || 'Sign in failed.'));
+      pwEl.value = '';
+      return;
+    }
+    AUTH_TOKEN = data.token; AUTH_LOST = false;
+    try{
+      localStorage.setItem(LS.token, data.token);
+      localStorage.setItem(LS.expires, String(data.expires || 0));
+      localStorage.setItem(LS.user, data.user || user);
+    }catch(_){}
+    pwEl.value = '';                                // never leave it sitting in the DOM
+    closeGate();                                    // the form leaves the screen only on success — that is what tells the browser to offer to save it
+    paintAuthUi();
+    showToast('Signed in');
+    loadAll();                                      // …which also sends anything waiting in the outbox, with its own request id
+  }catch(e){
+    gateMsg('err', 'Could not reach Google Drive. Check the connection and try again.');
+  }finally{
+    gateBusy('gSignInBtn', false, '', '<i class="ti ti-login-2"></i> Sign in');
+  }
+}
+
+/* The token was refused (expired, signed out everywhere, password changed), or
+   this device never had one. One screen however many calls were in flight;
+   entries waiting in the outbox stay where they are. */
+function handleAuthLoss(msg){
+  if(AUTH_LOST) return;
+  const had = !!AUTH_TOKEN;
+  AUTH_LOST = true; AUTH_TOKEN = '';
+  try{ localStorage.removeItem(LS.token); localStorage.removeItem(LS.expires); }catch(_){}
+  setStatus(false, 'Signed out — sign in to sync');
+  paintAuthUi();
+  openGate(had ? 'Your session has ended — please sign in again.' : '');
+}
+
+async function signOut(){
+  closeDrawer();
+  const n = outbox.length;
+  if(!confirm('Sign out on this device?\n\nThe saved offline copy of the ledger is cleared from this device.'
+      + (n ? '\n\n' + authQueueNote() : ''))) return;
+  // Tokens are signed, not stored, so there is nothing to delete server-side:
+  // forgetting it here is the whole of signing out (signOutAllDevices() in
+  // the Apps Script editor ends every device's token at once).
+  AUTH_TOKEN = ''; AUTH_LOST = true;
+  try{ [LS.token, LS.expires, LS.cache].forEach(k => localStorage.removeItem(k)); }catch(_){}
+  entries = []; commitments = []; plans = []; outboxMerge();
+  render(); renderPlan(); renderCommitments(); renderBankBal();
+  setStatus(false, 'Signed out');
+  paintAuthUi();
+  openGate('');
+}
+
+function paintAuthUi(){
+  const b = document.getElementById('drawerSignOut');
+  if(b) b.style.display = AUTH_TOKEN ? '' : 'none';
+}
 </script>
 </body>
 </html>

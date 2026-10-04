@@ -1,8 +1,13 @@
-// IBI Finance Tracker — GAS Backend v5.17  (same version number as the web app)
+// IBI Finance Tracker — GAS Backend v5.18  (same version number as the web app)
+// v5.18 (4 Oct 2026): SIGN-IN. Every write needs a signed-in token; anonymous reads get no rows.
+//   Script Properties: FINANCE_PASSWORD_NEW (temporary, then run setStaffPassword),
+//   FINANCE_PASSWORD_HASH + FINANCE_TOKEN_SECRET (written by the script), FINANCE_SERVICE_KEY
+//   (read-only, for Staff Supervision), FINANCE_ENFORCE_AUTH, optional FINANCE_USER.
+//   Check with checkAuthSetup(). Deploy as a NEW VERSION of the SAME deployment.
 // India Business International — Finance & Accounts Ledger
 // Sheet ID: 1hbh5E9kzX4632d4kaMHLXC-Aqhi5exgEJWOxMtSrttE
 // All requests via GET (URL params) — avoids CORS/redirect issues
-// Deploy → Web App → Execute as Me → Access: Anyone
+// Deploy → Web App → Execute as Me → Access: Anyone (the script itself checks the sign-in)
 //
 // v2.1: auto-imports the legacy "Ledger" tab (Date|Time|Description|Income|Expenditure|
 //       Cumulative Balance) into the new "Transactions" schema the first time the app
@@ -55,10 +60,229 @@ const PLAN_HDRS  = ["ID","Month","Side","CommitmentId","Item","Category","Party"
                     "Proposed","Actual","DueDate","PaidDate","Status","PayMode",
                     "PaidBy","TxId","Note","Sort","CreatedAt"];
 
-const APP_VERSION = "5.17";   // kept in step with the web app's badge (7 Sep 2026)
+const APP_VERSION = "5.18";   // kept in step with the web app's badge (7 Sep 2026)
 // Lets a page newer than this deployment detect what it can do, and say
 // "update the Apps Script" instead of failing oddly at Save.
-const FEATURES    = ["plans", "commitments", "paidby", "category", "rid", "balances", "profile"];   // category: Category column on Transactions
+const FEATURES    = ["plans", "commitments", "paidby", "category", "rid", "balances", "profile", "auth", "serviceKey"];   // category: Category column on Transactions
+
+/* Per-app names for the shared SIGN-IN block below. */
+const AUTH_PREFIX       = 'FINANCE';            // Script Property names: FINANCE_PASSWORD_HASH, …
+const AUTH_USER_DEFAULT = 'IBI-Finance-Data';   // the username typed at sign-in (FINANCE_USER overrides)
+const AUTH_APP_LABEL    = 'IBI Finance Tracker';
+
+/* ══ SIGN-IN — shared by the IBI and TSM finance scripts (IBI v5.18 / TSM v6.18) ══
+   Until v5.17 / v6.17 anyone holding the /exec address could READ the whole
+   ledger and ADD, CHANGE or DELETE rows — no password at all (found 1 Oct 2026,
+   security audit 4 Oct 2026). This is the Mini Finance Tracker's model —
+   action=login → a 30-day token, every other action checks it, a refusal says
+   status:'auth' — hardened the way Order Processing v15.0 / Package Tracker
+   v14.0 were:
+     • the password is kept only as a salted, stretched hash
+       (<PREFIX>_PASSWORD_HASH), written by setStaffPassword() from a temporary
+       <PREFIX>_PASSWORD_NEW property that it deletes again;
+     • tokens are HMAC-signed (no session list to grow), tied to the current
+       password — change it and every device signs in again;
+     • 10 wrong passwords in 15 minutes pause sign-in for everyone;
+     • sign-in is accepted only as a POST, so a password never sits in a URL;
+     • EVERY write needs a signed-in token. A service key (optional,
+       <PREFIX>_SERVICE_KEY, 32+ characters) may READ the ledger (getAll) for a
+       server-side reader such as Staff Supervision — it can never write.
+   Reads: an anonymous read gets NO rows, whatever the flag says — a ledger has
+   no safe subset. <PREFIX>_ENFORCE_AUTH = true only makes the refusal (and the
+   ping) say less: off = the refusal still carries version/features and the
+   ping reports which setup pieces are in place, to help the roll-out.
+   Per-app names come from AUTH_PREFIX / AUTH_USER_DEFAULT / AUTH_APP_LABEL
+   above this block; the block itself is byte-identical in both scripts. */
+const AUTH_TTL_MS          = 30 * 24 * 60 * 60 * 1000;   // signed in for 30 days
+const AUTH_PW_ROUNDS       = 1000;
+const AUTH_FAIL_LIMIT      = 10;                         // wrong passwords per window, then a pause
+const AUTH_FAIL_WINDOW_SEC = 15 * 60;
+const AUTH_OPEN_ACTIONS    = ['ping', 'login', 'logout'];
+const AUTH_SERVICE_ACTIONS = ['getAll'];                 // what a service key may do: read, never write
+
+function authProps_() { return PropertiesService.getScriptProperties(); }
+function authProp_(name) { return String(authProps_().getProperty(AUTH_PREFIX + '_' + name) || ''); }
+function authEnforced_() { return authProp_('ENFORCE_AUTH').trim().toLowerCase() === 'true'; }
+function authUser_() { return authProp_('USER').trim() || AUTH_USER_DEFAULT; }
+
+/* Constant-time compare: a plain === leaks through its timing how many
+   leading characters matched. */
+function authSafeEqual_(a, b) {
+  a = String(a == null ? '' : a); b = String(b == null ? '' : b);
+  let diff = a.length ^ b.length;
+  const n = Math.max(a.length, b.length);
+  for (let i = 0; i < n; i++) diff |= ((a.charCodeAt(i) || 0) ^ (b.charCodeAt(i) || 0));
+  return diff === 0;
+}
+
+/* "v1$<rounds>$<salt>$<hash>" — salted, stretched SHA-256. */
+function authHashPw_(pw, salt, rounds) {
+  const pwBytes = Utilities.newBlob(String(salt) + '|' + String(pw)).getBytes();
+  let d = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, pwBytes);
+  for (let i = 1; i < rounds; i++) {
+    d = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, d.concat(pwBytes));
+  }
+  return Utilities.base64EncodeWebSafe(d);
+}
+function authCheckPw_(pw) {
+  const parts = authProp_('PASSWORD_HASH').split('$');
+  if (parts.length !== 4 || parts[0] !== 'v1' || !pw) return false;
+  const rounds = parseInt(parts[1], 10) || AUTH_PW_ROUNDS;
+  return authSafeEqual_(authHashPw_(pw, parts[2], rounds), parts[3]);
+}
+
+function authSecret_() {
+  let s = authProp_('TOKEN_SECRET');
+  if (!s) {
+    s = Utilities.getUuid() + Utilities.getUuid();
+    authProps_().setProperty(AUTH_PREFIX + '_TOKEN_SECRET', s);
+  }
+  return s;
+}
+/* The token is tied to the CURRENT password: change it and every device's
+   token stops working at once. No password = no token is ever valid. */
+function authFingerprint_() { return authProp_('PASSWORD_HASH').slice(-16); }
+function authSig_(exp) {
+  const raw = Utilities.computeHmacSha256Signature('user|' + exp + '|' + authFingerprint_(), authSecret_());
+  return Utilities.base64EncodeWebSafe(raw);
+}
+function authMakeToken_(exp) { return 't1.' + exp + '.' + authSig_(String(exp)); }
+function authCheckToken_(token) {
+  const m = String(token == null ? '' : token).trim().match(/^t1\.(\d{10,16})\.([A-Za-z0-9_\-=]+)$/);
+  if (!m) return false;
+  if (Date.now() > parseInt(m[1], 10)) return false;              // expired
+  if (!authFingerprint_()) return false;                           // no password set = nobody
+  return authSafeEqual_(m[2], authSig_(m[1]));
+}
+function authCheckServiceKey_(key) {
+  const real = authProp_('SERVICE_KEY');
+  if (real.length < 32 || !key) return false;                      // unset = refused, never open
+  return authSafeEqual_(String(key), real);
+}
+/* Who is calling? 'user' | 'service' | '' (anonymous). */
+function authWho_(p) {
+  try {
+    if (p && p.token && authCheckToken_(p.token)) return 'user';
+    if (p && p.serviceKey && authCheckServiceKey_(p.serviceKey)) return 'service';
+  } catch (e) {}
+  return '';
+}
+
+function authRefusal_() {
+  const r = { status: 'auth', code: 'auth', ok: false,
+              message: 'Please sign in to ' + AUTH_APP_LABEL + '.' };
+  if (!authEnforced_()) { r.redacted = true; r.version = APP_VERSION; r.features = FEATURES; }
+  return r;
+}
+/* null = go ahead; otherwise the refusal to send back. */
+function authGate_(action, p) {
+  if (AUTH_OPEN_ACTIONS.indexOf(action) >= 0) return null;
+  const who = authWho_(p);
+  if (who === 'user') return null;
+  if (who === 'service' && AUTH_SERVICE_ACTIONS.indexOf(action) >= 0) return null;
+  return authRefusal_();
+}
+
+/* Extra ping fields. Whether each piece is SET — never its value. */
+function authPingInfo_(r) {
+  r.authEnforced = authEnforced_();
+  if (!r.authEnforced) {
+    r.setup = { password: !!authProp_('PASSWORD_HASH'),
+                serviceKey: authProp_('SERVICE_KEY').length >= 32 };
+  }
+  return r;
+}
+
+function authFailCount_() {
+  try { return parseInt(CacheService.getScriptCache().get(AUTH_PREFIX + '_login_fails') || '0', 10) || 0; }
+  catch (e) { return 0; }
+}
+function authFailBump_() {
+  try { CacheService.getScriptCache().put(AUTH_PREFIX + '_login_fails', String(authFailCount_() + 1), AUTH_FAIL_WINDOW_SEC); }
+  catch (e) {}
+}
+function authFailClear_() {
+  try { CacheService.getScriptCache().remove(AUTH_PREFIX + '_login_fails'); } catch (e) {}
+}
+
+/* action=login, POST body {user, pw} — the same fields the Mini app sends. */
+function authLogin_(p, viaPost) {
+  if (!viaPost) {
+    return { status: 'error', code: 'post-only',
+             message: 'Sign-in must be sent as a POST — update the page (reload it).' };
+  }
+  if (!authProp_('PASSWORD_HASH')) {
+    return { status: 'error', code: 'unconfigured',
+             message: 'Sign-in is not set up yet — run setStaffPassword in the Apps Script editor.' };
+  }
+  if (authFailCount_() >= AUTH_FAIL_LIMIT) {
+    return { status: 'error', code: 'locked',
+             message: 'Too many wrong passwords. Wait 15 minutes, then try again.' };
+  }
+  const want = authUser_().toLowerCase();
+  const user = String((p && p.user) || '').trim().toLowerCase();
+  const pw   = String((p && p.pw) || '');
+  if (user !== want || !authCheckPw_(pw)) {
+    authFailBump_();
+    Utilities.sleep(600);                                    // blunt the speed of guessing
+    return { status: 'error', code: 'bad-login', message: 'Wrong username or password.' };
+  }
+  authFailClear_();
+  const exp = Date.now() + AUTH_TTL_MS;
+  return { status: 'ok', token: authMakeToken_(exp), expires: exp, user: authUser_(),
+           version: APP_VERSION, features: FEATURES };
+}
+
+/** RUN FROM THE EDITOR. Hashes <PREFIX>_PASSWORD_NEW into <PREFIX>_PASSWORD_HASH
+    and deletes the plain copy. The password is never written in this file and
+    never logged. Every device then signs in again. */
+function setStaffPassword() {
+  const p = authProps_(), newKey = AUTH_PREFIX + '_PASSWORD_NEW';
+  const pw = String(p.getProperty(newKey) || '');
+  if (!pw) {
+    Logger.log('Nothing to do: add the Script Property ' + newKey + ' (the new password) first, then run this again.');
+    return 'missing ' + newKey;
+  }
+  if (pw.length < 8) {
+    p.deleteProperty(newKey);
+    Logger.log('Too short: use at least 8 characters. ' + newKey + ' was deleted — add it again with a longer password.');
+    return 'too short';
+  }
+  const salt = Utilities.getUuid().replace(/-/g, '');
+  p.setProperty(AUTH_PREFIX + '_PASSWORD_HASH', 'v1$' + AUTH_PW_ROUNDS + '$' + salt + '$' + authHashPw_(pw, salt, AUTH_PW_ROUNDS));
+  p.deleteProperty(newKey);
+  authSecret_();
+  authFailClear_();
+  Logger.log('Password saved (hashed). ' + newKey + ' was deleted. Sign in with username ' +
+             authUser_() + ' and the new password.');
+  return 'ok';
+}
+
+/** RUN FROM THE EDITOR. Says which pieces are in place — never a value. */
+function checkAuthSetup() {
+  const p = authProps_();
+  const lines = [
+    AUTH_APP_LABEL + ' backend v' + APP_VERSION,
+    'Username: ' + authUser_(),
+    'Password: ' + (authProp_('PASSWORD_HASH') ? 'OK (hashed)' : 'MISSING — run setStaffPassword'),
+    'Temporary password left behind: ' + (p.getProperty(AUTH_PREFIX + '_PASSWORD_NEW') ? 'YES — run setStaffPassword now' : 'none (OK)'),
+    'Token secret: ' + (authSecret_() ? 'OK' : 'MISSING'),
+    'Service key (read-only, optional): ' + (authProp_('SERVICE_KEY').length >= 32 ? 'OK'
+        : (authProp_('SERVICE_KEY') ? 'TOO SHORT — needs 32+ characters' : 'not set')),
+    'Enforce: ' + (authEnforced_() ? 'ON — refusals say nothing more' : 'off — anonymous reads still get NO rows; refusals carry the version')
+  ];
+  Logger.log(lines.join('\n'));
+  return lines.join('\n');
+}
+
+/** RUN FROM THE EDITOR if a device is lost or a token may have leaked: every
+    device must sign in again (the password itself does not change). */
+function signOutAllDevices() {
+  authProps_().setProperty(AUTH_PREFIX + '_TOKEN_SECRET', Utilities.getUuid() + Utilities.getUuid());
+  Logger.log('Every device is signed out and must sign in again.');
+  return 'ok';
+}
+/* ══ end SIGN-IN ══ */
 
 /* One helper builds every data sheet, so a sheet added in a later version gets
    the same frozen, styled header row and — the part that matters on an upgrade
@@ -313,67 +537,61 @@ function deleteRowById(name, headers, id) {
   } finally { try { lock.releaseLock(); } catch (e) {} }
 }
 
-function doGet(e) {
-  const p      = e.parameter || {};
-  const action = p.action || '';
-  let result;
-
-  try {
-    switch (action) {
-      case 'ping':
-        result = { status:'ok', message:'IBI Finance Tracker GAS v' + APP_VERSION + ' is live!',
-                   version: APP_VERSION, features: FEATURES };
-        break;
-      case 'saveCommitment':   result = saveCommitment(p);                              break;
-      case 'deleteCommitment': result = deleteRowById(COMMIT_SHEET, COMMIT_HDRS, p.id); break;
-      case 'savePlan':         result = savePlan(p);                                    break;
-      case 'savePlans':        result = savePlans(p);                                   break;
-      case 'deletePlan':       result = deleteRowById(PLAN_SHEET, PLAN_HDRS, p.id);     break;
-      case 'saveBalance':      result = saveBalance(p);                               break;
-      case 'deleteBalance':    result = deleteRowById(BAL_SHEET, BAL_HDRS, p.id);     break;
-      case 'moveToBalances':   result = moveToBalances(p);                            break;
-      case 'getProfile':       result = getProfile_();                                break;
-      case 'saveProfile':      result = saveProfile_(p);                              break;
-
-      case 'getAll':
-        result = getAllTransactions();
-        break;
-      case 'add':
-        result = addTransaction(p);
-        break;
-      case 'update':
-        result = updateTransaction(p);
-        break;
-      case 'delete':
-        result = deleteTransaction(p.id);
-        break;
-      case 'migrate':
-        result = { status:'ok', imported: migrateFromLedger_(true), message:'Re-imported Ledger.' };
-        break;
-      default:
-        result = { status:'error', message:'Unknown action: ' + action };
-    }
-  } catch(err) {
-    result = { status:'error', message: err.toString() };
-  }
-
-  return ContentService
-    .createTextOutput(JSON.stringify(result))
-    .setMimeType(ContentService.MimeType.JSON);
-}
-
-// Keep doPost as fallback (same handler)
-/* The app UPLOADS large values (the profile photo) as a JSON body — Google
-   refuses a URL over ~12,000 characters. Body fields join the URL's. */
+/* ── ROUTER (v5.18) ─────────────────────────────────────────────────────────
+   Every action except ping / login / logout passes authGate_() first — a
+   write needs a signed-in token, a read needs a token or the read-only
+   service key. GET and POST reach the same route; a POST's JSON body (the
+   profile photo, the sign-in) joins the URL's parameters.
+   The old web action 'migrate' (re-import the legacy Ledger — it CLEARS the
+   Transactions tab first) is gone from the web; run migrateLedgerToTransactions()
+   from the editor if it is ever needed again. */
+function doGet(e)  { return respond_(route_((e && e.parameter) || {}, false)); }
 function doPost(e) {
-  const p = (e && e.parameter) || {};
+  const p = {}, q = (e && e.parameter) || {};
+  Object.keys(q).forEach(function (k) { p[k] = q[k]; });
   try {
     if (e && e.postData && e.postData.contents) {
       const body = JSON.parse(e.postData.contents);
-      Object.keys(body).forEach(function (k) { p[k] = body[k]; });
+      if (body && typeof body === 'object') Object.keys(body).forEach(function (k) { p[k] = body[k]; });
     }
   } catch (err) { /* not JSON — the query parameters stand on their own */ }
-  return doGet({ parameter: p });
+  return respond_(route_(p, true));
+}
+function respond_(result) {
+  return ContentService.createTextOutput(JSON.stringify(result))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function route_(p, viaPost) {
+  const action = String(p.action || '');
+  try {
+    const refused = authGate_(action, p);
+    if (refused) return refused;
+    switch (action) {
+      case 'ping':
+        return authPingInfo_({ status:'ok', message:'IBI Finance Tracker GAS v' + APP_VERSION + ' is live!',
+                               version: APP_VERSION, features: FEATURES });
+      case 'login':            return authLogin_(p, viaPost);
+      case 'logout':           return { status:'ok', message:'Signed out on this device.' };
+      case 'getAll':           return getAllTransactions();
+      case 'add':              return addTransaction(p);
+      case 'update':           return updateTransaction(p);
+      case 'delete':           return deleteTransaction(p.id);
+      case 'saveCommitment':   return saveCommitment(p);
+      case 'deleteCommitment': return deleteRowById(COMMIT_SHEET, COMMIT_HDRS, p.id);
+      case 'savePlan':         return savePlan(p);
+      case 'savePlans':        return savePlans(p);
+      case 'deletePlan':       return deleteRowById(PLAN_SHEET, PLAN_HDRS, p.id);
+      case 'saveBalance':      return saveBalance(p);
+      case 'deleteBalance':    return deleteRowById(BAL_SHEET, BAL_HDRS, p.id);
+      case 'moveToBalances':   return moveToBalances(p);
+      case 'getProfile':       return getProfile_();
+      case 'saveProfile':      return saveProfile_(p);
+      default:                 return { status:'error', message:'Unknown action: ' + action };
+    }
+  } catch (err) {
+    return { status:'error', message: err.toString() };
+  }
 }
 
 function getAllTransactions() {
