@@ -266,7 +266,7 @@ tbody tr.tx-row{cursor:pointer}
 .drawer-item{display:flex;align-items:center;gap:10px;padding:13px 16px;border-bottom:1px solid var(--border);color:var(--text);font-size:14px;cursor:pointer;text-decoration:none;background:none;border-left:none;border-right:none;border-top:none;width:100%;font-family:var(--font);text-align:left}
 .drawer-item:hover{background:var(--bg3);color:var(--cyan)}
 .drawer-item i{font-size:18px;color:var(--cyan);width:22px;flex-shrink:0}
-/* ══ SIGN-IN SCREEN (v5.18) — the Mini app's gate. Above every sheet (they sit at 520);
+/* ══ SIGN-IN SCREEN (v5.19) — the Mini app's gate. Above every sheet (they sit at 520);
    the toast (9999) still shows over it. Sizes at phone width come from the late
    phone block's .gate-* rules, which is why this sits early in the sheet. ══ */
 .gate{position:fixed;inset:0;z-index:9000;background:var(--bg);display:none;overflow-y:auto;padding:max(22px,env(safe-area-inset-top)) 16px calc(28px + env(safe-area-inset-bottom))}
@@ -882,7 +882,7 @@ button.hero-logo{padding:0;cursor:pointer;position:relative;background-position:
     <div class="topbar-left">
       <div class="ibi-logo"><span>IBI</span></div>
       <div>
-        <div class="app-name">IBI Finance Tracker <span class="ver-badge">v5.18</span></div>
+        <div class="app-name">IBI Finance Tracker <span class="ver-badge">v5.19</span></div>
       </div>
     </div>
     <div class="topbar-right">
@@ -1228,7 +1228,7 @@ button.hero-logo{padding:0;cursor:pointer;position:relative;background-position:
   <div id="bankBalList" class="cm-list"></div>
 </div><!-- /viewBal -->
 
-  <div class="footer">IBI Finance Tracker v5.18 &mdash; India Business International &mdash; indiabusinessinternational@gmail.com</div>
+  <div class="footer">IBI Finance Tracker v5.19 &mdash; India Business International &mdash; indiabusinessinternational@gmail.com</div>
 </div>
 
 <!-- DRAWER MENU -->
@@ -1282,7 +1282,7 @@ button.hero-logo{padding:0;cursor:pointer;position:relative;background-position:
   <!-- app and backend carry the SAME version number (CEO, 7 Sep 2026, "for easy
        noting"). Both are shown here; a bare number mismatch is only a note, a
        missing feature is what raises the amber prompts. -->
-  <div class="drawer-item" style="cursor:default;color:var(--text2);font-size:12px;align-items:flex-start"><i class="ti ti-info-circle"></i> <span id="aboutVer">App v5.18 · Backend: not connected yet</span></div>
+  <div class="drawer-item" style="cursor:default;color:var(--text2);font-size:12px;align-items:flex-start"><i class="ti ti-info-circle"></i> <span id="aboutVer">App v5.19 · Backend: not connected yet</span></div>
 </div>
 
 <!-- REPORT MODAL -->
@@ -1822,14 +1822,14 @@ button.hero-logo{padding:0;cursor:pointer;position:relative;background-position:
   </div>
 </div>
 
-<!-- SIGN-IN SCREEN (v5.18) — the Apps Script checks the password, never this page -->
+<!-- SIGN-IN SCREEN (v5.19) — the Apps Script checks the password, never this page -->
 <div class="gate" id="gate" role="dialog" aria-modal="true" aria-labelledby="gateTitle">
   <div class="gate-card">
     <div class="gate-brand">
       <div class="gate-mark"><i class="ti ti-lock"></i></div>
       <div>
         <div class="gate-title" id="gateTitle">IBI Finance Tracker</div>
-        <div class="gate-sub">Finance &amp; Accounts Ledger &middot; v5.18</div>
+        <div class="gate-sub">Finance &amp; Accounts Ledger &middot; v5.19</div>
       </div>
     </div>
     <div class="gate-h"><i class="ti ti-lock"></i> Sign in</div>
@@ -2113,7 +2113,7 @@ document.querySelectorAll('input[type="date"]').forEach(el=>{
 });
 
 // ── GAS — all via GET, with auto-retry on failure ──
-// v5.18 SIGN-IN: every call carries the token once there is one. An 'auth'
+// v5.19 SIGN-IN: every call carries the token once there is one. An 'auth'
 // answer is never retried: it opens the sign-in screen and the call fails like
 // a lost connection — an outbox entry waits and later goes with the SAME rid.
 async function gasCall(params, retries=2, timeoutMs=20000){
@@ -2156,9 +2156,13 @@ async function loadAll(){
   document.getElementById('emptyState').style.display   = 'none';
   if(!haveRows) document.getElementById('txBody').innerHTML = '';
   try{
-    const data = await gasCall({action:'getAll'});
+    // Google can take 30–60 s to wake a sleeping script: say so, and wait for it.
+    const wakeT = setTimeout(() => setStatus(false, 'Waking Google Drive — Google can take up to a minute…'), 6000);   // its own timer: two syncs can overlap
+    let data;
+    try{ data = await gasCall({action:'getAll'}, 1, WAKE_TIMEOUT_MS); } finally { clearTimeout(wakeT); }
     if(data.status==='ok'){
-      entries=(data.transactions||[]).map(normType); outboxSynced(); outboxMerge(); setTimeout(flushOutbox, 0);
+      _resyncWait = 0; clearTimeout(_resyncTimer); _lastContact = Date.now();
+      entries=(data.transactions||[]).map(normType); outboxSynced(); outboxMerge(); _obWait = 0; setTimeout(flushOutbox, 0);
       /* An older deployment answers with transactions and nothing else. The
          ABSENCE of the key — not an empty array, which is a real answer — is
          what says the Plan and Commitments sheets do not exist there yet. */
@@ -2175,9 +2179,14 @@ async function loadAll(){
     else{ setStatus(false,'Error: '+data.message); showToast('Load failed','error'); }
   }catch(e){
     if(!AUTH_LOST){                                     // the sign-in screen is already up in that case
-      setStatus(false, haveRows ? 'Offline — showing saved copy' : 'Connection failed');
+      // Retry by itself — 15 s, 30 s, 60 s, then every 2 min — instead of waiting for a tap on Sync.
+      const first = !_resyncWait;
+      _resyncWait = Math.min(120000, (_resyncWait || 7500) * 2);
+      clearTimeout(_resyncTimer);
+      _resyncTimer = setTimeout(() => { if(document.visibilityState === 'visible') loadAll(); }, _resyncWait);
+      setStatus(false, (haveRows ? 'Offline — showing saved copy' : 'Connection failed') + ' · trying again in ' + Math.round(_resyncWait / 1000) + ' s');
       setOffline(haveRows);
-      showToast('Cannot reach Google Drive','error');
+      if(first) showToast('Cannot reach Google Drive — trying again by itself','error');
     }
     console.error(e);
   }
@@ -2570,7 +2579,7 @@ async function runBalMove(){
   await loadAll();
 }
 
-/* ══ AUTH CLIENT — shared by all three finance trackers (Mini v4.8 / IBI v5.18 / TSM v6.18) ══
+/* ══ AUTH CLIENT — shared by all three finance trackers (Mini v4.8 / IBI v5.19 / TSM v6.18) ══
    The Apps Script holds the password; this page only forwards what was typed
    once and then carries the token it is handed. Change this block in all
    three apps together.
@@ -2688,7 +2697,7 @@ async function flushOutbox(){
       }
       it.tries++; it.last = Date.now(); _obSave();
       let res = null;
-      try{ res = await gasCall(Object.assign({ action:'add', rid: it.rid }, it.fields), 1, 30000); }
+      try{ res = await gasCall(Object.assign({ action:'add', rid: it.rid }, it.fields), 1, WAKE_TIMEOUT_MS); _lastContact = Date.now(); }
       catch(e){
         // Refused for sign-in = nothing was written, so it is not an attempt. The
         // entry waits for the sign-in and then goes with the SAME request id.
@@ -2701,6 +2710,8 @@ async function flushOutbox(){
         _obConfirmed.set(row.id, { row, at: Date.now() });
         const i = entries.findIndex(e => e.id === 'LOCAL-' + it.rid);
         if(i >= 0) entries[i] = row; else entries.push(row);
+        // Google took this entry, so it is reachable again: refresh now instead of waiting out the retry timer.
+        if(_resyncWait){ _resyncWait = 0; clearTimeout(_resyncTimer); setTimeout(loadAll, 0); }
       } else if(res && /busy|try again/i.test(res.message || '')){ later = true; break; }
       else {
         it.failed = true; it.err = (res && res.message) || 'not saved'; _obSave();
@@ -2718,6 +2729,34 @@ async function flushOutbox(){
 }
 window.addEventListener('online', () => { _obWait = 0; flushOutbox(); });
 document.addEventListener('visibilitychange', () => { if(document.visibilityState === 'visible') flushOutbox(); });
+
+/* ══ WAKE & KEEP WARM — Google's sleeping script (shared by all three trackers) ══
+   Measured 6 Oct 2026: the first request after a quiet spell took 39.9 s, the
+   next 2.4 s — Google was waking the script, not down. The app used to give
+   up at 20 s, call it "Offline", and wait for a tap on Sync. Now:
+   • a read waits up to 75 s, and after 6 s the status says Google is waking;
+   • a failed read retries by itself (15 s → 30 s → 60 s → 2 min);
+   • while the app is OPEN AND ON SCREEN, a ping every 4 minutes keeps the
+     script awake. A ping does no work and stops the moment the app is hidden —
+     the watch-gate rule: nothing runs for an app nobody is looking at.
+   `var`, not `let`: loadAll() can run before this block is reached.
+   Change this block in all three apps together. */
+var _resyncTimer = 0, _resyncWait = 0, _lastContact = 0;
+var WAKE_TIMEOUT_MS = 75000;
+function keepWarm(force){
+  if(document.visibilityState !== 'visible' || !navigator.onLine) return;
+  if(typeof AUTH_LOST !== 'undefined' && AUTH_LOST) return;
+  if(!force && Date.now() - _lastContact < 4 * 60e3) return;
+  _lastContact = Date.now();
+  gasCall({ action:'ping' }, 1, WAKE_TIMEOUT_MS).catch(() => {});
+}
+setInterval(keepWarm, 60e3);
+document.addEventListener('visibilitychange', () => {
+  if(document.visibilityState !== 'visible') return;
+  if(_resyncWait){ _resyncWait = 0; clearTimeout(_resyncTimer); loadAll(); }   // was offline: try now
+  else keepWarm();
+});
+window.addEventListener('online', () => { if(_resyncWait){ _resyncWait = 0; clearTimeout(_resyncTimer); loadAll(); } });
 
 /* ══ NO REPEATS — one entry, one row (shared by all three finance trackers) ══
    Two things put the same entry in the books twice, and nobody saw either:
@@ -3199,7 +3238,7 @@ function deltaBadge(cur, prev, goodUp){
    are supplied here.
    ══════════════════════════════════════════════════════════════════════════ */
 
-/* v5.18 SIGN-IN. AUTH_TOKEN = the 30-day token the Apps Script issued at sign-in.
+/* v5.19 SIGN-IN. AUTH_TOKEN = the 30-day token the Apps Script issued at sign-in.
    AUTH_LOST = the backend refused this device (or it never signed in): every
    call short-circuits on it and the sign-in screen is up. An older Apps
    Script never refuses, so with one nothing here ever changes anything. */
@@ -5835,7 +5874,7 @@ function printReport(){
     ${quality.length?`<h3 style="color:#a76b00">Data Quality Audit</h3>${quality.map(q=>`<div class="ins ${q.t}">${q.msg}</div>`).join('')}`:''}
 
     <div class="net">Net Surplus: <span style="color:${cur.net>=0?'#0086ad':'#b11'}">${S(cur.net)}</span></div>
-    <div class="foot"><span>Generated ${esc(genAt)} IST · IBI Finance Tracker v5.18</span><span>indiabusinessinternational@gmail.com</span></div>
+    <div class="foot"><span>Generated ${esc(genAt)} IST · IBI Finance Tracker v5.19</span><span>indiabusinessinternational@gmail.com</span></div>
   </body></html>`;
   const win=window.open('','_blank');
   if(!win){ showToast('Allow pop-ups to print, or use Download CSV','error'); return; }
@@ -7938,7 +7977,7 @@ function pickPhoto(input){
 function clearPhoto(){ pfPhotoDraft = 'none'; paintProfilePreview(); }
 async function gasPost(params, timeoutMs = 45000){
   if(AUTH_LOST) throw authError();
-  const body = Object.assign({}, params); if(AUTH_TOKEN) body.token = AUTH_TOKEN;   // v5.18: the token rides in the body
+  const body = Object.assign({}, params); if(AUTH_TOKEN) body.token = AUTH_TOKEN;   // v5.19: the token rides in the body
   const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), timeoutMs);
   try{
     const r = await fetch(GAS_URL, { method:'POST', redirect:'follow', signal: ctl.signal,
@@ -7987,7 +8026,7 @@ document.addEventListener('keydown', e => {
 });
 window.addEventListener('DOMContentLoaded', loadProfile);
 
-/* ══ SIGN-IN SCREEN (IBI v5.18 / TSM v6.18) — the Mini app's gate, sign-in step only ══
+/* ══ SIGN-IN SCREEN (IBI v5.19 / TSM v6.18) — the Mini app's gate, sign-in step only ══
    Until now the backend answered anyone holding its address. The Apps Script
    now checks a password and hands back a 30-day token; this screen is how the
    token is got. The backend address is fixed in this page, so there is no

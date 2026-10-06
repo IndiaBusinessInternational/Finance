@@ -1,4 +1,7 @@
-# IBI Finance Tracker v5.18
+# IBI Finance Tracker v5.19
+
+**Wakes Google, retries by itself (v5.19)** — measured 6 Oct 2026: Google's first request after a quiet spell took 39.9 s (the next 2.4 s); the app gave up at 20 s, showed "Offline" and waited for a tap on Sync. Now a read waits up to 75 s and says "Waking Google Drive…" after 6 s; a failed read retries by itself (15 s → 30 s → 60 s → 2 min); while the app is open and ON SCREEN a no-work ping every 4 min keeps the script awake (stops when hidden — the watch-gate rule); queued entries go the moment a read succeeds, and an entry that gets through refreshes the status at once. GAS is a number-only bump.
+
 
 **Sign-in (v5.18)** — the Apps Script now checks a password (salted hash in Script Property `FINANCE_PASSWORD_HASH`, set by running `setStaffPassword()` from a temporary `FINANCE_PASSWORD_NEW`) and hands the page a 30-day signed token. Every write needs it; an anonymous read gets no rows. Username **IBI-Finance-Data**. Staff Supervision reads with the read-only `FINANCE_SERVICE_KEY`. Entries waiting in the outbox are kept through a sign-out and sent after sign-in with the same request id — never twice. Check the set-up with `checkAuthSetup()`.
 
