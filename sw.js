@@ -1,4 +1,4 @@
-const CACHE = 'ibi-finance-v5.21';
+const CACHE = 'ibi-finance-v5.22';
 const ASSETS = ['./index.html', './manifest.json'];
 
 self.addEventListener('install', e => {

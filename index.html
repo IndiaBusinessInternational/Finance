@@ -887,7 +887,7 @@ html,body{overflow-x:clip}
   .section-hdr,.form-card,.table-wrap,.bal-section,.pending-section,.status-bar,.offline-note,.pane-card,.pane-empty,.month-bar,.needs-backend{border-radius:0!important;border-left:none;border-right:none;box-shadow:none}
   .section-hdr,.form-card,.bal-section,.pending-section,.status-bar,.offline-note,.pane-card,.filter-row,.filter-summary{padding-left:10px;padding-right:10px}
   .summary-grid,.tot-grid,.plan-group,.cm-list,.pane-head,.dash-period{padding-left:10px;padding-right:10px}
-  .form-card,.pane-card,.bal-section,.pending-section,.status-bar,.offline-note,.sheet-body,.dt-f{overflow-wrap:anywhere}
+  .form-card,.pane-card,.bal-section,.pending-section,.status-bar,.offline-note,.sheet-body,.dt-f{overflow-wrap:break-word}   /* not anywhere: it split button labels mid-word */
   .report-modal{width:100vw;max-width:100vw;border-radius:0;border-left:none;border-right:none}
   .report-hdr,.report-actions{padding-left:10px;padding-right:10px}
   .report-body{padding-left:10px;padding-right:10px}
@@ -907,7 +907,7 @@ html,body{overflow-x:clip}
     <div class="topbar-left">
       <div class="ibi-logo"><span>IBI</span></div>
       <div>
-        <div class="app-name">IBI Finance Tracker <span class="ver-badge">v5.21</span></div>
+        <div class="app-name">IBI Finance Tracker <span class="ver-badge">v5.22</span></div>
       </div>
     </div>
     <div class="topbar-right">
@@ -1253,7 +1253,7 @@ html,body{overflow-x:clip}
   <div id="bankBalList" class="cm-list"></div>
 </div><!-- /viewBal -->
 
-  <div class="footer">IBI Finance Tracker v5.21 &mdash; India Business International &mdash; indiabusinessinternational@gmail.com</div>
+  <div class="footer">IBI Finance Tracker v5.22 &mdash; India Business International &mdash; indiabusinessinternational@gmail.com</div>
 </div>
 
 <!-- DRAWER MENU -->
@@ -1307,7 +1307,7 @@ html,body{overflow-x:clip}
   <!-- app and backend carry the SAME version number (CEO, 7 Sep 2026, "for easy
        noting"). Both are shown here; a bare number mismatch is only a note, a
        missing feature is what raises the amber prompts. -->
-  <div class="drawer-item" style="cursor:default;color:var(--text2);font-size:12px;align-items:flex-start"><i class="ti ti-info-circle"></i> <span id="aboutVer">App v5.21 · Backend: not connected yet</span></div>
+  <div class="drawer-item" style="cursor:default;color:var(--text2);font-size:12px;align-items:flex-start"><i class="ti ti-info-circle"></i> <span id="aboutVer">App v5.22 · Backend: not connected yet</span></div>
 </div>
 
 <!-- REPORT MODAL -->
@@ -1854,7 +1854,7 @@ html,body{overflow-x:clip}
       <div class="gate-mark"><i class="ti ti-lock"></i></div>
       <div>
         <div class="gate-title" id="gateTitle">IBI Finance Tracker</div>
-        <div class="gate-sub">Finance &amp; Accounts Ledger &middot; v5.21</div>
+        <div class="gate-sub">Finance &amp; Accounts Ledger &middot; v5.22</div>
       </div>
     </div>
     <div class="gate-h"><i class="ti ti-lock"></i> Sign in</div>
@@ -5899,7 +5899,7 @@ function printReport(){
     ${quality.length?`<h3 style="color:#a76b00">Data Quality Audit</h3>${quality.map(q=>`<div class="ins ${q.t}">${q.msg}</div>`).join('')}`:''}
 
     <div class="net">Net Surplus: <span style="color:${cur.net>=0?'#0086ad':'#b11'}">${S(cur.net)}</span></div>
-    <div class="foot"><span>Generated ${esc(genAt)} IST · IBI Finance Tracker v5.21</span><span>indiabusinessinternational@gmail.com</span></div>
+    <div class="foot"><span>Generated ${esc(genAt)} IST · IBI Finance Tracker v5.22</span><span>indiabusinessinternational@gmail.com</span></div>
   </body></html>`;
   const win=window.open('','_blank');
   if(!win){ showToast('Allow pop-ups to print, or use Download CSV','error'); return; }
