@@ -1,4 +1,6 @@
-# IBI Finance Tracker v5.22
+# IBI Finance Tracker v5.23
+
+**v5.23 (27 Oct 2026)** — WhatsApp rich preview: 1200×630 `og-banner.jpg` under 300 KB with `og:image:type`; a Share button in the top bar (`ibi-share.js` v1.0, precached). Robots see it once ibi-auth-worker v1.4 is pasted. GAS 5.23 is a number-only bump — pasting it is optional.
 
 **v5.22 (11 Oct 2026)** — long words now break with `overflow-wrap: break-word` instead of `anywhere`, which could split a button label mid-word on a phone. Same block in all three finance trackers. GAS 5.22 is a number-only bump — pasting it is optional.
 
