@@ -1,4 +1,6 @@
-# IBI Finance Tracker v5.23
+# IBI Finance Tracker v5.24
+
+**v5.24 (27 Oct 2026)** — edge to edge on laptops too (CEO, 27 Oct 2026): the centred 960px column is gone at every width; cards are full-bleed with 10px inner side padding, top bar 8px; balances and commitments sit several cards per row on wide screens. Phones: the app name no longer runs under the theme switch at 360px (title truncates, "Dark" word hidden, Share this app moves into the menu as in Mini/TSM). Shared edge block, byte-identical with Mini v4.15 and TSM v6.26. IBIFinanceTracker_GAS.gs unchanged (5.23).
 
 **v5.23 (27 Oct 2026)** — WhatsApp rich preview: 1200×630 `og-banner.jpg` under 300 KB with `og:image:type`; a Share button in the top bar (`ibi-share.js` v1.0, precached). Robots see it once ibi-auth-worker v1.4 is pasted. GAS 5.23 is a number-only bump — pasting it is optional.
 
