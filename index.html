@@ -931,7 +931,7 @@ html,body{overflow-x:clip}
     <div class="topbar-left">
       <div class="ibi-logo"><span>IBI</span></div>
       <div class="topbar-title">
-        <div class="app-name"><span class="app-name-text">IBI Finance Tracker</span><span class="ver-badge">v5.24</span></div>
+        <div class="app-name"><span class="app-name-text">IBI Finance Tracker</span><span class="ver-badge">v5.25</span></div>
       </div>
     </div>
     <div class="topbar-right">
@@ -1277,7 +1277,7 @@ html,body{overflow-x:clip}
   <div id="bankBalList" class="cm-list"></div>
 </div><!-- /viewBal -->
 
-  <div class="footer">IBI Finance Tracker v5.24 &mdash; India Business International &mdash; indiabusinessinternational@gmail.com</div>
+  <div class="footer">IBI Finance Tracker v5.25 &mdash; India Business International &mdash; indiabusinessinternational@gmail.com</div>
 </div>
 
 <!-- DRAWER MENU -->
@@ -1332,7 +1332,7 @@ html,body{overflow-x:clip}
   <!-- app and backend carry the SAME version number (CEO, 7 Sep 2026, "for easy
        noting"). Both are shown here; a bare number mismatch is only a note, a
        missing feature is what raises the amber prompts. -->
-  <div class="drawer-item" style="cursor:default;color:var(--text2);font-size:12px;align-items:flex-start"><i class="ti ti-info-circle"></i> <span id="aboutVer">App v5.24 · Backend: not connected yet</span></div>
+  <div class="drawer-item" style="cursor:default;color:var(--text2);font-size:12px;align-items:flex-start"><i class="ti ti-info-circle"></i> <span id="aboutVer">App v5.25 · Backend: not connected yet</span></div>
 </div>
 
 <!-- REPORT MODAL -->
@@ -1879,7 +1879,7 @@ html,body{overflow-x:clip}
       <div class="gate-mark"><i class="ti ti-lock"></i></div>
       <div>
         <div class="gate-title" id="gateTitle">IBI Finance Tracker</div>
-        <div class="gate-sub">Finance &amp; Accounts Ledger &middot; v5.24</div>
+        <div class="gate-sub">Finance &amp; Accounts Ledger &middot; v5.25</div>
       </div>
     </div>
     <div class="gate-h"><i class="ti ti-lock"></i> Sign in</div>
@@ -5924,7 +5924,7 @@ function printReport(){
     ${quality.length?`<h3 style="color:#a76b00">Data Quality Audit</h3>${quality.map(q=>`<div class="ins ${q.t}">${q.msg}</div>`).join('')}`:''}
 
     <div class="net">Net Surplus: <span style="color:${cur.net>=0?'#0086ad':'#b11'}">${S(cur.net)}</span></div>
-    <div class="foot"><span>Generated ${esc(genAt)} IST · IBI Finance Tracker v5.24</span><span>indiabusinessinternational@gmail.com</span></div>
+    <div class="foot"><span>Generated ${esc(genAt)} IST · IBI Finance Tracker v5.25</span><span>indiabusinessinternational@gmail.com</span></div>
   </body></html>`;
   const win=window.open('','_blank');
   if(!win){ showToast('Allow pop-ups to print, or use Download CSV','error'); return; }
@@ -6422,8 +6422,11 @@ async function confirmImport(){
       } else {
         const e = r.match;
         const note = (String(e.note||'').includes(tag) ? String(e.note||'') : `${String(e.note||'')} ${tag}`).trim();
+        /* v5.25: send the row's Paid by, Mode and Category back too. 'update' rewrites
+           columns 9-11, so leaving them out blanked all three on every Link (28 Oct 2026). */
         const res = await gasCall({ action:'update', id:e.id, date:e.date, type:e.type,
-          description:e.description, party:e.party, amount:e.amount, note:note.slice(0,480) }, 1, 25000);
+          description:e.description, party:e.party, amount:e.amount, note:note.slice(0,480),
+          paidBy:e.paidBy||'', mode:e.mode||'', category:e.category||'' }, 1, 25000);
         if(res && res.status==='ok') ok++; else fail++;
       }
     }catch(err){ console.warn('import row failed', r.ref, err); fail++; }

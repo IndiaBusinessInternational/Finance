@@ -1,4 +1,6 @@
-# IBI Finance Tracker v5.24
+# IBI Finance Tracker v5.25
+
+**v5.25 (28 Oct 2026)** — bank-import Link no longer blanks Mode, Paid by and Category: `confirmImport()` now sends the row's `paidBy`, `mode` and `category` with `action:'update'`, and GAS `updateTransaction` keeps the existing cell for any field the caller does not send (an empty value still clears). GAS paste + New version required.
 
 **v5.24 (27 Oct 2026)** — edge to edge on laptops too (CEO, 27 Oct 2026): the centred 960px column is gone at every width; cards are full-bleed with 10px inner side padding, top bar 8px; balances and commitments sit several cards per row on wide screens. Phones: the app name no longer runs under the theme switch at 360px (title truncates, "Dark" word hidden, Share this app moves into the menu as in Mini/TSM). Shared edge block, byte-identical with Mini v4.15 and TSM v6.26. IBIFinanceTracker_GAS.gs unchanged (5.23).
 

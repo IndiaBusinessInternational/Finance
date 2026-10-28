@@ -1,4 +1,4 @@
-// IBI Finance Tracker — GAS Backend v5.23  (same version number as the web app)
+// IBI Finance Tracker — GAS Backend v5.25  (same version number as the web app)
 // v5.18 (4 Oct 2026): SIGN-IN. Every write needs a signed-in token; anonymous reads get no rows.
 //   Script Properties: FINANCE_PASSWORD_NEW (temporary, then run setStaffPassword),
 //   FINANCE_PASSWORD_HASH + FINANCE_TOKEN_SECRET (written by the script), FINANCE_SERVICE_KEY
@@ -60,7 +60,7 @@ const PLAN_HDRS  = ["ID","Month","Side","CommitmentId","Item","Category","Party"
                     "Proposed","Actual","DueDate","PaidDate","Status","PayMode",
                     "PaidBy","TxId","Note","Sort","CreatedAt"];
 
-const APP_VERSION = "5.23";   // kept in step with the web app's badge (7 Sep 2026)
+const APP_VERSION = "5.25";   // kept in step with the web app's badge (7 Sep 2026)
 // Lets a page newer than this deployment detect what it can do, and say
 // "update the Apps Script" instead of failing oddly at Save.
 const FEATURES    = ["plans", "commitments", "paidby", "category", "rid", "balances", "profile", "auth", "serviceKey"];   // category: Category column on Transactions
@@ -695,18 +695,28 @@ function updateTransaction(p) {
   for (let i = 1; i < rows.length; i++) {
     if (String(rows[i][0]) === String(p.id)) {
       const r = i + 1;
+      // v5.25: a field the caller did not send keeps the value already in the
+      // row. Sending it empty ('') still clears it. Before, every missing field
+      // was written blank, so the bank-import Link wiped Paid by, Mode and
+      // Category (28 Oct 2026).
+      const old = rows[i];
+      const keep = (k, col, v) => (p[k] === undefined || p[k] === null) ? old[col] : v;
       // Two ranges, one setValues each — six single-cell writes were six round
       // trips. Column 8 is CreatedAt and is deliberately skipped: it records
       // when the row was first written and must survive every later edit.
       sh.getRange(r, 2, 1, 6).setValues([[
-        p.date        || '',
-        p.type        || 'income',
-        p.description || '',
-        p.party       || '',
-        parseFloat(p.amount) || 0,
-        p.note        || ''
+        keep('date',        1, p.date        || ''),
+        keep('type',        2, p.type        || 'income'),
+        keep('description', 3, p.description || ''),
+        keep('party',       4, p.party       || ''),
+        keep('amount',      5, parseFloat(p.amount) || 0),
+        keep('note',        6, p.note        || '')
       ]]);
-      sh.getRange(r, 9, 1, 3).setValues([[p.paidBy || '', p.mode || '', p.category || '']]);
+      sh.getRange(r, 9, 1, 3).setValues([[
+        keep('paidBy',   8,  p.paidBy   || ''),
+        keep('mode',     9,  p.mode     || ''),
+        keep('category', 10, p.category || '')
+      ]]);
       return { status:'ok', message:'Updated: ' + p.id };
     }
   }
