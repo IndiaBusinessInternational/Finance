@@ -1,5 +1,9 @@
-const CACHE = 'ibi-finance-v5.25';
-const ASSETS = ['./index.html', './manifest.json', './ibi-share.js'];
+const CACHE = 'ibi-finance-v5.26';
+/* v5.26 / v4.16 / v6.27: the bank-logo tiles on the Balances cards, so an
+   installed app still shows them offline. */
+const BANK_LOGOS = ['axis', 'bob', 'canara', 'cub', 'federal', 'hdfc', 'icici', 'idfc', 'indianbank',
+  'iob', 'indusind', 'kotak', 'kvb', 'pnb', 'sbi', 'tmb', 'union', 'yes'].map(k => './banklogos/' + k + '.png');
+const ASSETS = ['./index.html', './manifest.json', './ibi-share.js'].concat(BANK_LOGOS);
 
 self.addEventListener('install', e => {
   e.waitUntil(

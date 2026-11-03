@@ -817,7 +817,10 @@ tbody tr.tx-row{cursor:pointer}
 .bal-needs.show{display:block}
 .bal-big{font-size:20px;font-weight:800;color:var(--text);white-space:nowrap;text-align:right;font-variant-numeric:tabular-nums}
 .bal-big.neg{color:var(--danger-text)}
-.bal-ico{width:38px;height:38px;border-radius:10px;background:var(--bg3);display:inline-flex;align-items:center;justify-content:center;font-size:20px;color:var(--cyan);flex:0 0 auto}
+.bal-ico{width:44px;height:44px;border-radius:12px;background:var(--bg3);display:inline-flex;align-items:center;justify-content:center;font-size:22px;color:var(--cyan);flex:0 0 auto}
+.bal-ico.bal-logo{background:#fff;border:1px solid var(--border);overflow:hidden}
+.bal-ico.bal-logo .ti{display:none}
+.bal-ico img{width:100%;height:100%;display:block}
 .bal-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
 .bal-head{display:flex;gap:11px;align-items:center;min-width:0;flex:1 1 auto}
 .bal-amt{flex:0 0 auto}
@@ -931,7 +934,7 @@ html,body{overflow-x:clip}
     <div class="topbar-left">
       <div class="ibi-logo"><span>IBI</span></div>
       <div class="topbar-title">
-        <div class="app-name"><span class="app-name-text">IBI Finance Tracker</span><span class="ver-badge">v5.25</span></div>
+        <div class="app-name"><span class="app-name-text">IBI Finance Tracker</span><span class="ver-badge">v5.26</span></div>
       </div>
     </div>
     <div class="topbar-right">
@@ -1277,7 +1280,7 @@ html,body{overflow-x:clip}
   <div id="bankBalList" class="cm-list"></div>
 </div><!-- /viewBal -->
 
-  <div class="footer">IBI Finance Tracker v5.25 &mdash; India Business International &mdash; indiabusinessinternational@gmail.com</div>
+  <div class="footer">IBI Finance Tracker v5.26 &mdash; India Business International &mdash; indiabusinessinternational@gmail.com</div>
 </div>
 
 <!-- DRAWER MENU -->
@@ -1332,7 +1335,7 @@ html,body{overflow-x:clip}
   <!-- app and backend carry the SAME version number (CEO, 7 Sep 2026, "for easy
        noting"). Both are shown here; a bare number mismatch is only a note, a
        missing feature is what raises the amber prompts. -->
-  <div class="drawer-item" style="cursor:default;color:var(--text2);font-size:12px;align-items:flex-start"><i class="ti ti-info-circle"></i> <span id="aboutVer">App v5.25 · Backend: not connected yet</span></div>
+  <div class="drawer-item" style="cursor:default;color:var(--text2);font-size:12px;align-items:flex-start"><i class="ti ti-info-circle"></i> <span id="aboutVer">App v5.26 · Backend: not connected yet</span></div>
 </div>
 
 <!-- REPORT MODAL -->
@@ -1879,7 +1882,7 @@ html,body{overflow-x:clip}
       <div class="gate-mark"><i class="ti ti-lock"></i></div>
       <div>
         <div class="gate-title" id="gateTitle">IBI Finance Tracker</div>
-        <div class="gate-sub">Finance &amp; Accounts Ledger &middot; v5.25</div>
+        <div class="gate-sub">Finance &amp; Accounts Ledger &middot; v5.26</div>
       </div>
     </div>
     <div class="gate-h"><i class="ti ti-lock"></i> Sign in</div>
@@ -2318,6 +2321,28 @@ function _balIcon(name){
   return /cash/i.test(name) ? 'ti-cash' : /card|credit/i.test(name) ? 'ti-credit-card'
        : /wallet|paytm|gpay|phonepe|upi/i.test(name) ? 'ti-wallet' : 'ti-building-bank';
 }
+/* Bank logos (IBI FT v5.26 / Mini v4.16 / TSM v6.27). Each card shows its
+   bank's own mark, picked from the account name: small PNG tiles cut from the
+   official logos and kept in banklogos/ inside each app, never linked from
+   outside. The more specific name comes first (Indian Overseas before Indian
+   Bank, City Union before Union Bank). Cash and an unknown bank keep the icon;
+   a logo that fails to load falls back to the icon too. */
+const BAL_LOGOS = [[/\biob\b|indian overseas/i,'iob'],[/(?<!south )indian bank/i,'indianbank'],
+  [/\bcub\b|city union/i,'cub'],[/union bank/i,'union'],[/icici/i,'icici'],[/hdfc/i,'hdfc'],
+  [/\bsbi\b|state bank/i,'sbi'],[/\btmb\b|tamil ?nad merc/i,'tmb'],[/baroda|\bbob\b/i,'bob'],
+  [/federal bank/i,'federal'],[/\baxis\b/i,'axis'],[/kotak/i,'kotak'],[/canara/i,'canara'],
+  [/\bpnb\b|punjab national/i,'pnb'],[/\bidfc\b/i,'idfc'],[/\byes bank\b/i,'yes'],
+  [/indusind/i,'indusind'],[/\bkvb\b|karur vysya/i,'kvb']];
+function _balLogo(name){
+  const hit = BAL_LOGOS.find(b => b[0].test(String(name || '')));
+  return hit ? 'banklogos/' + hit[1] + '.png' : '';
+}
+function _balIcoHTML(name){
+  const src = _balLogo(name);
+  return src
+    ? `<span class="bal-ico bal-logo"><i class="ti ti-building-bank"></i><img src="${src}" alt="" width="44" height="44" onerror="this.parentNode.classList.remove('bal-logo');this.remove()"></span>`
+    : `<span class="bal-ico"><i class="ti ${_balIcon(name)}"></i></span>`;
+}
 /* Every account with its readings, newest first. */
 function balAccounts(){
   const map = new Map();
@@ -2388,7 +2413,7 @@ function balCardHTML(a){
          <button onclick="balDelOne('${esc(b.id)}')" aria-label="Delete this reading" title="Delete"><i class="ti ti-trash"></i></button></div>`).join('')}</div>` : '';
   return `<div class="cm-card">
     <div class="bal-top">
-      <div class="bal-head"><span class="bal-ico"><i class="ti ${_balIcon(a.name)}"></i></span>
+      <div class="bal-head">${_balIcoHTML(a.name)}
         <div style="min-width:0"><div class="cm-name">${esc(a.name)}</div>
         <div class="cm-sub">${sub.join(' · ')}${days > BAL_STALE_DAYS ? ` <span class="bal-old"><i class="ti ti-clock-exclamation"></i> ${days} days old</span>` : ''}</div></div>
       </div>
@@ -5924,7 +5949,7 @@ function printReport(){
     ${quality.length?`<h3 style="color:#a76b00">Data Quality Audit</h3>${quality.map(q=>`<div class="ins ${q.t}">${q.msg}</div>`).join('')}`:''}
 
     <div class="net">Net Surplus: <span style="color:${cur.net>=0?'#0086ad':'#b11'}">${S(cur.net)}</span></div>
-    <div class="foot"><span>Generated ${esc(genAt)} IST · IBI Finance Tracker v5.25</span><span>indiabusinessinternational@gmail.com</span></div>
+    <div class="foot"><span>Generated ${esc(genAt)} IST · IBI Finance Tracker v5.26</span><span>indiabusinessinternational@gmail.com</span></div>
   </body></html>`;
   const win=window.open('','_blank');
   if(!win){ showToast('Allow pop-ups to print, or use Download CSV','error'); return; }
