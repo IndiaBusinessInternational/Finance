@@ -1,4 +1,5 @@
-// IBI Finance Tracker — GAS Backend v5.27  (same version number as the web app)
+// IBI Finance Tracker — GAS Backend v5.28  (same version number as the web app)
+// v5.28 (4 Nov 2026): number only (web app actions column fit); paste optional.
 // v5.27 (4 Nov 2026): RECURRING ENTRIES — sheet tab Recurring + daily 6 AM trigger.
 //   After pasting: run installRecurringTrigger once (Allow), THEN Deploy → Manage deployments → New version.
 // v5.18 (4 Oct 2026): SIGN-IN. Every write needs a signed-in token; anonymous reads get no rows.
@@ -62,7 +63,7 @@ const PLAN_HDRS  = ["ID","Month","Side","CommitmentId","Item","Category","Party"
                     "Proposed","Actual","DueDate","PaidDate","Status","PayMode",
                     "PaidBy","TxId","Note","Sort","CreatedAt"];
 
-const APP_VERSION = "5.27";   // kept in step with the web app's badge (7 Sep 2026)
+const APP_VERSION = "5.28";   // kept in step with the web app's badge (7 Sep 2026)
 // Lets a page newer than this deployment detect what it can do, and say
 // "update the Apps Script" instead of failing oddly at Save.
 const FEATURES    = ["plans", "commitments", "paidby", "category", "rid", "balances", "profile", "auth", "serviceKey", "recurring"];   // category: Category column on Transactions
