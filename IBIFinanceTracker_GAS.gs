@@ -1,4 +1,6 @@
-// IBI Finance Tracker — GAS Backend v5.26  (same version number as the web app)
+// IBI Finance Tracker — GAS Backend v5.27  (same version number as the web app)
+// v5.27 (4 Nov 2026): RECURRING ENTRIES — sheet tab Recurring + daily 6 AM trigger.
+//   After pasting: run installRecurringTrigger once (Allow), THEN Deploy → Manage deployments → New version.
 // v5.18 (4 Oct 2026): SIGN-IN. Every write needs a signed-in token; anonymous reads get no rows.
 //   Script Properties: FINANCE_PASSWORD_NEW (temporary, then run setStaffPassword),
 //   FINANCE_PASSWORD_HASH + FINANCE_TOKEN_SECRET (written by the script), FINANCE_SERVICE_KEY
@@ -60,10 +62,10 @@ const PLAN_HDRS  = ["ID","Month","Side","CommitmentId","Item","Category","Party"
                     "Proposed","Actual","DueDate","PaidDate","Status","PayMode",
                     "PaidBy","TxId","Note","Sort","CreatedAt"];
 
-const APP_VERSION = "5.26";   // kept in step with the web app's badge (7 Sep 2026)
+const APP_VERSION = "5.27";   // kept in step with the web app's badge (7 Sep 2026)
 // Lets a page newer than this deployment detect what it can do, and say
 // "update the Apps Script" instead of failing oddly at Save.
-const FEATURES    = ["plans", "commitments", "paidby", "category", "rid", "balances", "profile", "auth", "serviceKey"];   // category: Category column on Transactions
+const FEATURES    = ["plans", "commitments", "paidby", "category", "rid", "balances", "profile", "auth", "serviceKey", "recurring"];   // category: Category column on Transactions
 
 /* Per-app names for the shared SIGN-IN block below. */
 const AUTH_PREFIX       = 'FINANCE';            // Script Property names: FINANCE_PASSWORD_HASH, …
@@ -586,6 +588,9 @@ function route_(p, viaPost) {
       case 'deleteBalance':    return deleteRowById(BAL_SHEET, BAL_HDRS, p.id);
       case 'moveToBalances':   return moveToBalances(p);
       case 'getProfile':       return getProfile_();
+      case 'saveRecurring':    return saveRecurring(p);
+      case 'deleteRecurring':  return deleteRecurring(p);
+      case 'runRecurring':     return runRecurring();
       case 'saveProfile':      return saveProfile_(p);
       default:                 return { status:'error', message:'Unknown action: ' + action };
     }
@@ -594,7 +599,220 @@ function route_(p, viaPost) {
   }
 }
 
+/* ══ RECURRING ENTRIES (IBI FT 5.27 / TSM 6.28) ═════════════════════════════
+   Shared, byte-identical in both finance backends — change both together.
+   Founder, 4 Nov 2026: "say I need to add Milk from Ajay on a daily basis …
+   various schedule of recurring" (the schedule choices of IBI Task Manager).
+   A template lives in the sheet tab Recurring. THIS SCRIPT writes the ledger
+   rows itself — a daily trigger at about 6 AM IST (installRecurringTrigger,
+   run once from the editor) and every getAll — so nothing depends on a phone
+   or laptop being open.
+   • One row per template per date: the ledger row ID is
+     RC-<template>-<yyyyMMdd>, checked under the script lock before writing.
+   • LastDone is the high-water mark. Catch-up writes every due date after it;
+     a row deleted by hand never comes back (its date is already behind it).
+   • Pause writes nothing; Resume moves LastDone to yesterday (no back-fill).
+   • An edit changes later rows only; rows already written stay as they are.
+   • Delete removes the template only; its ledger rows stay.                */
+const REC_SHEET     = 'Recurring';
+const REC_HDRS      = ['ID','Description','Type','Party','Amount','PaidBy','Mode','Category','Note',
+                       'Freq','Days','Dom','Dom2','Every','Month','StartDate','EndDate','Active',
+                       'LastDone','CreatedAt','UpdatedAt'];
+const REC_TEXT_COLS = [11, 16, 17, 19];          // Days, StartDate, EndDate, LastDone: kept as plain text
+const REC_TZ        = 'Asia/Kolkata';
+const REC_MAX_DAYS  = 400;                       // longest catch-up written in one run
+const REC_FREQS     = ['daily', 'monthly', 'twice', 'nmonths', 'yearly'];
+const REC_TYPES     = ['income', 'expense', 'saving', 'credit', 'settlement'];
+
+function recSheet_() {
+  return getNamedSheet(REC_SHEET, REC_HDRS,
+    [150, 240, 90, 170, 90, 110, 90, 160, 180, 80, 110, 50, 50, 55, 55, 100, 100, 60, 100, 150, 150]);
+}
+function recStampNow_() { return Utilities.formatDate(new Date(), REC_TZ, 'dd-MMM-yyyy HH:mm:ss'); }
+function recToday_()    { return Utilities.formatDate(new Date(), REC_TZ, 'yyyy-MM-dd'); }
+function recIso_(v) {
+  if (v instanceof Date) return Utilities.formatDate(v, sheetTZ_(), 'yyyy-MM-dd');
+  const m = String(v == null ? '' : v).trim().match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+  return m ? m[1] + '-' + ('0' + m[2]).slice(-2) + '-' + ('0' + m[3]).slice(-2) : '';
+}
+/* Calendar arithmetic on 'yyyy-MM-dd' at UTC noon: no timezone can shift a day. */
+function recAdd_(ymd, n) {
+  const p = ymd.split('-').map(Number);
+  const d = new Date(Date.UTC(p[0], p[1] - 1, p[2] + n, 12));
+  return d.getUTCFullYear() + '-' + ('0' + (d.getUTCMonth() + 1)).slice(-2) + '-' + ('0' + d.getUTCDate()).slice(-2);
+}
+function recDiff_(a, b) {
+  const pa = a.split('-').map(Number), pb = b.split('-').map(Number);
+  return Math.round((Date.UTC(pb[0], pb[1] - 1, pb[2]) - Date.UTC(pa[0], pa[1] - 1, pa[2])) / 86400000);
+}
+function recInt_(v, lo, hi, dflt) {
+  const n = parseInt(v, 10);
+  return isNaN(n) ? dflt : Math.min(hi, Math.max(lo, n));
+}
+function recClamp_(dom, y, m) {                  // m = 1..12; the 31st falls on the last day of a short month
+  const last = new Date(Date.UTC(y, m, 0, 12)).getUTCDate();
+  return Math.min(recInt_(dom, 1, 31, 1), last);
+}
+function recDays_(s) {                           // '1,2,3' → [1,2,3]; empty = every day (0 = Sunday)
+  const a = String(s == null ? '' : s).split(/[^0-9]+/).filter(function (x) { return x !== ''; })
+    .map(Number).filter(function (n) { return n >= 0 && n <= 6; });
+  const u = a.filter(function (n, i) { return a.indexOf(n) === i; }).sort();
+  return u.length ? u : [0, 1, 2, 3, 4, 5, 6];
+}
+function recIsDue_(t, ymd) {
+  const p = ymd.split('-').map(Number), y = p[0], m = p[1], d = p[2];
+  switch (t.freq) {
+    case 'monthly': return d === recClamp_(t.dom, y, m);
+    case 'twice':   return d === recClamp_(t.dom, y, m) || d === recClamp_(t.dom2, y, m);
+    case 'yearly':  return m === recInt_(t.month, 1, 12, 1) && d === recClamp_(t.dom, y, m);
+    case 'nmonths': {
+      const every = recInt_(t.every, 2, 12, 3), start = recInt_(t.month, 1, 12, 1);
+      return ((m - start) % every + every) % every === 0 && d === recClamp_(t.dom, y, m);
+    }
+    default:        return recDays_(t.days).indexOf(new Date(Date.UTC(y, m - 1, d, 12)).getUTCDay()) >= 0;
+  }
+}
+
+function recRead_() {
+  const sh = recSheet_(), n = sh.getLastRow();
+  if (n <= 1) return [];
+  const out = [];
+  sh.getRange(2, 1, n - 1, REC_HDRS.length).getValues().forEach(function (r, i) {
+    const id = String(r[0] || '').trim();
+    if (!id) return;
+    out.push({ row: i + 2, id: id, description: str_(r[1]), type: str_(r[2]) || 'expense', party: str_(r[3]),
+      amount: num_(r[4]), paidBy: str_(r[5]), mode: str_(r[6]), category: str_(r[7]), note: str_(r[8]),
+      freq: REC_FREQS.indexOf(str_(r[9])) >= 0 ? str_(r[9]) : 'daily', days: recDays_(r[10]).join(','),
+      dom: recInt_(r[11], 1, 31, 1), dom2: recInt_(r[12], 1, 31, 15), every: recInt_(r[13], 2, 12, 3),
+      month: recInt_(r[14], 1, 12, 1), startDate: recIso_(r[15]), endDate: recIso_(r[16]),
+      active: bool_(r[17]), lastDone: recIso_(r[18]), createdAt: str_(r[19]), updatedAt: str_(r[20]) });
+  });
+  return out;
+}
+function readRecurring_() {
+  try {
+    return recRead_().map(function (t) { const o = Object.assign({}, t); delete o.row; return o; });
+  } catch (e) { return []; }
+}
+function recWrite_(sh, row, t) {
+  REC_TEXT_COLS.forEach(function (c) { sh.getRange(row, c).setNumberFormat('@'); });
+  sh.getRange(row, 1, 1, REC_HDRS.length).setValues([[t.id, t.description, t.type, t.party, t.amount,
+    t.paidBy, t.mode, t.category, t.note, t.freq, t.days, t.dom, t.dom2, t.every, t.month,
+    t.startDate, t.endDate, t.active, t.lastDone, t.createdAt, t.updatedAt]]);
+}
+
+/* Create or update one template. The page makes the ID ('R' + base-36), so a
+   repeated save is the same upsert — never a second template. */
+function saveRecurring(p) {
+  const id = String(p.id || '').trim();
+  if (!/^R[0-9a-z]{4,30}$/i.test(id)) return { status:'error', message:'Bad template ID.' };
+  const desc = str_(p.description).trim(), party = str_(p.party).trim(), amount = num_(p.amount);
+  if (!desc || !party || !(amount > 0)) return { status:'error', message:'Description, party and an amount above 0 are needed.' };
+  const today = recToday_();
+  const start = recIso_(p.startDate) || today, end = recIso_(p.endDate);
+  if (end && end < start) return { status:'error', message:'The end date is before the start date.' };
+  const type = REC_TYPES.indexOf(str_(p.type).trim().toLowerCase()) >= 0 ? str_(p.type).trim().toLowerCase() : 'expense';
+  const lock = LockService.getScriptLock();
+  try { lock.waitLock(20000); } catch (e) {
+    return { status:'error', message:'Busy — please try again in a moment.' };
+  }
+  try {
+    const sh = recSheet_();
+    const old = recRead_().filter(function (t) { return t.id === id; })[0];
+    const active = (p.active === undefined || p.active === '') ? true : bool_(p.active);
+    const now = recStampNow_();
+    let lastDone;
+    if (old) {
+      lastDone = old.lastDone || recAdd_(start, -1);
+      const yday = recAdd_(today, -1);
+      if (active && !old.active && lastDone < yday) lastDone = yday;      // resume: paused days are not back-filled
+    } else {
+      lastDone = recIso_(p.lastDone) || recAdd_(start, -1);
+    }
+    recWrite_(sh, old ? old.row : Math.max(sh.getLastRow(), 1) + 1, {
+      id: id, description: desc, type: type, party: party, amount: amount,
+      paidBy: str_(p.paidBy).trim(), mode: str_(p.mode).trim(), category: str_(p.category).trim(),
+      note: str_(p.note).trim(), freq: REC_FREQS.indexOf(str_(p.freq)) >= 0 ? str_(p.freq) : 'daily',
+      days: recDays_(p.days).join(','), dom: recInt_(p.dom, 1, 31, 1), dom2: recInt_(p.dom2, 1, 31, 15),
+      every: recInt_(p.every, 2, 12, 3), month: recInt_(p.month, 1, 12, 1),
+      startDate: start, endDate: end, active: active, lastDone: lastDone,
+      createdAt: old ? old.createdAt : now, updatedAt: now });
+    SpreadsheetApp.flush();
+  } finally {
+    try { lock.releaseLock(); } catch (e) {}
+  }
+  const run = recRun_(20000);                     // a template due today writes today's row at once
+  return { status:'ok', id: id, created: run.created || 0, message:'Saved.' };
+}
+function deleteRecurring(p) { return deleteRowById(REC_SHEET, REC_HDRS, p.id); }
+
+/* The writer. Idempotent: run it twice, or from two places at once, and each
+   date still gets exactly one row. */
+function recRun_(waitMs) {
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(waitMs || 3000)) return { created: 0, busy: true };
+  try {
+    const today = recToday_();
+    const due = recRead_().filter(function (t) { return t.active && (!t.lastDone || t.lastDone < today); });
+    if (!due.length) return { created: 0 };
+    const tx = getSheet(), have = {}, n = tx.getLastRow();
+    if (n > 1) tx.getRange(2, 1, n - 1, 1).getValues().forEach(function (r) { have[String(r[0])] = true; });
+    const rows = [];
+    due.forEach(function (t) {
+      let from = t.lastDone ? recAdd_(t.lastDone, 1) : (t.startDate || today);
+      if (t.startDate && from < t.startDate) from = t.startDate;
+      const to = (t.endDate && t.endDate < today) ? t.endDate : today;
+      if (from <= to && recDiff_(from, to) > REC_MAX_DAYS) from = recAdd_(to, -REC_MAX_DAYS);
+      for (let d = from; d <= to; d = recAdd_(d, 1)) {
+        if (!recIsDue_(t, d)) continue;
+        const rid = 'RC-' + t.id + '-' + d.replace(/-/g, '');
+        if (have[rid]) continue;
+        have[rid] = true;
+        rows.push([rid, d, t.type, t.description, t.party, t.amount, t.note, recStampNow_(),
+                   t.paidBy, t.mode, t.category]);
+      }
+    });
+    if (rows.length) tx.getRange(tx.getLastRow() + 1, 1, rows.length, rows[0].length).setValues(rows);
+    const rs = recSheet_();
+    due.forEach(function (t) { rs.getRange(t.row, 19).setNumberFormat('@').setValue(today); });
+    SpreadsheetApp.flush();
+    return { created: rows.length };
+  } finally {
+    try { lock.releaseLock(); } catch (e) {}
+  }
+}
+function recBeforeRead_() {                       // never lets a read fail
+  try { return recRun_(3000); } catch (e) { return { created: 0, error: String(e) }; }
+}
+function runRecurring() {
+  const r = recRun_(20000);
+  return { status: r.busy ? 'error' : 'ok', created: r.created || 0,
+           message: r.busy ? 'Busy — please try again in a moment.' : (r.created || 0) + ' entr' + (r.created === 1 ? 'y' : 'ies') + ' written.' };
+}
+function recTriggerOn_() { return !!PropertiesService.getScriptProperties().getProperty('REC_TRIGGER'); }
+
+/* Time trigger handler: about 6 AM IST every day. */
+function recurringDaily() {
+  const r = recRun_(60000);
+  Logger.log('Recurring entries: ' + (r.created || 0) + ' row(s) written' + (r.busy ? ' (busy — next run catches up)' : '') + '.');
+  return r;
+}
+/* RUN ONCE from the Apps Script editor (Google asks for "Allow" the first
+   time). Safe to run again: it replaces the trigger, never adds a second. */
+function installRecurringTrigger() {
+  ScriptApp.getProjectTriggers().forEach(function (tr) {
+    if (tr.getHandlerFunction() === 'recurringDaily') ScriptApp.deleteTrigger(tr);
+  });
+  ScriptApp.newTrigger('recurringDaily').timeBased().everyDays(1).atHour(6).nearMinute(5)
+    .inTimezone(REC_TZ).create();
+  PropertiesService.getScriptProperties().setProperty('REC_TRIGGER', recStampNow_());
+  recSheet_();
+  Logger.log('Daily recurring trigger installed (about 6 AM IST).');
+}
+/* ══ /RECURRING ENTRIES ═════════════════════════════════════════════════════ */
+
 function getAllTransactions() {
+  recBeforeRead_();                 // RECURRING: write any due rows first, so this read includes them
   const sh = getSheet();
 
   // One-time auto-import of legacy Ledger data when Transactions is still empty.
@@ -630,6 +848,8 @@ function getAllTransactions() {
            plans:       readPlans_(tz),
            balances:      readBalances_(),
            profileAt:     Number(readSetting_('profileAt') || 0),
+           recurring:     readRecurring_(),
+           recTrigger:    recTriggerOn_(),
            version:     APP_VERSION,
            features:    FEATURES };
 }

@@ -1,4 +1,6 @@
-# IBI Finance Tracker v5.25
+# IBI Finance Tracker v5.27
+
+**v5.27 (4 Nov 2026)** — RECURRING ENTRIES (Founder: "say I need to add Milk from Ajay on a daily basis"). A Recurring card on the Ledger, an editor (daily or chosen weekdays, monthly, twice a month, every 2/3/4/6 months, yearly; start and end date; pause; stop), a Repeat box on the add form, and a Recurring button on every entry. Templates live in the sheet tab **Recurring**; the Apps Script writes the ledger rows itself (daily trigger about 6 AM IST + every sync) with row ID `RC-<template>-<yyyyMMdd>`, so one date never gets two rows, missed days are caught up, a deleted day never comes back, and a paused template is not back-filled. Shared block, byte-identical with TSM v6.28. **GAS 5.27: paste, run `installRecurringTrigger` once (Allow), then New version.**
 
 **v5.25 (28 Oct 2026)** — bank-import Link no longer blanks Mode, Paid by and Category: `confirmImport()` now sends the row's `paidBy`, `mode` and `category` with `action:'update'`, and GAS `updateTransaction` keeps the existing cell for any field the caller does not send (an empty value still clears). GAS paste + New version required.
 

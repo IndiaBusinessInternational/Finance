@@ -924,6 +924,45 @@ html,body{overflow-x:clip}
 .app-name{display:flex;align-items:center;gap:7px;min-width:0}
 .app-name-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
 @media(max-width:600px){ .toggle-label{display:none} .topbar-right ibi-share-button{display:none!important} }
+/* ══ v5.27 / v6.28 — RECURRING ENTRIES (shared, byte-identical in IBI FT + TSM) ══ */
+.rec-section{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius);padding:12px 14px;margin-bottom:14px}
+.rec-hdr{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.rec-title{font-weight:700;color:var(--cyan);font-size:13px;display:flex;align-items:center;gap:6px;font-family:var(--font)}
+.rec-sub{font-size:12px;color:var(--text3);margin:4px 0 6px;line-height:1.45}
+.rec-row{display:flex;align-items:center;gap:10px;padding:9px 4px;border-top:1px solid var(--border);cursor:pointer;min-height:52px;outline:none}
+.rec-row:hover,.rec-row:focus-visible{background:var(--bg3)}
+.rec-row.off .rec-main,.rec-row.off .rec-amt{opacity:.55}
+.rec-ico{flex:none;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--bg3);color:var(--cyan);font-size:17px}
+.rec-main{flex:1;min-width:0}
+.rec-name{font-size:calc(14.5px*var(--ts,1));font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rec-meta{font-size:calc(12px*var(--ts,1));color:var(--text3);line-height:1.45;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rec-right{flex:none;display:flex;align-items:center;gap:2px}
+.rec-amt{font-size:calc(14px*var(--ts,1));font-weight:700;white-space:nowrap}
+.rec-acts .action-btn{min-width:40px;min-height:40px;font-size:18px}
+.rec-acts .action-btn:hover{color:var(--cyan);background:rgba(0,197,255,0.1)}
+.rec-chip{display:inline-block;font-size:10.5px;font-weight:700;padding:1px 7px;border-radius:10px;background:var(--warning-bg);color:var(--warning-text);border:1px solid var(--warning-border);vertical-align:1px}
+.rec-empty,.rec-note{font-size:12.5px;color:var(--text2);padding:9px 2px 3px;line-height:1.5}
+.rec-note.warn{color:var(--warning-text)}
+.rec-tag{color:var(--cyan);font-size:13px;vertical-align:-1px;margin-right:3px}
+.rec-days{display:flex;flex-wrap:wrap;gap:6px}
+.rec-days .chip{min-width:46px;min-height:38px;justify-content:center}
+.rec-quick{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px}
+.rec-nav{display:flex;align-items:center;gap:5px;margin-left:auto;margin-right:10px;font-size:12px;color:var(--text3);white-space:nowrap}
+.rec-nb{background:none;border:1px solid var(--border2);color:var(--text2);border-radius:8px;width:36px;height:36px;font-size:19px;line-height:1;cursor:pointer;font-family:var(--font)}
+.rec-nb:hover{border-color:var(--cyan);color:var(--cyan)}
+.rec-nb:disabled{opacity:.35;cursor:default}
+.rec-hint{font-size:12.5px;color:var(--text2);line-height:1.55;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:9px 11px}
+.rec-hint .warn{color:var(--warning-text);font-weight:600}
+.rec-err{display:none;color:var(--danger-text);font-size:12.5px;line-height:1.45;margin-top:4px}
+.rec-err.show{display:block}
+.rec-chk{display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--text)}
+.rec-chk input{width:auto;flex:none}
+#recModal .fld select{width:100%}
+@media(max-width:600px){
+  .rec-section{padding:10px 10px}
+  .rec-nav span{display:none}
+}
+/* ══ /RECURRING ENTRIES ══ */
 </style>
 </head>
 <body>
@@ -934,7 +973,7 @@ html,body{overflow-x:clip}
     <div class="topbar-left">
       <div class="ibi-logo"><span>IBI</span></div>
       <div class="topbar-title">
-        <div class="app-name"><span class="app-name-text">IBI Finance Tracker</span><span class="ver-badge">v5.26</span></div>
+        <div class="app-name"><span class="app-name-text">IBI Finance Tracker</span><span class="ver-badge">v5.27</span></div>
       </div>
     </div>
     <div class="topbar-right">
@@ -1134,9 +1173,26 @@ html,body{overflow-x:clip}
         <label for="fNote">Note (optional)</label>
         <input type="text" id="fNote" placeholder="e.g. GST invoice, pending ₹200, on hold...">
       </div>
+      <!-- RECURRING (v5.27 / v6.28): choose a schedule; after Save the recurring entry opens for a check -->
+      <div class="form-group full">
+        <label for="fRepeat"><i class="ti ti-repeat"></i> Repeat <span style="color:var(--text3);font-weight:400">— optional</span></label>
+        <select id="fRepeat">
+          <option value="">Never: just this entry</option>
+          <option value="daily">Every day</option>
+          <option value="weekdays">On chosen days of the week</option>
+          <option value="monthly">Monthly</option>
+          <option value="twice">Twice a month</option>
+          <option value="m2">Every 2 months</option>
+          <option value="m3">Every 3 months (quarterly)</option>
+          <option value="m4">Every 4 months</option>
+          <option value="m6">Every 6 months (half-yearly)</option>
+          <option value="yearly">Yearly</option>
+        </select>
+        <div style="font-size:11px;color:var(--text3);margin-top:5px;line-height:1.4">After you save, the schedule opens for a check. Nothing repeats until you tap Save there.</div>
+      </div>
     </div>
     <div class="btn-row">
-      <button class="btn-save" id="btnSave" onclick="saveEntry()">
+      <button class="btn-save" id="btnSave" onclick="recSaveEntry()">
         <i class="ti ti-device-floppy"></i> <span id="btnSaveLabel">Save to Google Drive</span>
       </button>
       <button class="btn-clear" onclick="cancelEdit()">Clear</button>
@@ -1153,6 +1209,16 @@ html,body{overflow-x:clip}
   <div id="pendingSection" class="pending-section">
     <div class="pending-title"><i class="ti ti-alert-circle"></i> Pending / On Hold</div>
     <div id="pendingList"></div>
+  </div>
+
+  <!-- ═══ RECURRING ENTRIES (IBI FT v5.27 / TSM v6.28) — shared, byte-identical ═══ -->
+  <div id="recSection" class="rec-section">
+    <div class="rec-hdr">
+      <div class="rec-title"><i class="ti ti-repeat"></i> Recurring entries <span class="count-badge" id="recCount">0</span></div>
+      <button class="mini-btn" id="recNewBtn" onclick="recNew()"><i class="ti ti-plus"></i> New</button>
+    </div>
+    <div class="rec-sub">Written into the ledger by themselves every morning: one entry per date, never twice.</div>
+    <div id="recList"></div>
   </div>
 
   <!-- TABLE -->
@@ -1280,7 +1346,7 @@ html,body{overflow-x:clip}
   <div id="bankBalList" class="cm-list"></div>
 </div><!-- /viewBal -->
 
-  <div class="footer">IBI Finance Tracker v5.26 &mdash; India Business International &mdash; indiabusinessinternational@gmail.com</div>
+  <div class="footer">IBI Finance Tracker v5.27 &mdash; India Business International &mdash; indiabusinessinternational@gmail.com</div>
 </div>
 
 <!-- DRAWER MENU -->
@@ -1293,6 +1359,7 @@ html,body{overflow-x:clip}
   <div class="drawer-section-label">App</div>
   <button class="drawer-item" onclick="closeDrawer();openProfile()"><i class="ti ti-user-circle"></i> Profile &amp; Photo</button>
   <button class="drawer-item" onclick="closeDrawer();openVoice()"><i class="ti ti-microphone"></i> Add entry by voice</button>
+  <button class="drawer-item" onclick="closeDrawer();recGoto()"><i class="ti ti-repeat"></i> Recurring entries</button>
   <button class="drawer-item" onclick="loadAll();closeDrawer()"><i class="ti ti-refresh"></i> Sync with Google Drive</button>
   <button class="drawer-item" onclick="closeDrawer();if(window.IBIShare)IBIShare.open()"><i class="ti ti-share"></i> Share this app</button>
   <button class="drawer-item" id="drawerSignOut" style="display:none" onclick="signOut()"><i class="ti ti-logout"></i> Sign out on this device</button>
@@ -1335,7 +1402,7 @@ html,body{overflow-x:clip}
   <!-- app and backend carry the SAME version number (CEO, 7 Sep 2026, "for easy
        noting"). Both are shown here; a bare number mismatch is only a note, a
        missing feature is what raises the amber prompts. -->
-  <div class="drawer-item" style="cursor:default;color:var(--text2);font-size:12px;align-items:flex-start"><i class="ti ti-info-circle"></i> <span id="aboutVer">App v5.26 · Backend: not connected yet</span></div>
+  <div class="drawer-item" style="cursor:default;color:var(--text2);font-size:12px;align-items:flex-start"><i class="ti ti-info-circle"></i> <span id="aboutVer">App v5.27 · Backend: not connected yet</span></div>
 </div>
 
 <!-- REPORT MODAL -->
@@ -1841,6 +1908,7 @@ html,body{overflow-x:clip}
   <div class="sheet-body" id="detailBody"></div>
   <div class="sheet-foot">
     <button class="mini-btn danger" onclick="detailDelete()"><i class="ti ti-trash"></i> Delete</button>
+    <button class="mini-btn" onclick="recFromDetail()" title="Repeat this entry automatically, or open its schedule"><i class="ti ti-repeat"></i> Recurring</button>
     <button class="mini-btn" onclick="detailDuplicate()" title="Start a new entry with these details"><i class="ti ti-copy"></i> Duplicate</button>
     <button class="btn-save" onclick="detailEdit()"><i class="ti ti-pencil"></i> Edit</button>
   </div>
@@ -1882,7 +1950,7 @@ html,body{overflow-x:clip}
       <div class="gate-mark"><i class="ti ti-lock"></i></div>
       <div>
         <div class="gate-title" id="gateTitle">IBI Finance Tracker</div>
-        <div class="gate-sub">Finance &amp; Accounts Ledger &middot; v5.26</div>
+        <div class="gate-sub">Finance &amp; Accounts Ledger &middot; v5.27</div>
       </div>
     </div>
     <div class="gate-h"><i class="ti ti-lock"></i> Sign in</div>
@@ -1901,6 +1969,120 @@ html,body{overflow-x:clip}
     </form>
     <div class="gate-msg" id="signInMsg" role="status" aria-live="polite"></div>
     <div class="gate-help">Forgotten the password? It is set in the Apps Script editor: Script Property <b>FINANCE_PASSWORD_NEW</b>, then run <b>setStaffPassword</b>.</div>
+  </div>
+</div>
+
+<!-- ═══ RECURRING ENTRY EDITOR (IBI FT v5.27 / TSM v6.28) — shared, byte-identical ═══ -->
+<div class="sheet-overlay" id="recOverlay" onclick="recClose()"></div>
+<div class="sheet-modal wide" id="recModal" role="dialog" aria-modal="true" aria-labelledby="recTitle">
+  <div class="sheet-hdr">
+    <span class="sheet-hdr-title" id="recTitle"><i class="ti ti-repeat"></i> New recurring entry</span>
+    <span class="rec-nav" id="recNav"><button class="rec-nb" id="recPrev" onclick="recStep(-1)" aria-label="Previous recurring entry">&lsaquo;</button><span id="recPos"></span><button class="rec-nb" id="recNext" onclick="recStep(1)" aria-label="Next recurring entry">&rsaquo;</button></span>
+    <button class="drawer-close" onclick="recClose()" aria-label="Close"><i class="ti ti-x"></i></button>
+  </div>
+  <div class="sheet-body" oninput="recTouched()" onchange="recTouched()">
+    <div class="fld-row one">
+      <div class="fld">
+        <label for="recDesc">Description</label>
+        <input type="text" id="recDesc" list="dlDesc" autocomplete="off" placeholder="e.g. Cow Milk 1 Liters from Ajay">
+      </div>
+    </div>
+    <div class="fld-row">
+      <div class="fld">
+        <label for="recType">Type</label>
+        <select id="recType"></select>
+      </div>
+      <div class="fld">
+        <label for="recAmount">Amount (₹)</label>
+        <input type="number" id="recAmount" placeholder="0" min="0" step="0.01" inputmode="decimal">
+      </div>
+    </div>
+    <div class="fld-row">
+      <div class="fld">
+        <label for="recParty" id="recPartyLbl">Party</label>
+        <input type="text" id="recParty" list="dlParty" autocomplete="off" placeholder="e.g. Ajay Milk">
+      </div>
+      <div class="fld">
+        <label for="recCat">Category</label>
+        <input type="text" id="recCat" list="dlCat" autocomplete="off" placeholder="e.g. Milk & Dairy">
+      </div>
+    </div>
+    <div class="fld-row">
+      <div class="fld">
+        <label for="recPaidBy">Paid by / Received by <span style="color:var(--text3)">(optional)</span></label>
+        <input type="text" id="recPaidBy" list="dlPaidBy" autocomplete="off" placeholder="e.g. self">
+      </div>
+      <div class="fld">
+        <label for="recMode">Payment mode <span style="color:var(--text3)">(optional)</span></label>
+        <select id="recMode"></select>
+      </div>
+    </div>
+    <div class="fld-row one">
+      <div class="fld">
+        <label for="recNote">Note on each entry <span style="color:var(--text3)">(optional)</span></label>
+        <input type="text" id="recNote" autocomplete="off" placeholder="e.g. 1 litre">
+      </div>
+    </div>
+    <div class="fld-row one">
+      <div class="fld">
+        <label for="recFreq">How often?</label>
+        <select id="recFreq" onchange="recFreqUI()">
+          <option value="daily">Daily or weekly: choose the days</option>
+          <option value="monthly">Monthly: one day each month</option>
+          <option value="twice">Twice a month: two days each month</option>
+          <option value="m2">Every 2 months</option>
+          <option value="m3">Every 3 months (quarterly)</option>
+          <option value="m4">Every 4 months</option>
+          <option value="m6">Every 6 months (half-yearly)</option>
+          <option value="yearly">Yearly: once a year</option>
+        </select>
+      </div>
+    </div>
+    <div class="fld-row one" id="recDaysWrap">
+      <div class="fld">
+        <label>Repeat on</label>
+        <div class="rec-days" id="recDays"></div>
+        <div class="rec-quick">
+          <button type="button" class="chip" onclick="recSetDays('all')">Every day</button>
+          <button type="button" class="chip" onclick="recSetDays('monsat')">Mon–Sat</button>
+          <button type="button" class="chip" onclick="recSetDays('monfri')">Mon–Fri</button>
+        </div>
+      </div>
+    </div>
+    <div class="fld-row" id="recDomWrap">
+      <div class="fld">
+        <label for="recDom" id="recDomLbl">Day of the month</label>
+        <select id="recDom"></select>
+      </div>
+      <div class="fld" id="recDom2Wrap">
+        <label for="recDom2">Second day</label>
+        <select id="recDom2"></select>
+      </div>
+      <div class="fld" id="recMonthWrap">
+        <label for="recMonth" id="recMonthLbl">Starting month</label>
+        <select id="recMonth"></select>
+      </div>
+    </div>
+    <div class="fld-row">
+      <div class="fld">
+        <label for="recStart">Start date</label>
+        <input type="date" id="recStart">
+      </div>
+      <div class="fld">
+        <label for="recEnd">End date <span style="color:var(--text3)">(optional)</span></label>
+        <input type="date" id="recEnd">
+      </div>
+    </div>
+    <div class="fld-row one" id="recActiveWrap">
+      <label class="rec-chk"><input type="checkbox" id="recActive"> Active (untick to pause without deleting)</label>
+    </div>
+    <div class="rec-hint" id="recHint"></div>
+    <div class="rec-err" id="recErr" role="alert"></div>
+  </div>
+  <div class="sheet-foot">
+    <button class="mini-btn danger" id="recDelBtn" onclick="recDelete()"><i class="ti ti-trash"></i> Stop &amp; delete</button>
+    <button class="mini-btn" onclick="recClose()">Cancel</button>
+    <button class="btn-save" id="recSaveBtn" onclick="recSave()"><i class="ti ti-device-floppy"></i> <span id="recSaveLbl">Save</span></button>
   </div>
 </div>
 
@@ -2223,7 +2405,7 @@ async function loadAll(){
       if(hasPlans){ commitments = data.commitments; plans = data.plans; }
       setBackendOK(hasPlans);
       setCatBackend(Array.isArray(data.features) && data.features.indexOf('category') >= 0);
-      balLoad(data); paintBackendVer(data.version); syncProfileIfStale(data.profileAt);                 // app and backend share one version number
+      balLoad(data); recLoad(data); paintBackendVer(data.version); syncProfileIfStale(data.profileAt);                 // app and backend share one version number
       cacheEntries();
       setOffline(false);
       setStatus(true,'Connected — Google Drive' + (data.version ? ' · backend v' + data.version : ''));
@@ -3202,7 +3384,7 @@ function render(){
     document.getElementById('fsCount').textContent=list.length;
     fsBox.style.display='flex';
   } else fsBox.style.display='none';
-  renderBalances();
+  renderBalances(); renderRecurring();
   const pending=entries.filter(e=>e.note&&/pending|hold|balance/i.test(e.note));
   const ps=document.getElementById('pendingSection');
   if(pending.length){
@@ -3218,7 +3400,7 @@ function render(){
       <td style="color:var(--text2)">${i+1}</td>
       <td class="dt-cell" style="color:var(--text2);font-size:12px"><div>${dt.date}</div>${dt.sub?`<div class="dt-sub">${dt.sub}</div>`:''}</td>
       <td><span class="pill ${e.type}">${(m=>`<i class="ti ${m.icon}"></i> ${m.label}`)(TYPE_META[e.type]||TYPE_META.expense)}</span></td>
-      <td title="${e.description}">${e.description}<div class="dt-sub">${esc(categoryOf(e))}</div></td>
+      <td title="${e.description}">${String(e.id).indexOf('RC-')===0?'<i class="ti ti-repeat rec-tag" title="Written by a recurring entry"></i>':''}${e.description}<div class="dt-sub">${esc(categoryOf(e))}</div></td>
       <td class="dt-cell" title="${e.party||''}" style="color:var(--text2)">${e.party||'—'}${(w=>w?`<div class="dt-sub">${esc(w)}</div>`:'')([e.paidBy,e.mode].filter(Boolean).join(' · '))}</td>
       <td style="text-align:right" class="amt-${e.type}">${(TYPE_META[e.type]||TYPE_META.expense).sign}${fmt(e.amount)}</td>
       <td style="color:var(--text2);font-size:12px;font-style:italic" title="${e.note||''}">${e.note||'—'}</td>
@@ -5949,7 +6131,7 @@ function printReport(){
     ${quality.length?`<h3 style="color:#a76b00">Data Quality Audit</h3>${quality.map(q=>`<div class="ins ${q.t}">${q.msg}</div>`).join('')}`:''}
 
     <div class="net">Net Surplus: <span style="color:${cur.net>=0?'#0086ad':'#b11'}">${S(cur.net)}</span></div>
-    <div class="foot"><span>Generated ${esc(genAt)} IST · IBI Finance Tracker v5.26</span><span>indiabusinessinternational@gmail.com</span></div>
+    <div class="foot"><span>Generated ${esc(genAt)} IST · IBI Finance Tracker v5.27</span><span>indiabusinessinternational@gmail.com</span></div>
   </body></html>`;
   const win=window.open('','_blank');
   if(!win){ showToast('Allow pop-ups to print, or use Download CSV','error'); return; }
@@ -7970,6 +8152,420 @@ if(!voiceSupported()){
   if(cta) cta.querySelector('.vc-btn').title = 'Needs Chrome, Edge or Safari';
 }
 voicePaintPrefs();
+
+/* ══ v5.27 / v6.28 — RECURRING ENTRIES ═══════════════════════════════════════
+   Shared, byte-identical in IBI Finance Tracker + TSM Finance Tracker.
+   Founder, 4 Nov 2026: "say I need to add Milk from Ajay on a daily basis",
+   with the schedule choices of IBI Task Manager.
+   The page only keeps the TEMPLATES (sheet tab Recurring). The Apps Script
+   writes the ledger rows itself, at about 6 AM IST and on every sync, with the
+   row ID RC-<template>-<yyyyMMdd>, so one date can never get two rows and a
+   missed day is caught up. The schedule maths below mirrors the script's, and
+   is used only to SHOW the next dates. */
+var recList = [], recBackend = null, recTrigger = false, recLoaded = false;
+var recEditId = null, recNewId = '', recDirty = false, _recLayer = false, recBusy = false;
+var REC_DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+var REC_MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+function recKey(){ return ((typeof LS === 'object' && LS && LS.view) ? String(LS.view).replace(/view$/, '') : 'fin_') + 'recurring'; }
+function recCacheSave(){ try{ localStorage.setItem(recKey(), JSON.stringify({ list: recList, backend: recBackend, trigger: recTrigger })); }catch(e){} }
+function recCacheLoad(){
+  if(recLoaded) return;
+  recLoaded = true;
+  try{
+    const c = JSON.parse(localStorage.getItem(recKey()) || 'null');
+    if(c && Array.isArray(c.list)){ recList = c.list; recBackend = c.backend; recTrigger = !!c.trigger; }
+  }catch(e){}
+}
+function recLoad(data){
+  recLoaded = true;
+  recBackend = !!(data && Array.isArray(data.recurring));
+  recList = recBackend ? data.recurring.slice() : [];
+  recTrigger = !!(data && data.recTrigger);
+  recCacheSave();
+}
+
+/* ── schedule maths (mirror of the Apps Script) ── */
+function recP2(n){ return ('0' + n).slice(-2); }
+function recToday(){ const d = new Date(); return d.getFullYear() + '-' + recP2(d.getMonth() + 1) + '-' + recP2(d.getDate()); }
+function recAdd(ymd, n){
+  const p = String(ymd).split('-').map(Number);
+  const d = new Date(Date.UTC(p[0], p[1] - 1, p[2] + n, 12));
+  return d.getUTCFullYear() + '-' + recP2(d.getUTCMonth() + 1) + '-' + recP2(d.getUTCDate());
+}
+function recInt(v, lo, hi, dflt){ const n = parseInt(v, 10); return isNaN(n) ? dflt : Math.min(hi, Math.max(lo, n)); }
+function recClamp(dom, y, m){ return Math.min(recInt(dom, 1, 31, 1), new Date(Date.UTC(y, m, 0, 12)).getUTCDate()); }
+function recDaysOf(s){
+  const a = String(s == null ? '' : s).split(/[^0-9]+/).filter(x => x !== '').map(Number).filter(n => n >= 0 && n <= 6);
+  const u = a.filter((n, i) => a.indexOf(n) === i).sort();
+  return u.length ? u : [0, 1, 2, 3, 4, 5, 6];
+}
+function recIsDue(t, ymd){
+  const p = ymd.split('-').map(Number), y = p[0], m = p[1], d = p[2];
+  switch(t.freq){
+    case 'monthly': return d === recClamp(t.dom, y, m);
+    case 'twice':   return d === recClamp(t.dom, y, m) || d === recClamp(t.dom2, y, m);
+    case 'yearly':  return m === recInt(t.month, 1, 12, 1) && d === recClamp(t.dom, y, m);
+    case 'nmonths': {
+      const every = recInt(t.every, 2, 12, 3), start = recInt(t.month, 1, 12, 1);
+      return ((m - start) % every + every) % every === 0 && d === recClamp(t.dom, y, m);
+    }
+    default: return recDaysOf(t.days).indexOf(new Date(Date.UTC(y, m - 1, d, 12)).getUTCDay()) >= 0;
+  }
+}
+/* The dates the script will write next: after LastDone, from the start date, up to the end date. */
+function recUpcoming(t, k){
+  if(!t || t.active === false) return [];
+  let d = t.lastDone ? recAdd(t.lastDone, 1) : (t.startDate || recToday());
+  if(t.startDate && d < t.startDate) d = t.startDate;
+  const out = [];
+  for(let i = 0; i < 800 && out.length < k; i++, d = recAdd(d, 1)){
+    if(t.endDate && d > t.endDate) break;
+    if(recIsDue(t, d)) out.push(d);
+  }
+  return out;
+}
+function recNice(ymd){
+  const p = ymd.split('-').map(Number);
+  const dow = new Date(Date.UTC(p[0], p[1] - 1, p[2], 12)).getUTCDay();
+  return REC_DOW[dow] + ' ' + recP2(p[2]) + ' ' + REC_MON[p[1] - 1] + (p[0] !== new Date().getFullYear() ? ' ' + p[0] : '');
+}
+function recOrd(n){ n = recInt(n, 1, 31, 1); const s = (n % 100 >= 11 && n % 100 <= 13) ? 'th' : ({1:'st', 2:'nd', 3:'rd'}[n % 10] || 'th'); return n + s; }
+function recFreqLabel(t){
+  switch(t.freq){
+    case 'monthly': return 'Monthly on the ' + recOrd(t.dom);
+    case 'twice':   return 'On the ' + recOrd(Math.min(t.dom, t.dom2)) + ' and ' + recOrd(Math.max(t.dom, t.dom2));
+    case 'yearly':  return 'Yearly on ' + recInt(t.dom, 1, 31, 1) + ' ' + REC_MON[recInt(t.month, 1, 12, 1) - 1];
+    case 'nmonths': {
+      const every = recInt(t.every, 2, 12, 3), start = recInt(t.month, 1, 12, 1), ms = [];
+      for(let m = 0; m < 12; m += every) ms.push(REC_MON[(start - 1 + m) % 12]);
+      return 'Every ' + every + ' months on the ' + recOrd(t.dom) + ' (' + ms.join(', ') + ')';
+    }
+    default: {
+      const d = recDaysOf(t.days).join(',');
+      if(d === '0,1,2,3,4,5,6') return 'Every day';
+      if(d === '1,2,3,4,5,6') return 'Mon–Sat';
+      if(d === '1,2,3,4,5') return 'Mon–Fri';
+      return 'Every ' + recDaysOf(t.days).map(n => REC_DOW[n]).join(', ');
+    }
+  }
+}
+function recWritten(id){ return entries.filter(e => String(e.id).indexOf('RC-' + id + '-') === 0); }
+function recSorted(){
+  return recList.slice().sort((a, b) => {
+    if((a.active === false) !== (b.active === false)) return a.active === false ? 1 : -1;
+    const na = recUpcoming(a, 1)[0] || '9999', nb = recUpcoming(b, 1)[0] || '9999';
+    return na < nb ? -1 : na > nb ? 1 : String(a.description).localeCompare(String(b.description));
+  });
+}
+
+/* ── the Ledger card ── */
+function renderRecurring(){
+  const box = document.getElementById('recList'); if(!box) return;
+  recCacheLoad();
+  document.getElementById('recCount').textContent = recList.length;
+  const newBtn = document.getElementById('recNewBtn');
+  if(recBackend === false){
+    newBtn.disabled = true;
+    box.innerHTML = '<div class="rec-note warn"><i class="ti ti-alert-triangle"></i> Recurring entries need the new Apps Script (v' + esc(typeof appVersion === 'function' ? appVersion() : '') + '). Until it is pasted and deployed, nothing repeats.</div>';
+    return;
+  }
+  newBtn.disabled = false;
+  if(recBackend === null && !recList.length){ box.innerHTML = '<div class="rec-note">Loading…</div>'; return; }
+  if(!recList.length){
+    box.innerHTML = '<div class="rec-empty">No recurring entries yet. Tap <b>New</b> (for example, daily milk), or open any entry in the table below and tap <b>Recurring</b>.</div>';
+    return;
+  }
+  const today = recToday();
+  box.innerHTML = recSorted().map(t => {
+    const meta = TYPE_META[t.type] || TYPE_META.expense;
+    const off = t.active === false, next = recUpcoming(t, 1)[0];
+    const ended = !off && !next && t.endDate && t.endDate < today;
+    const status = off ? '<span class="rec-chip">Paused</span> no entries until resumed'
+      : ended ? 'Ended on ' + esc(recNice(t.endDate))
+      : next ? 'Next: ' + esc(recNice(next)) + (next < today ? ' (catching up)' : next === today ? ' (today)' : '')
+      : 'No more dates';
+    const id = esc(t.id);
+    return `<div class="rec-row${off ? ' off' : ''}" id="rec_${id}" role="button" tabindex="0" onclick="recEdit('${id}')" onkeydown="if(event.key==='Enter'){recEdit('${id}')}" title="Tap to edit">
+      <div class="rec-ico"><i class="ti ti-repeat"></i></div>
+      <div class="rec-main"><div class="rec-name">${esc(t.description)}</div>
+        <div class="rec-meta">${esc(recFreqLabel(t))} · ${esc(t.party)}</div>
+        <div class="rec-meta">${status}</div></div>
+      <div class="rec-right"><div class="rec-amt amt-${esc(t.type)}">${meta.sign}${fmt(t.amount)}</div>
+        <div class="rec-acts" onclick="event.stopPropagation()"><button class="action-btn" onclick="recToggle('${id}', this)" title="${off ? 'Resume' : 'Pause'}" aria-label="${off ? 'Resume' : 'Pause'}"><i class="ti ${off ? 'ti-player-play' : 'ti-player-pause'}"></i></button></div></div>
+    </div>`;
+  }).join('') + (recTrigger ? '' : '<div class="rec-note"><i class="ti ti-info-circle"></i> Entries are written each time the app syncs. The 6 AM daily timer is not switched on yet.</div>');
+}
+function recGoto(){
+  if(typeof setView === 'function') setView('ledger');
+  const s = document.getElementById('recSection');
+  if(s) setTimeout(() => s.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
+}
+
+/* ── the editor ── */
+function recEl(id){ return document.getElementById(id); }
+function recFillSelects(){
+  const ty = recEl('recType');
+  if(!ty.options.length) ty.innerHTML = Object.keys(TYPE_META).map(k => `<option value="${k}">${esc(TYPE_META[k].label)}</option>`).join('');
+  const mo = recEl('recMode'), fm = document.getElementById('fMode');
+  if(!mo.options.length) mo.innerHTML = fm ? fm.innerHTML : '<option value="">Not stated</option>';
+  const days = n => Array.from({ length: 31 }, (_, i) => `<option value="${i + 1}">${recOrd(i + 1)}${i + 1 > 28 ? ' (or last day)' : ''}</option>`).join('');
+  if(!recEl('recDom').options.length){ recEl('recDom').innerHTML = days(); recEl('recDom2').innerHTML = days(); }
+  if(!recEl('recMonth').options.length) recEl('recMonth').innerHTML = REC_MON.map((m, i) => `<option value="${i + 1}">${m}</option>`).join('');
+  if(!recEl('recDays').children.length) recEl('recDays').innerHTML = [1, 2, 3, 4, 5, 6, 0].map(d => `<button type="button" class="chip" data-d="${d}" aria-pressed="false" onclick="recDayTap(this)">${REC_DOW[d]}</button>`).join('');
+}
+function recDayTap(b){ b.classList.toggle('on'); b.setAttribute('aria-pressed', b.classList.contains('on')); recTouched(); }
+function recSetDays(which){
+  const want = which === 'monsat' ? [1, 2, 3, 4, 5, 6] : which === 'monfri' ? [1, 2, 3, 4, 5] : [0, 1, 2, 3, 4, 5, 6];
+  recEl('recDays').querySelectorAll('.chip').forEach(b => { const on = want.indexOf(+b.dataset.d) >= 0; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
+  recTouched();
+}
+function recFreqUI(){
+  const v = recEl('recFreq').value, nm = /^m\d+$/.test(v);
+  recEl('recDaysWrap').style.display = v === 'daily' ? '' : 'none';
+  recEl('recDomWrap').style.display = v === 'daily' ? 'none' : '';
+  recEl('recDom2Wrap').style.display = v === 'twice' ? '' : 'none';
+  recEl('recMonthWrap').style.display = (nm || v === 'yearly') ? '' : 'none';
+  recEl('recDomLbl').textContent = v === 'twice' ? 'First day' : 'Day of the month';
+  recEl('recMonthLbl').textContent = v === 'yearly' ? 'Month' : 'Starting month';
+  recHint();
+}
+function recForm(){
+  const v = recEl('recFreq').value, nm = /^m(\d+)$/.exec(v);
+  const days = Array.from(recEl('recDays').querySelectorAll('.chip.on')).map(b => +b.dataset.d).sort();
+  return {
+    description: recEl('recDesc').value.trim(), type: recEl('recType').value, party: recEl('recParty').value.trim(),
+    amount: parseFloat(recEl('recAmount').value), category: recEl('recCat').value.trim(),
+    paidBy: recEl('recPaidBy').value.trim(), mode: recEl('recMode').value, note: recEl('recNote').value.trim(),
+    freq: nm ? 'nmonths' : v, every: nm ? +nm[1] : 3, days: days.join(','), noDays: v === 'daily' && !days.length,
+    dom: +recEl('recDom').value || 1, dom2: +recEl('recDom2').value || 15, month: +recEl('recMonth').value || 1,
+    startDate: recEl('recStart').value, endDate: recEl('recEnd').value,
+    active: recEditId ? recEl('recActive').checked : true
+  };
+}
+function recHint(){
+  const f = recForm(), old = recEditId ? recList.find(x => x.id === recEditId) : null;
+  const t = Object.assign({}, f, { lastDone: old ? old.lastDone : (f.startDate ? recAdd(f.startDate, -1) : '') });
+  const box = recEl('recHint'), today = recToday();
+  if(f.noDays){ box.innerHTML = '<span class="warn">Choose at least one day of the week.</span>'; return; }
+  if(!f.startDate){ box.innerHTML = 'Choose a start date.'; return; }
+  if(!f.active){ box.innerHTML = '<span class="warn">Paused</span>: no entries are written. Tick Active to resume from today; the paused days are not filled in.'; return; }
+  const next = recUpcoming(t, 60), past = next.filter(d => d <= today && (old ? false : d < today));
+  const fut = next.filter(d => !(past.indexOf(d) >= 0)).slice(0, 3);
+  let h = '<b>' + esc(recFreqLabel(f)) + '</b>. ';
+  h += fut.length ? 'Next entries: ' + fut.map(recNice).map(esc).join(', ') + '.' : 'No dates fall between the start and end dates.';
+  if(!old && past.length){
+    const all = recUpcoming(Object.assign({}, t, { endDate: (f.endDate && f.endDate < today) ? f.endDate : recAdd(today, -1) }), 500);
+    h += '<br><span class="warn"><i class="ti ti-alert-triangle"></i> The start date is in the past: ' + all.length + ' entr' + (all.length === 1 ? 'y' : 'ies') + ' for the missed dates (from ' + esc(recNice(all[0])) + ') will be written as soon as you save.</span>';
+  }
+  if(old){
+    const w = recWritten(old.id);
+    h += '<br>Written so far: ' + w.length + ' entr' + (w.length === 1 ? 'y' : 'ies') + (w.length ? ' · latest ' + esc(recNice(w.map(e => e.date).sort().slice(-1)[0])) : '') + '. A change applies from the next entry; past entries stay as they are.';
+  }
+  box.innerHTML = h;
+}
+function recTouched(){ recDirty = true; recEl('recErr').classList.remove('show'); recHint(); }
+function recSetForm(v){
+  recFillSelects();
+  recEl('recDesc').value = v.description || '';
+  recEl('recType').value = TYPE_META[v.type] ? v.type : 'expense';
+  recEl('recParty').value = v.party || '';
+  recEl('recAmount').value = v.amount || '';
+  recEl('recCat').value = v.category || '';
+  recEl('recPaidBy').value = v.paidBy || '';
+  recEl('recMode').value = v.mode || '';
+  recEl('recNote').value = v.note || '';
+  recEl('recFreq').value = v.freq === 'nmonths' ? 'm' + recInt(v.every, 2, 12, 3) : (v.freq || 'daily');
+  if(!recEl('recFreq').value) recEl('recFreq').value = 'm3';
+  const ds = recDaysOf(v.days);
+  recEl('recDays').querySelectorAll('.chip').forEach(b => { const on = ds.indexOf(+b.dataset.d) >= 0; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
+  recEl('recDom').value = recInt(v.dom, 1, 31, 1);
+  recEl('recDom2').value = recInt(v.dom2, 1, 31, 15);
+  recEl('recMonth').value = recInt(v.month, 1, 12, 1);
+  recEl('recStart').value = v.startDate || '';
+  recEl('recEnd').value = v.endDate || '';
+  recEl('recActive').checked = v.active !== false;
+  recEl('recDesc').classList.remove('miss'); recEl('recParty').classList.remove('miss'); recEl('recAmount').classList.remove('miss');
+}
+function recOpen(t, pre, keepLayer){
+  recEditId = t ? t.id : null;
+  recNewId = t ? '' : 'R' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  const tm = new Date();
+  recSetForm(t || Object.assign({ type: (typeof txType !== 'undefined' && TYPE_META[txType]) ? txType : 'expense',
+    freq: 'daily', days: '0,1,2,3,4,5,6', dom: tm.getDate(), dom2: 15, every: 3, month: tm.getMonth() + 1,
+    startDate: recAdd(recToday(), 1), endDate: '', active: true }, pre || {}));
+  recEl('recTitle').innerHTML = '<i class="ti ti-repeat"></i> ' + (t ? 'Edit recurring entry' : 'New recurring entry');
+  recEl('recDelBtn').style.display = t ? '' : 'none';
+  recEl('recActiveWrap').style.display = t ? '' : 'none';
+  const list = recSorted(), i = t ? list.findIndex(x => x.id === t.id) : -1;
+  recEl('recNav').style.display = (t && list.length > 1) ? '' : 'none';
+  if(i >= 0){ recEl('recPos').textContent = (i + 1) + ' / ' + list.length; recEl('recPrev').disabled = i === 0; recEl('recNext').disabled = i === list.length - 1; }
+  recEl('recSaveLbl').textContent = t ? 'Save changes' : 'Save';
+  recEl('recErr').classList.remove('show');
+  recFreqUI();
+  recDirty = false;
+  openSheet('rec');
+  if(!keepLayer && !_recLayer){ try{ history.pushState({ recLayer: 1 }, ''); _recLayer = true; }catch(e){} }
+}
+function recNew(pre){
+  if(recBackend === false){ showToast('Paste the new Apps Script first', 'error'); return; }
+  recOpen(null, pre);
+}
+function recEdit(id){
+  const t = recList.find(x => x.id === id);
+  if(!t){ showToast('This recurring entry no longer exists', 'error'); return; }
+  recOpen(t);
+}
+function recStep(dir){
+  const list = recSorted(), i = list.findIndex(x => x.id === recEditId), n = list[i + dir];
+  if(!n) return;
+  if(recDirty && !confirm('Discard the changes to this recurring entry?')) return;
+  recOpen(n, null, true);
+}
+function recHide(){ closeSheet('rec'); recDirty = false; recEditId = null; }
+function recClose(force){
+  if(!force && recDirty && !confirm('Discard the changes to this recurring entry?')) return;
+  recDirty = false;
+  if(_recLayer){ history.back(); } else recHide();
+}
+window.addEventListener('popstate', function(){
+  if(!_recLayer) return;
+  if(recDirty && !confirm('Discard the changes to this recurring entry?')){ try{ history.pushState({ recLayer: 1 }, ''); }catch(e){} return; }
+  _recLayer = false; recHide();
+});
+document.addEventListener('keydown', function(e){
+  const m = document.getElementById('recModal');
+  if(!m || !m.classList.contains('open')) return;
+  if(e.key === 'Escape'){ e.preventDefault(); e.stopImmediatePropagation(); recClose(); return; }
+  if(e.key === 'Enter' && e.target && e.target.tagName === 'INPUT' && e.target.type !== 'checkbox'){ e.preventDefault(); recSave(); }
+  if((e.key === 'ArrowLeft' || e.key === 'ArrowRight') && !(e.target && /INPUT|SELECT|TEXTAREA/.test(e.target.tagName))) recStep(e.key === 'ArrowLeft' ? -1 : 1);
+}, true);
+function recErrShow(msg, fieldId){
+  const b = recEl('recErr'); b.textContent = msg; b.classList.add('show');
+  if(fieldId){ const f = recEl(fieldId); f.classList.add('miss'); f.focus(); }
+  b.scrollIntoView({ block: 'nearest' });
+}
+async function recSave(){
+  if(recBusy) return;
+  const f = recForm();
+  ['recDesc', 'recParty', 'recAmount'].forEach(id => recEl(id).classList.remove('miss'));
+  if(!f.description) return recErrShow('Type a description, e.g. Cow Milk 1 Liters from Ajay.', 'recDesc');
+  if(!f.party) return recErrShow('Type the party, e.g. Ajay Milk.', 'recParty');
+  if(!(f.amount > 0)) return recErrShow('Type an amount above ₹0.', 'recAmount');
+  if(f.noDays) return recErrShow('Choose at least one day of the week.');
+  if(!f.startDate) return recErrShow('Choose a start date.', 'recStart');
+  if(f.endDate && f.endDate < f.startDate) return recErrShow('The end date is before the start date.', 'recEnd');
+  if(recBackend === false) return recErrShow('Paste the new Apps Script first; then this saves.');
+  const id = recEditId || recNewId;
+  const params = { action: 'saveRecurring', id: id, description: f.description, type: f.type, party: f.party,
+    amount: f.amount, category: f.category, paidBy: f.paidBy, mode: f.mode, note: f.note, freq: f.freq,
+    every: f.every, days: f.days, dom: f.dom, dom2: f.dom2, month: f.month, startDate: f.startDate,
+    endDate: f.endDate, active: String(f.active) };
+  const btn = recEl('recSaveBtn'), lbl = recEl('recSaveLbl'), was = lbl.textContent;
+  recBusy = true; btn.disabled = true; lbl.textContent = 'Saving…';
+  try{
+    const d = await gasCall(params, 2, 75000);
+    if(d && d.status === 'ok'){
+      const old = recList.find(x => x.id === id);
+      const row = Object.assign({}, old || {}, f, { id: id,
+        lastDone: old ? old.lastDone : recAdd(f.startDate, -1) });
+      delete row.noDays;
+      recList = recList.filter(x => x.id !== id).concat([row]);
+      recCacheSave();
+      recDirty = false; recClose(true);
+      const n = recUpcoming(row, 1)[0];
+      showToast(d.created ? 'Saved: ' + d.created + ' entr' + (d.created === 1 ? 'y' : 'ies') + ' written' : 'Saved' + (n && row.active !== false ? ': next entry ' + recNice(n) : ''));
+      renderRecurring();
+      if(typeof loadAll === 'function') loadAll();
+    } else {
+      recErrShow((d && d.message) || 'Could not save. Try again.');
+    }
+  }catch(e){
+    if(typeof AUTH_LOST === 'undefined' || !AUTH_LOST) recErrShow('Could not reach Google Drive. Check the connection and tap Save again.');
+  }finally{
+    recBusy = false; btn.disabled = false; lbl.textContent = was;
+  }
+}
+async function recToggle(id, btn){
+  const t = recList.find(x => x.id === id); if(!t || recBusy) return;
+  const on = t.active === false;
+  recBusy = true; if(btn) btn.disabled = true;
+  try{
+    const d = await gasCall(Object.assign({ action: 'saveRecurring' }, t, { active: String(on), lastDone: '' }), 2, 75000);
+    if(d && d.status === 'ok'){
+      t.active = on;
+      if(on && t.lastDone && t.lastDone < recAdd(recToday(), -1)) t.lastDone = recAdd(recToday(), -1);
+      recCacheSave(); renderRecurring();
+      showToast(on ? 'Resumed from today' + (d.created ? ': ' + d.created + ' entr' + (d.created === 1 ? 'y' : 'ies') + ' written' : '') : 'Paused: nothing is written until you resume');
+      if(on && typeof loadAll === 'function') loadAll();
+    } else showToast((d && d.message) || 'Could not change it', 'error');
+  }catch(e){
+    if(typeof AUTH_LOST === 'undefined' || !AUTH_LOST) showToast('Could not reach Google Drive. Try again.', 'error');
+  }finally{
+    recBusy = false; if(btn) btn.disabled = false;
+  }
+}
+async function recDelete(){
+  const t = recList.find(x => x.id === recEditId); if(!t || recBusy) return;
+  if(!confirm('Stop "' + t.description + '" and delete it?\n\nEntries already in the ledger stay. Nothing new will be written.')) return;
+  recBusy = true; recEl('recDelBtn').disabled = true;
+  try{
+    const d = await gasCall({ action: 'deleteRecurring', id: t.id }, 2, 75000);
+    if(d && (d.status === 'ok' || /not found/i.test(d.message || ''))){
+      recList = recList.filter(x => x.id !== t.id); recCacheSave();
+      recDirty = false; recClose(true); renderRecurring();
+      showToast('Stopped. Past entries are kept.');
+    } else recErrShow((d && d.message) || 'Could not delete. Try again.');
+  }catch(e){
+    if(typeof AUTH_LOST === 'undefined' || !AUTH_LOST) recErrShow('Could not reach Google Drive. Try again.');
+  }finally{
+    recBusy = false; recEl('recDelBtn').disabled = false;
+  }
+}
+
+/* ── from an entry: the form's Repeat box, and the detail sheet's Recurring button ── */
+function recPrefill(e, rep){
+  const today = recToday(), base = (e.date && e.date > today) ? e.date : today;
+  const start = recAdd(base, 1);
+  const p = String(e.date || today).split('-').map(Number), day = p[2] || 1, mon = p[1] || 1;
+  const pre = { description: e.description || '', type: TYPE_META[e.type] ? e.type : 'expense', party: e.party || '',
+    amount: e.amount || '', paidBy: e.paidBy || '', mode: e.mode || '',
+    category: e.category || (typeof categoryOf === 'function' ? categoryOf(e) : ''), note: '',
+    startDate: start, freq: 'daily', days: '0,1,2,3,4,5,6', dom: day, dom2: day <= 15 ? day + 15 : day - 15, month: mon };
+  if(rep === 'weekdays') pre.days = String(new Date(Date.UTC(p[0] || 2026, mon - 1, day, 12)).getUTCDay());
+  else if(rep === 'monthly' || rep === 'twice' || rep === 'yearly') pre.freq = rep;
+  else if(/^m\d+$/.test(rep || '')){ pre.freq = 'nmonths'; pre.every = +rep.slice(1); }
+  return pre;
+}
+function recFromForm(){
+  return { date: document.getElementById('fDate').value, type: (typeof txType !== 'undefined') ? txType : 'expense',
+    description: document.getElementById('fDesc').value.trim(), party: document.getElementById('fParty').value.trim(),
+    amount: parseFloat(document.getElementById('fAmount').value) || '', paidBy: document.getElementById('fPaidBy').value.trim(),
+    mode: document.getElementById('fMode').value, category: document.getElementById('fCat').value.trim() };
+}
+async function recSaveEntry(){
+  const sel = document.getElementById('fRepeat'), rep = sel ? sel.value : '';
+  const snap = rep ? recFromForm() : null;
+  const ok = await saveEntry();
+  if(ok && snap){
+    sel.value = '';
+    if(recBackend === false){ showToast('Entry saved. Recurring needs the new Apps Script first', 'error'); return ok; }
+    recNew(recPrefill(snap, rep));
+    showToast('Entry saved. Now check the schedule and tap Save');
+  }
+  return ok;
+}
+function recFromDetail(){
+  const e = entries.find(x => x.id === detailId); if(!e) return;
+  closeDetail();
+  const m = /^RC-(R[0-9a-z]+)-\d{8}$/i.exec(String(e.id));
+  if(m){
+    if(recList.some(x => x.id === m[1])) return recEdit(m[1]);
+    showToast('Written by a recurring entry that has since been deleted'); return;
+  }
+  recNew(recPrefill(e, 'daily'));
+}
+/* ══ /RECURRING ENTRIES ══ */
 
 // ── SERVICE WORKER ──
 if('serviceWorker' in navigator){

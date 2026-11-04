@@ -1,4 +1,5 @@
-const CACHE = 'ibi-finance-v5.26';
+const CACHE = 'ibi-finance-v5.27';
+/* v5.27 / v6.28: recurring entries (new page code; no new files). */
 /* v5.26 / v4.16 / v6.27: the bank-logo tiles on the Balances cards, so an
    installed app still shows them offline. */
 const BANK_LOGOS = ['axis', 'bob', 'canara', 'cub', 'federal', 'hdfc', 'icici', 'idfc', 'indianbank',
